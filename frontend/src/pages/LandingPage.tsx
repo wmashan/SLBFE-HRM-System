@@ -1,67 +1,81 @@
 import React, { useState } from 'react';
-import { Users, Shield, FileText, BarChart3, Clock, CheckCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Shield, ArrowRight, Eye, EyeOff, Globe, Award, Building2, UserCheck, Calendar, TrendingUp, HeadphonesIcon, MapPin } from 'lucide-react';
 
 const SLBFELandingPage = () => {
+  const navigate = useNavigate();
   const [showLogin, setShowLogin] = useState(false);
+  const [loginMode, setLoginMode] = useState('login'); // 'login', 'forgot'
   const [loginForm, setLoginForm] = useState({
     username: '',
     password: '',
-    role: 'employee'
+    email: '',
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setLoginForm({
       ...loginForm,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login process
-    console.log('Login attempt:', loginForm);
-    alert(`Login attempted for ${loginForm.username} as ${loginForm.role}`);
+    
+    if (loginMode === 'login') {
+      // Handle login
+      console.log('Login attempt:', { 
+        username: loginForm.username
+      });
+      alert(`Login attempted for ${loginForm.username}`);
+    } 
+    else if (loginMode === 'forgot') {
+      // Handle forgot password
+      console.log('Password reset request for:', loginForm.email);
+      alert(`Password reset link sent to ${loginForm.email}. Please check your inbox.`);
+      setLoginMode('login');
+    }
   };
 
   const features = [
     {
       icon: <Users className="w-8 h-8 text-blue-600" />,
-      title: "Employee Management",
-      description: "Comprehensive employee profiles with complete lifecycle management from onboarding to retirement."
+      title: "Foreign Employment Staff Management",
+      description: "Comprehensive management of SLBFE personnel across all departments and branches nationwide with specialized role assignments."
     },
     {
-      icon: <Shield className="w-8 h-8 text-green-600" />,
-      title: "Secure Access Control",
-      description: "Role-based permissions ensuring data security and compliance with organizational policies."
+      icon: <Globe className="w-8 h-8 text-green-600" />,
+      title: "Multi-Country Program Management",
+      description: "Manage staff assignments for Korea, Japan, Middle East, and other foreign employment programs with country-specific expertise tracking."
     },
     {
-      icon: <FileText className="w-8 h-8 text-purple-600" />,
-      title: "Digital Document Management",
-      description: "Centralized document storage with easy upload, categorization, and retrieval capabilities."
+      icon: <Award className="w-8 h-8 text-purple-600" />,
+      title: "Training & Certification Tracking",
+      description: "Track employee certifications, training programs, and skill development for pre-departure training coordinators and specialists."
     },
     {
-      icon: <BarChart3 className="w-8 h-8 text-orange-600" />,
-      title: "Advanced Reporting",
-      description: "Generate detailed reports with custom filters and export to Excel/CSV formats."
+      icon: <Building2 className="w-8 h-8 text-orange-600" />,
+      title: "Branch Network Management",
+      description: "Centralized management of 50+ branches nationwide with location-specific staffing, resources, and performance tracking."
     },
     {
-      icon: <Clock className="w-8 h-8 text-red-600" />,
-      title: "Workflow Automation",
-      description: "Streamlined approval processes for transfers, leave requests, and loan applications."
+      icon: <UserCheck className="w-8 h-8 text-red-600" />,
+      title: "Migrant Worker Case Assignment",
+      description: "Assign and track SLBFE staff responsible for specific migrant worker cases, ensuring proper oversight and support."
     },
     {
-      icon: <CheckCircle className="w-8 h-8 text-teal-600" />,
-      title: "Self-Service Portal",
-      description: "Empower employees with direct access to their profiles, leave balances, and pay slips."
+      icon: <Calendar className="w-8 h-8 text-teal-600" />,
+      title: "Government Compliance & Audit",
+      description: "Maintain compliance with government regulations, track audit requirements, and ensure policy adherence across all operations."
     }
   ];
 
   const stats = [
-    { number: "10,000+", label: "Active Employees", color: "text-blue-600" },
-    { number: "50+", label: "Branches Nationwide", color: "text-green-600" },
-    { number: "99.9%", label: "System Uptime", color: "text-purple-600" },
-    { number: "24/7", label: "Support Available", color: "text-orange-600" }
+    { number: "1,500+", label: "SLBFE Staff Members", color: "text-blue-600" },
+    { number: "50+", label: "Branch Offices", color: "text-green-600" },
+    { number: "144K+", label: "Workers Deployed (2025)", color: "text-purple-600" },
+    { number: "15+", label: "Destination Countries", color: "text-orange-600" }
   ];
 
   return (
@@ -93,91 +107,161 @@ const SLBFELandingPage = () => {
       {showLogin && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all">
+            {/* Header */}
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-              <p className="text-gray-600 mt-1">Sign in to access your account</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {loginMode === 'login' && 'Welcome Back'}
+                {loginMode === 'forgot' && 'Reset Password'}
+              </h2>
+              <p className="text-gray-600 mt-1">
+                {loginMode === 'login' && 'Sign in to access your SLBFE account'}
+                {loginMode === 'forgot' && 'Enter your email to reset your password'}
+              </p>
             </div>
-            
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <select
-                  name="role"
-                  value={loginForm.role}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                >
-                  <option value="employee">Employee</option>
-                  <option value="hr">HR Officer</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">System Administrator</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                <input
-                  type="text"
-                  name="username"
-                  value={loginForm.username}
-                  onChange={handleInputChange}
-                  placeholder="Enter your username"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                <div className="relative">
+
+            {/* Login Form */}
+            {loginMode === 'login' && (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={loginForm.password}
+                    type="text"
+                    name="username"
+                    value={loginForm.username}
                     onChange={handleInputChange}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter your username"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={loginForm.password}
+                      onChange={handleInputChange}
+                      placeholder="Enter your password"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center">
+                    <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  </label>
+                  <button 
+                    type="button" 
+                    onClick={() => setLoginMode('forgot')}
+                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    Forgot password?
                   </button>
                 </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-                <button type="button" className="text-sm text-blue-600 hover:text-blue-800">
-                  Forgot password?
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowLogin(false)}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-medium transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                
+                <div className="space-y-3">
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+                  >
+                    Sign In
+                  </button>
+                  
+                  <div className="text-center">
+                    <span className="text-sm text-gray-600">Don't have an account? </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowLogin(false);
+                        navigate('/create-account');
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    >
+                      Create Account
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* Forgot Password Form */}
+            {loginMode === 'forgot' && (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={loginForm.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your registered email"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    required
+                  />
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-700">
+                    <strong>Note:</strong> A password reset link will be sent to your registered email address. 
+                    Please check your inbox and follow the instructions to reset your password.
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
+                  >
+                    Send Reset Link
+                  </button>
+                  
+                  <div className="text-center">
+                    <span className="text-sm text-gray-600">Remember your password? </span>
+                    <button
+                      type="button"
+                      onClick={() => setLoginMode('login')}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    >
+                      Back to Login
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* Cancel Button */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogin(false);
+                  setLoginMode('login');
+                  setLoginForm({
+                    username: '',
+                    password: '',
+                    email: ''
+                  });
+                }}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-medium transition-all"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -188,20 +272,22 @@ const SLBFELandingPage = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Transforming HR
+              SLBFE HR
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                Management
+                Management System
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Streamline your HR processes with our comprehensive digital solution. From employee onboarding to retirement management, experience the future of workforce administration.
+            <p className="text-xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
+              Streamline human resource management for Sri Lanka's premier foreign employment bureau. 
+              Manage staff across 50+ branches, track training programs, and oversee operations that 
+              facilitate overseas employment for thousands of Sri Lankan workers.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => setShowLogin(true)}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center"
               >
-                Get Started
+                Access System
                 <ArrowRight className="ml-2 w-5 h-5" />
               </button>
               <button className="border-2 border-gray-300 hover:border-blue-600 text-gray-800 hover:text-blue-600 px-8 py-4 rounded-lg font-semibold transition-all duration-200">
@@ -233,10 +319,11 @@ const SLBFELandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Comprehensive HR Solution
+              Specialized HR Solutions for SLBFE
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our platform offers a complete suite of tools designed to modernize and streamline your HR operations.
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+              Purpose-built for Sri Lanka's Bureau of Foreign Employment, managing a diverse workforce 
+              dedicated to facilitating overseas employment opportunities for Sri Lankan citizens.
             </p>
           </div>
           
@@ -259,20 +346,64 @@ const SLBFELandingPage = () => {
         </div>
       </section>
 
+      {/* SLBFE Specific Capabilities Section */}
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Empowering SLBFE's Mission
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Supporting the bureau that has facilitated over 144,000 overseas employment opportunities in 2025 alone.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                <TrendingUp className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Performance Analytics</h3>
+              <p className="text-gray-600 mb-4">Track staff performance across different programs - Korea EPS, Japan Technical Training, Middle East placements, and more.</p>
+              <div className="text-sm text-blue-600 font-medium">• Program-specific metrics • Branch comparisons • Success rate tracking</div>
+            </div>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <MapPin className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Multi-Location Management</h3>
+              <p className="text-gray-600 mb-4">Seamlessly manage HR operations across all SLBFE branches from Colombo to remote district offices.</p>
+              <div className="text-sm text-green-600 font-medium">• Centralized oversight • Location-based reporting • Resource allocation</div>
+            </div>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                <HeadphonesIcon className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">24/7 Support Integration</h3>
+              <p className="text-gray-600 mb-4">Integrate with SLBFE's hotline (1989) and WhatsApp support for comprehensive employee assistance.</p>
+              <div className="text-sm text-purple-600 font-medium">• Help desk integration • Emergency protocols • Multi-channel support</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
-            Ready to Modernize Your HR?
+            Ready to Modernize SLBFE's HR Operations?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of organizations already benefiting from our comprehensive HR management solution.
+          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+            Join the digital transformation of Sri Lanka's leading foreign employment bureau. 
+            Streamline operations that support thousands of migrant workers and their families.
           </p>
           <button
             onClick={() => setShowLogin(true)}
             className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
-            Start Your Journey
+            Access SLBFE HR System
           </button>
         </div>
       </section>
@@ -286,39 +417,58 @@ const SLBFELandingPage = () => {
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">SLBFE</span>
+                <span className="text-xl font-bold">SLBFE HRM</span>
               </div>
-              <p className="text-gray-400">
+              <p className="text-gray-400 mb-4">
                 Sri Lanka Bureau of Foreign Employment HR Management System
+              </p>
+              <p className="text-sm text-gray-500">
+                Empowering the workforce behind Sri Lanka's foreign employment sector
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <h4 className="font-semibold mb-4">HR Modules</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Dashboard</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Employee Portal</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Reports</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Employee Management</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Training Coordination</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Branch Operations</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Performance Analytics</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h4 className="font-semibold mb-4">Support & Resources</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">System Status</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">User Guide</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Training Materials</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">System Updates</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Technical Support</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Contact Info</h4>
+              <h4 className="font-semibold mb-4">SLBFE Contact</h4>
               <div className="space-y-2 text-gray-400">
-                <p>Email: support@slbfe.gov.lk</p>
-                <p>Phone: +94 11 123 4567</p>
-                <p>Address: Colombo, Sri Lanka</p>
+                <p className="flex items-center">
+                  <span className="w-4 h-4 mr-2">📧</span>
+                  info_center@slbfe.lk
+                </p>
+                <p className="flex items-center">
+                  <span className="w-4 h-4 mr-2">📞</span>
+                  Hotline: 1989
+                </p>
+                <p className="flex items-center">
+                  <span className="w-4 h-4 mr-2">📱</span>
+                  WhatsApp: +94 71 9 802 822
+                </p>
+                <p className="flex items-center">
+                  <span className="w-4 h-4 mr-2">🌐</span>
+                  www.slbfe.lk
+                </p>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 SLBFE HR Management System. All rights reserved.</p>
+            <p>&copy; 2025 SLBFE HR Management System. All rights reserved.</p>
+            <p className="text-sm mt-1">Supporting Sri Lanka's Bureau of Foreign Employment operations nationwide</p>
           </div>
         </div>
       </footer>
