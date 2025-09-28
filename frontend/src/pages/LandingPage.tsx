@@ -1,42 +1,8 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Shield, ArrowRight, Eye, EyeOff, Globe, Award, Building2, UserCheck, Calendar, TrendingUp, HeadphonesIcon, MapPin } from 'lucide-react';
+import { Users, ArrowRight, Globe, Award, Building2, UserCheck, Calendar, TrendingUp, HeadphonesIcon, MapPin } from 'lucide-react';
 
 const SLBFELandingPage = () => {
   const navigate = useNavigate();
-  const [showLogin, setShowLogin] = useState(false);
-  const [loginMode, setLoginMode] = useState('login'); // 'login', 'forgot'
-  const [loginForm, setLoginForm] = useState({
-    username: '',
-    password: '',
-    email: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setLoginForm({
-      ...loginForm,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (loginMode === 'login') {
-      // Handle login
-      console.log('Login attempt:', { 
-        username: loginForm.username
-      });
-      alert(`Login attempted for ${loginForm.username}`);
-    } 
-    else if (loginMode === 'forgot') {
-      // Handle forgot password
-      console.log('Password reset request for:', loginForm.email);
-      alert(`Password reset link sent to ${loginForm.email}. Please check your inbox.`);
-      setLoginMode('login');
-    }
-  };
 
   const features = [
     {
@@ -94,177 +60,14 @@ const SLBFELandingPage = () => {
               </div>
             </div>
             <button
-              onClick={() => setShowLogin(!showLogin)}
+              onClick={() => navigate('/login')}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              {showLogin ? 'Hide Login' : 'Login'}
+              Login
             </button>
           </div>
         </div>
       </header>
-
-      {/* Login Modal */}
-      {showLogin && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all">
-            {/* Header */}
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {loginMode === 'login' && 'Welcome Back'}
-                {loginMode === 'forgot' && 'Reset Password'}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {loginMode === 'login' && 'Sign in to access your SLBFE account'}
-                {loginMode === 'forgot' && 'Enter your email to reset your password'}
-              </p>
-            </div>
-
-            {/* Login Form */}
-            {loginMode === 'login' && (
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={loginForm.username}
-                    onChange={handleInputChange}
-                    placeholder="Enter your username"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={loginForm.password}
-                      onChange={handleInputChange}
-                      placeholder="Enter your password"
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                    <span className="ml-2 text-sm text-gray-600">Remember me</span>
-                  </label>
-                  <button 
-                    type="button" 
-                    onClick={() => setLoginMode('forgot')}
-                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-                
-                <div className="space-y-3">
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
-                  >
-                    Sign In
-                  </button>
-                  
-                  <div className="text-center">
-                    <span className="text-sm text-gray-600">Don't have an account? </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowLogin(false);
-                        navigate('/create-account');
-                      }}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                    >
-                      Create Account
-                    </button>
-                  </div>
-                </div>
-              </form>
-            )}
-
-            {/* Forgot Password Form */}
-            {loginMode === 'forgot' && (
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={loginForm.email}
-                    onChange={handleInputChange}
-                    placeholder="Enter your registered email"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    required
-                  />
-                </div>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> A password reset link will be sent to your registered email address. 
-                    Please check your inbox and follow the instructions to reset your password.
-                  </p>
-                </div>
-                
-                <div className="space-y-3">
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105"
-                  >
-                    Send Reset Link
-                  </button>
-                  
-                  <div className="text-center">
-                    <span className="text-sm text-gray-600">Remember your password? </span>
-                    <button
-                      type="button"
-                      onClick={() => setLoginMode('login')}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                    >
-                      Back to Login
-                    </button>
-                  </div>
-                </div>
-              </form>
-            )}
-
-            {/* Cancel Button */}
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLogin(false);
-                  setLoginMode('login');
-                  setLoginForm({
-                    username: '',
-                    password: '',
-                    email: ''
-                  });
-                }}
-                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg font-medium transition-all"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
@@ -284,7 +87,7 @@ const SLBFELandingPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => setShowLogin(true)}
+                onClick={() => navigate('/login')}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center"
               >
                 Access System
@@ -400,7 +203,7 @@ const SLBFELandingPage = () => {
             Streamline operations that support thousands of migrant workers and their families.
           </p>
           <button
-            onClick={() => setShowLogin(true)}
+            onClick={() => navigate('/login')}
             className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             Access SLBFE HR System
