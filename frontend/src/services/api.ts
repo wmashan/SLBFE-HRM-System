@@ -214,6 +214,44 @@ class ApiService {
   }>> {
     return this.request('/dashboard/stats');
   }
+
+  // Application Methods
+  async getApplications(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: 'pending' | 'approved' | 'rejected';
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/applications${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getApplication(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/applications/${id}`);
+  }
+
+  async updateApplicationStatus(id: string, status: 'pending' | 'approved' | 'rejected'): Promise<ApiResponse<any>> {
+    return this.request<any>(`/applications/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async deleteApplication(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/applications/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getApplicationStats(): Promise<ApiResponse<{
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    thisWeek: number;
+  }>> {
+    return this.request('/applications/stats');
+  }
 }
 
 // Create and export API service instance
@@ -245,6 +283,15 @@ export const departmentService = {
 export const branchService = {
   getBranches: () => apiService.getBranches(),
   createBranch: (data: any) => apiService.createBranch(data),
+};
+
+export const applicationService = {
+  getApplications: (params?: any) => apiService.getApplications(params),
+  getApplication: (id: string) => apiService.getApplication(id),
+  updateApplicationStatus: (id: string, status: 'pending' | 'approved' | 'rejected') => 
+    apiService.updateApplicationStatus(id, status),
+  deleteApplication: (id: string) => apiService.deleteApplication(id),
+  getApplicationStats: () => apiService.getApplicationStats(),
 };
 
 export default apiService;
