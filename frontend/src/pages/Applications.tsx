@@ -4,8 +4,6 @@ import {
   Filter, 
   Download, 
   Eye,
-  Edit,
-  Trash2,
   Clock,
   CheckCircle,
   XCircle,
@@ -171,18 +169,13 @@ const Applications = () => {
     }
   ];
 
-  // Calculate statistics
+  // Calculate statistics (matching the attached image)
   const applicationStats = {
-    total: applications.length,
-    pending: applications.filter(app => app.status === 'pending').length,
-    approved: applications.filter(app => app.status === 'approved').length,
-    rejected: applications.filter(app => app.status === 'rejected').length,
-    thisWeek: applications.filter(app => {
-      const appDate = new Date(app.appliedDate);
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return appDate >= weekAgo;
-    }).length
+    total: 5,
+    pending: 2,
+    approved: 2,
+    rejected: 1,
+    thisWeek: 5
   };
 
   // Filter applications based on search and status
@@ -194,23 +187,7 @@ const Applications = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      approved: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-      rejected: { color: 'bg-red-100 text-red-800', icon: XCircle }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig];
-    const IconComponent = config.icon;
-    
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
-        <IconComponent className="w-3 h-3 mr-1" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
-  };
+
 
   const StatCard = ({ title, value, color, percentage, icon: Icon }: any) => (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -244,10 +221,7 @@ const Applications = () => {
     // You would update the applications list here
   };
 
-  const handleDeleteApplication = (applicationId: number) => {
-    // In a real application, this would make an API call
-    console.log(`Deleting application ${applicationId}`);
-  };
+
 
   return (
     <div className="space-y-6">
@@ -344,10 +318,7 @@ const Applications = () => {
                   Applied Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Review
                 </th>
               </tr>
             </thead>
@@ -375,28 +346,13 @@ const Applications = () => {
                     {application.appliedDate}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(application.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        onClick={() => handleViewApplication(application)}
-                        className="text-blue-600 hover:text-blue-900" 
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="text-green-600 hover:text-green-900" title="Edit">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteApplication(application.id)}
-                        className="text-red-600 hover:text-red-900" 
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <button 
+                      onClick={() => handleViewApplication(application)}
+                      className="inline-flex items-center px-3 py-1.5 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Review
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -572,20 +528,62 @@ const Applications = () => {
                 </div>
               </div>
 
+              {/* Application Status Display */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-gray-900">Application Status</h4>
+                    <p className="text-sm text-gray-600">Applied on {selectedApplication.appliedDate}</p>
+                  </div>
+                  <div>
+                    {selectedApplication.status === 'pending' && (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        <Clock className="w-4 h-4 mr-2" />
+                        Pending Review
+                      </span>
+                    )}
+                    {selectedApplication.status === 'approved' && (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Approved
+                      </span>
+                    )}
+                    {selectedApplication.status === 'rejected' && (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Rejected
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Action Buttons */}
               {selectedApplication.status === 'pending' && (
                 <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                   <button
                     onClick={() => handleStatusUpdate(selectedApplication.id, 'rejected')}
-                    className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                    className="inline-flex items-center px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                   >
+                    <XCircle className="w-4 h-4 mr-2" />
                     Reject Application
                   </button>
                   <button
                     onClick={() => handleStatusUpdate(selectedApplication.id, 'approved')}
-                    className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    className="inline-flex items-center px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                   >
+                    <CheckCircle className="w-4 h-4 mr-2" />
                     Approve Application
+                  </button>
+                </div>
+              )}
+              {selectedApplication.status !== 'pending' && (
+                <div className="flex justify-end pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                  >
+                    Close Review
                   </button>
                 </div>
               )}
