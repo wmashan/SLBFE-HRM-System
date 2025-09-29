@@ -29,6 +29,10 @@ const Employees = () => {
     promotion: 'all',
     gender: 'all',
     ageGroup: 'all',
+    customAgeType: 'range', // 'range', 'fixed', 'above', 'below'
+    ageRangeFrom: '',
+    ageRangeTo: '',
+    fixedAge: '',
     education: 'all',
     employmentType: 'all',
     division: 'all',
@@ -244,6 +248,10 @@ const Employees = () => {
       promotion: 'all',
       gender: 'all',
       ageGroup: 'all',
+      customAgeType: 'range',
+      ageRangeFrom: '',
+      ageRangeTo: '',
+      fixedAge: '',
       education: 'all',
       employmentType: 'all',
       division: 'all',
@@ -271,13 +279,27 @@ const Employees = () => {
     // Gender filter
     const matchesGender = filters.gender === 'all' || employee.gender === filters.gender;
 
-    // Age group filter
-    const matchesAgeGroup = filters.ageGroup === 'all' ||
-      (filters.ageGroup === 'male-35+' && employee.gender === 'Male' && employee.age >= 35) ||
-      (filters.ageGroup === 'female-35+' && employee.gender === 'Female' && employee.age >= 35) ||
-      (filters.ageGroup === 'under-30' && employee.age < 30) ||
-      (filters.ageGroup === '30-40' && employee.age >= 30 && employee.age <= 40) ||
-      (filters.ageGroup === 'over-40' && employee.age > 40);
+    // Age group filter with custom criteria
+    let matchesAgeGroup = true;
+    if (filters.ageGroup !== 'all') {
+      if (filters.ageGroup === 'custom') {
+        // Handle custom age criteria
+        if (filters.customAgeType === 'range') {
+          const ageFrom = parseInt(filters.ageRangeFrom) || 0;
+          const ageTo = parseInt(filters.ageRangeTo) || 100;
+          matchesAgeGroup = employee.age >= ageFrom && employee.age <= ageTo;
+        } else if (filters.customAgeType === 'fixed') {
+          const fixedAge = parseInt(filters.fixedAge);
+          matchesAgeGroup = fixedAge ? employee.age === fixedAge : true;
+        } else if (filters.customAgeType === 'above') {
+          const fixedAge = parseInt(filters.fixedAge);
+          matchesAgeGroup = fixedAge ? employee.age > fixedAge : true;
+        } else if (filters.customAgeType === 'below') {
+          const fixedAge = parseInt(filters.fixedAge);
+          matchesAgeGroup = fixedAge ? employee.age < fixedAge : true;
+        }
+      }
+    }
 
     // Education filter
     const matchesEducation = filters.education === 'all' ||
@@ -476,24 +498,110 @@ const Employees = () => {
               </select>
             </div>
 
-            {/* Age Group Filter */}
-            <div>
+            {/* Enhanced Age Group Filter */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Clock className="w-4 h-4 inline mr-1" />
-                Age Groups
+                Age Criteria
               </label>
-              <select
-                value={filters.ageGroup}
-                onChange={(e) => handleFilterChange('ageGroup', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Ages</option>
-                <option value="male-35+">Male 35+ Years</option>
-                <option value="female-35+">Female 35+ Years</option>
-                <option value="under-30">Under 30 Years</option>
-                <option value="30-40">30-40 Years</option>
-                <option value="over-40">Over 40 Years</option>
-              </select>
+              
+              {/* Predefined Age Groups */}
+              <div className="mb-3">
+                <select
+                  value={filters.ageGroup}
+                  onChange={(e) => handleFilterChange('ageGroup', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Ages</option>
+                  <option value="custom">Custom Age Criteria</option>
+                </select>
+              </div>
+
+              {/* Custom Age Criteria */}
+              {filters.ageGroup === 'custom' && (
+                <div className="space-y-3 p-3 bg-blue-50 rounded-md border border-blue-200">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Age Criteria Type</label>
+                    <select
+                      value={filters.customAgeType}
+                      onChange={(e) => handleFilterChange('customAgeType', e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="range">Age Range</option>
+                      <option value="fixed">Exact Age</option>
+                      <option value="above">Above Age</option>
+                      <option value="below">Below Age</option>
+                    </select>
+                  </div>
+
+                  {/* Age Range Inputs */}
+                  {filters.customAgeType === 'range' && (
+                    <div className="flex space-x-2">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">From Age</label>
+                        <input
+                          type="number"
+                          placeholder="18"
+                          min="16"
+                          max="80"
+                          value={filters.ageRangeFrom}
+                          onChange={(e) => handleFilterChange('ageRangeFrom', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">To Age</label>
+                        <input
+                          type="number"
+                          placeholder="65"
+                          min="16"
+                          max="80"
+                          value={filters.ageRangeTo}
+                          onChange={(e) => handleFilterChange('ageRangeTo', e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fixed/Above/Below Age Input */}
+                  {(filters.customAgeType === 'fixed' || filters.customAgeType === 'above' || filters.customAgeType === 'below') && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        {filters.customAgeType === 'fixed' && 'Exact Age'}
+                        {filters.customAgeType === 'above' && 'Age Above'}
+                        {filters.customAgeType === 'below' && 'Age Below'}
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="30"
+                        min="16"
+                        max="80"
+                        value={filters.fixedAge}
+                        onChange={(e) => handleFilterChange('fixedAge', e.target.value)}
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
+
+                  {/* Age Criteria Preview */}
+                  <div className="text-xs text-blue-700 bg-blue-100 p-2 rounded">
+                    <strong>Preview:</strong>
+                    {filters.customAgeType === 'range' && (
+                      <span> Ages {filters.ageRangeFrom || '?'} to {filters.ageRangeTo || '?'} years</span>
+                    )}
+                    {filters.customAgeType === 'fixed' && (
+                      <span> Exactly {filters.fixedAge || '?'} years old</span>
+                    )}
+                    {filters.customAgeType === 'above' && (
+                      <span> Above {filters.fixedAge || '?'} years old</span>
+                    )}
+                    {filters.customAgeType === 'below' && (
+                      <span> Below {filters.fixedAge || '?'} years old</span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Education Filter */}
@@ -607,12 +715,38 @@ const Employees = () => {
               </span>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(filters).map(([key, value]) => {
-                  if (value && value !== 'all' && value !== '') {
+                  if (value && value !== 'all' && value !== '' && key !== 'customAgeType' && key !== 'ageRangeFrom' && key !== 'ageRangeTo' && key !== 'fixedAge') {
+                    let displayValue = value;
+                    
+                    // Special handling for custom age criteria
+                    if (key === 'ageGroup' && value === 'custom') {
+                      if (filters.customAgeType === 'range') {
+                        displayValue = `Age: ${filters.ageRangeFrom || '?'}-${filters.ageRangeTo || '?'}`;
+                      } else if (filters.customAgeType === 'fixed') {
+                        displayValue = `Age: ${filters.fixedAge || '?'}`;
+                      } else if (filters.customAgeType === 'above') {
+                        displayValue = `Age: >${filters.fixedAge || '?'}`;
+                      } else if (filters.customAgeType === 'below') {
+                        displayValue = `Age: <${filters.fixedAge || '?'}`;
+                      }
+                    }
+                    
                     return (
                       <span key={key} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {key}: {value}
+                        {key === 'ageGroup' && value === 'custom' ? displayValue : `${key}: ${displayValue}`}
                         <button 
-                          onClick={() => handleFilterChange(key, key.includes('date') ? '' : 'all')}
+                          onClick={() => {
+                            if (key === 'ageGroup' && value === 'custom') {
+                              // Reset all custom age fields when clearing custom age criteria
+                              handleFilterChange('ageGroup', 'all');
+                              handleFilterChange('customAgeType', 'range');
+                              handleFilterChange('ageRangeFrom', '');
+                              handleFilterChange('ageRangeTo', '');
+                              handleFilterChange('fixedAge', '');
+                            } else {
+                              handleFilterChange(key, key.includes('date') ? '' : 'all');
+                            }
+                          }}
                           className="ml-1 hover:text-blue-600"
                         >
                           <X className="w-3 h-3" />
