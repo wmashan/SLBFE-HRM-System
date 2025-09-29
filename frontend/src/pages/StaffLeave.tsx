@@ -104,7 +104,7 @@ const StaffLeave: React.FC = () => {
       startDate: '2025-10-15',
       endDate: '2025-10-20',
       days: 6,
-      reason: 'Family vacation',
+      reason: 'Family vacation to Maldives',
       status: 'Pending',
       appliedDate: '2025-09-25',
       emergencyContact: '+94771234567',
@@ -118,11 +118,11 @@ const StaffLeave: React.FC = () => {
       position: 'Software Developer',
       department: 'IT',
       branch: 'Colombo Branch',
-      leaveType: 'Sick',
+      leaveType: 'Medical',
       startDate: '2025-09-28',
       endDate: '2025-09-30',
       days: 3,
-      reason: 'Medical treatment',
+      reason: 'Medical treatment - Doctor appointment and recovery',
       status: 'Approved',
       appliedDate: '2025-09-27',
       approvedBy: 'Manager IT',
@@ -141,7 +141,7 @@ const StaffLeave: React.FC = () => {
       startDate: '2025-10-01',
       endDate: '2025-10-01',
       days: 1,
-      reason: 'Personal matters',
+      reason: 'Personal family matters',
       status: 'Rejected',
       appliedDate: '2025-09-20',
       rejectionReason: 'Month-end closing activities require your presence',
@@ -165,6 +165,150 @@ const StaffLeave: React.FC = () => {
       approvedBy: 'HR Manager',
       approvedDate: '2025-09-16',
       emergencyContact: '+94765432109'
+    },
+    {
+      id: 'LR005',
+      employeeId: 'EMP005',
+      employeeName: 'David Johnson',
+      employeeNumber: 'MK005',
+      position: 'Marketing Executive',
+      department: 'Marketing',
+      branch: 'Galle Branch',
+      leaveType: 'Annual',
+      startDate: '2025-10-10',
+      endDate: '2025-10-14',
+      days: 5,
+      reason: 'Wedding anniversary celebration',
+      status: 'Pending',
+      appliedDate: '2025-09-28',
+      emergencyContact: '+94712456789',
+      coveringEmployee: 'Lisa Anderson'
+    },
+    {
+      id: 'LR006',
+      employeeId: 'EMP006',
+      employeeName: 'Rachel Green',
+      employeeNumber: 'IT006',
+      position: 'UI/UX Designer',
+      department: 'IT',
+      branch: 'Colombo Branch',
+      leaveType: 'Medical',
+      startDate: '2025-10-02',
+      endDate: '2025-10-04',
+      days: 3,
+      reason: 'Surgery and post-operative care',
+      status: 'Pending',
+      appliedDate: '2025-09-29',
+      emergencyContact: '+94771987654',
+      coveringEmployee: 'Tom Wilson'
+    },
+    {
+      id: 'LR007',
+      employeeId: 'EMP007',
+      employeeName: 'James Wilson',
+      employeeNumber: 'OP007',
+      position: 'Operations Manager',
+      department: 'Operations',
+      branch: 'Head Office',
+      leaveType: 'Casual',
+      startDate: '2025-10-05',
+      endDate: '2025-10-05',
+      days: 1,
+      reason: 'Child school event',
+      status: 'Pending',
+      appliedDate: '2025-09-26',
+      emergencyContact: '+94765987432'
+    },
+    {
+      id: 'LR008',
+      employeeId: 'EMP008',
+      employeeName: 'Lisa Anderson',
+      employeeNumber: 'MK008',
+      position: 'Marketing Assistant',
+      department: 'Marketing',
+      branch: 'Kandy Branch',
+      leaveType: 'No Pay',
+      startDate: '2025-10-12',
+      endDate: '2025-10-19',
+      days: 8,
+      reason: 'Extended personal travel - no leave balance available',
+      status: 'Pending',
+      appliedDate: '2025-09-22',
+      emergencyContact: '+94777456123'
+    },
+    {
+      id: 'LR009',
+      employeeId: 'EMP009',
+      employeeName: 'Robert Clark',
+      employeeNumber: 'FN009',
+      position: 'Finance Officer',
+      department: 'Finance',
+      branch: 'Head Office',
+      leaveType: 'Medical',
+      startDate: '2025-09-30',
+      endDate: '2025-10-02',
+      days: 3,
+      reason: 'Emergency medical treatment',
+      status: 'Approved',
+      appliedDate: '2025-09-29',
+      approvedBy: 'Finance Manager',
+      approvedDate: '2025-09-29',
+      emergencyContact: '+94712789456'
+    },
+    {
+      id: 'LR010',
+      employeeId: 'EMP010',
+      employeeName: 'Monica Taylor',
+      employeeNumber: 'HR010',
+      position: 'HR Coordinator',
+      department: 'Human Resources',
+      branch: 'Galle Branch',
+      leaveType: 'Annual',
+      startDate: '2025-11-15',
+      endDate: '2025-11-22',
+      days: 8,
+      reason: 'Family reunion and vacation',
+      status: 'Approved',
+      appliedDate: '2025-09-20',
+      approvedBy: 'HR Manager',
+      approvedDate: '2025-09-21',
+      emergencyContact: '+94765123789'
+    },
+    {
+      id: 'LR011',
+      employeeId: 'EMP011',
+      employeeName: 'Kevin Martinez',
+      employeeNumber: 'IT011',
+      position: 'System Administrator',
+      department: 'IT',
+      branch: 'Head Office',
+      leaveType: 'No Pay',
+      startDate: '2025-10-25',
+      endDate: '2025-10-27',
+      days: 3,
+      reason: 'Personal emergency - exceeded leave quota',
+      status: 'Pending',
+      appliedDate: '2025-09-24',
+      emergencyContact: '+94771654321'
+    },
+    {
+      id: 'LR012',
+      employeeId: 'EMP012',
+      employeeName: 'Amanda White',
+      employeeNumber: 'OP012',
+      position: 'Operations Coordinator',
+      department: 'Operations',
+      branch: 'Colombo Branch',
+      leaveType: 'Casual',
+      startDate: '2025-10-08',
+      endDate: '2025-10-09',
+      days: 2,
+      reason: 'Home repairs and maintenance',
+      status: 'Approved',
+      appliedDate: '2025-09-23',
+      approvedBy: 'Operations Manager',
+      approvedDate: '2025-09-24',
+      emergencyContact: '+94712654987'
     }
   ];
 
@@ -172,10 +316,18 @@ const StaffLeave: React.FC = () => {
     { employeeId: 'EMP001', annual: 18, sick: 10, casual: 5, maternity: 0, paternity: 0, study: 3, unpaid: 0 },
     { employeeId: 'EMP002', annual: 22, sick: 8, casual: 7, maternity: 0, paternity: 0, study: 0, unpaid: 0 },
     { employeeId: 'EMP003', annual: 15, sick: 12, casual: 3, maternity: 0, paternity: 2, study: 0, unpaid: 0 },
-    { employeeId: 'EMP004', annual: 20, sick: 7, casual: 6, maternity: 92, paternity: 0, study: 0, unpaid: 0 }
+    { employeeId: 'EMP004', annual: 20, sick: 7, casual: 6, maternity: 92, paternity: 0, study: 0, unpaid: 0 },
+    { employeeId: 'EMP005', annual: 25, sick: 14, casual: 8, maternity: 0, paternity: 0, study: 2, unpaid: 0 },
+    { employeeId: 'EMP006', annual: 16, sick: 9, casual: 4, maternity: 0, paternity: 0, study: 0, unpaid: 0 },
+    { employeeId: 'EMP007', annual: 21, sick: 11, casual: 6, maternity: 0, paternity: 7, study: 0, unpaid: 0 },
+    { employeeId: 'EMP008', annual: 0, sick: 2, casual: 1, maternity: 0, paternity: 0, study: 0, unpaid: 8 },
+    { employeeId: 'EMP009', annual: 19, sick: 6, casual: 5, maternity: 0, paternity: 0, study: 4, unpaid: 0 },
+    { employeeId: 'EMP010', annual: 12, sick: 15, casual: 7, maternity: 0, paternity: 0, study: 0, unpaid: 0 },
+    { employeeId: 'EMP011', annual: 2, sick: 8, casual: 3, maternity: 0, paternity: 0, study: 0, unpaid: 3 },
+    { employeeId: 'EMP012', annual: 17, sick: 13, casual: 4, maternity: 0, paternity: 0, study: 1, unpaid: 0 }
   ];
 
-  const leaveTypes = ['Annual', 'Sick', 'Casual', 'Maternity', 'Paternity', 'Study', 'Unpaid'];
+  const leaveTypes = ['Annual', 'Sick', 'Casual', 'Medical', 'Maternity', 'Paternity', 'Study', 'No Pay'];
   const departments = ['Human Resources', 'IT', 'Finance', 'Marketing', 'Operations'];
   const branches = ['Head Office', 'Colombo Branch', 'Kandy Branch', 'Galle Branch'];
 
@@ -235,13 +387,30 @@ const StaffLeave: React.FC = () => {
   }, [leaveRequests, filters]);
 
   const handleApproveRequest = (requestId: string) => {
+    const currentDate = new Date().toISOString().split('T')[0];
     setLeaveRequests(prev => prev.map(req => 
       req.id === requestId 
-        ? { ...req, status: 'Approved' as const, approvedBy: 'HR Manager', approvedDate: new Date().toISOString().split('T')[0] }
+        ? { 
+            ...req, 
+            status: 'Approved' as const, 
+            approvedBy: 'HR Manager', 
+            approvedDate: currentDate 
+          }
         : req
     ));
+    
+    // Update stats
+    setStats(prev => ({
+      ...prev,
+      pendingRequests: prev.pendingRequests - 1,
+      approvedRequests: prev.approvedRequests + 1
+    }));
+    
     setSelectedRequest(null);
     setShowRequestDetails(false);
+    
+    // Show success notification
+    alert(`Leave request ${requestId} has been approved successfully!`);
   };
 
   const handleRejectRequest = (requestId: string) => {
@@ -255,9 +424,49 @@ const StaffLeave: React.FC = () => {
         ? { ...req, status: 'Rejected' as const, rejectionReason }
         : req
     ));
+    
+    // Update stats
+    setStats(prev => ({
+      ...prev,
+      pendingRequests: prev.pendingRequests - 1,
+      rejectedRequests: prev.rejectedRequests + 1
+    }));
+    
     setSelectedRequest(null);
     setShowRequestDetails(false);
     setRejectionReason('');
+    
+    // Show success notification
+    alert(`Leave request ${requestId} has been rejected with reason: "${rejectionReason}"`);
+  };
+
+  const handleQuickApprove = (requestId: string, requestName: string) => {
+    const confirmed = window.confirm(`Are you sure you want to approve the leave request for ${requestName}?`);
+    if (confirmed) {
+      handleApproveRequest(requestId);
+    }
+  };
+
+  const handleQuickReject = (request: LeaveRequest) => {
+    const reason = window.prompt(`Enter rejection reason for ${request.employeeName}'s leave request:`);
+    if (reason && reason.trim()) {
+      setRejectionReason(reason);
+      
+      setLeaveRequests(prev => prev.map(req => 
+        req.id === request.id 
+          ? { ...req, status: 'Rejected' as const, rejectionReason: reason }
+          : req
+      ));
+      
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        pendingRequests: prev.pendingRequests - 1,
+        rejectedRequests: prev.rejectedRequests + 1
+      }));
+      
+      alert(`Leave request ${request.id} has been rejected with reason: "${reason}"`);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -274,10 +483,12 @@ const StaffLeave: React.FC = () => {
     switch (type) {
       case 'Annual': return 'text-blue-600 bg-blue-100';
       case 'Sick': return 'text-red-600 bg-red-100';
+      case 'Medical': return 'text-red-700 bg-red-200';
       case 'Casual': return 'text-green-600 bg-green-100';
       case 'Maternity': return 'text-pink-600 bg-pink-100';
       case 'Paternity': return 'text-purple-600 bg-purple-100';
       case 'Study': return 'text-indigo-600 bg-indigo-100';
+      case 'No Pay': return 'text-orange-600 bg-orange-100';
       case 'Unpaid': return 'text-orange-600 bg-orange-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -616,17 +827,16 @@ const StaffLeave: React.FC = () => {
                           {request.status === 'Pending' && (
                             <>
                               <button
-                                onClick={() => handleApproveRequest(request.id)}
+                                onClick={() => handleQuickApprove(request.id, request.employeeName)}
                                 className="text-green-600 hover:text-green-900"
+                                title="Quick Approve"
                               >
                                 <CheckCircle className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => {
-                                  setSelectedRequest(request);
-                                  setShowRequestDetails(true);
-                                }}
+                                onClick={() => handleQuickReject(request)}
                                 className="text-red-600 hover:text-red-900"
+                                title="Quick Reject"
                               >
                                 <XCircle className="h-4 w-4" />
                               </button>
