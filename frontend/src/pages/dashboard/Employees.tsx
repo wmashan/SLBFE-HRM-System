@@ -10,11 +10,33 @@ import {
   Phone,
   Calendar,
   Building,
-  GraduationCap
+  GraduationCap,
+  ChevronDown,
+  X,
+  FileText,
+  Award,
+  UserCheck,
+  Clock
 } from 'lucide-react';
 
+import { useState } from 'react';
+
 const Employees = () => {
-  // Sample employee data based on user account creation form
+  // Filter state management
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    promotion: 'all',
+    gender: 'all',
+    ageGroup: 'all',
+    education: 'all',
+    employmentType: 'all',
+    division: 'all',
+    branch: 'all',
+    dateFrom: '',
+    dateTo: ''
+  });
+  // Enhanced employee data with demographics and education
   const employees = [
     {
       id: 1,
@@ -23,12 +45,23 @@ const Employees = () => {
       nameWithInitials: "J.D. Doe",
       designation: "Software Engineer",
       division: "IT Services",
+      branch: "Colombo Main",
       grade: "Grade 2",
       email: "john.doe@slbfe.lk",
       mobile: "077-1234567",
       civilStatus: "Single",
+      gender: "Male",
+      age: 28,
+      dateOfBirth: "1995-05-15",
       dateJoined: "2023-01-15",
-      employmentType: "Permanent"
+      employmentType: "Permanent",
+      promotions: [
+        { date: "2023-12-01", from: "Junior Software Engineer", to: "Software Engineer" }
+      ],
+      education: {
+        highestQualification: "Graduate",
+        qualifications: ["O/L", "A/L", "Bachelor's Degree"]
+      }
     },
     {
       id: 2,
@@ -37,12 +70,23 @@ const Employees = () => {
       nameWithInitials: "J.S. Smith",
       designation: "HR Manager",
       division: "Human Resources",
+      branch: "Colombo Main",
       grade: "Grade 1",
       email: "jane.smith@slbfe.lk",
       mobile: "077-2345678",
       civilStatus: "Married",
+      gender: "Female",
+      age: 36,
+      dateOfBirth: "1987-08-22",
       dateJoined: "2022-06-10",
-      employmentType: "Permanent"
+      employmentType: "Permanent",
+      promotions: [
+        { date: "2023-01-01", from: "Senior HR Officer", to: "HR Manager" }
+      ],
+      education: {
+        highestQualification: "Graduate",
+        qualifications: ["O/L", "A/L", "Master's Degree"]
+      }
     },
     {
       id: 3,
@@ -51,12 +95,21 @@ const Employees = () => {
       nameWithInitials: "M.J. Johnson",
       designation: "Data Analyst",
       division: "Analytics",
+      branch: "Kandy Branch",
       grade: "Grade 2",
       email: "mike.johnson@slbfe.lk",
       mobile: "077-3456789",
       civilStatus: "Single",
+      gender: "Male",
+      age: 31,
+      dateOfBirth: "1992-12-10",
       dateJoined: "2023-03-20",
-      employmentType: "Contract"
+      employmentType: "Contract",
+      promotions: [],
+      education: {
+        highestQualification: "Diploma",
+        qualifications: ["O/L", "A/L", "Diploma"]
+      }
     },
     {
       id: 4,
@@ -65,12 +118,23 @@ const Employees = () => {
       nameWithInitials: "S.W. Wilson",
       designation: "Marketing Manager",
       division: "Marketing",
+      branch: "Galle Branch",
       grade: "Grade 1",
       email: "sarah.wilson@slbfe.lk",
       mobile: "077-4567890",
       civilStatus: "Married",
+      gender: "Female",
+      age: 38,
+      dateOfBirth: "1985-11-05",
       dateJoined: "2021-11-05",
-      employmentType: "Permanent"
+      employmentType: "Permanent",
+      promotions: [
+        { date: "2022-11-01", from: "Marketing Officer", to: "Marketing Manager" }
+      ],
+      education: {
+        highestQualification: "Graduate",
+        qualifications: ["O/L", "A/L", "Bachelor's Degree", "Professional Certificate"]
+      }
     },
     {
       id: 5,
@@ -79,20 +143,182 @@ const Employees = () => {
       nameWithInitials: "T.B. Brown",
       designation: "Finance Officer",
       division: "Finance",
+      branch: "Matara Branch",
       grade: "Grade 2",
       email: "tom.brown@slbfe.lk",
       mobile: "077-5678901",
       civilStatus: "Single",
+      gender: "Male",
+      age: 26,
+      dateOfBirth: "1997-08-12",
       dateJoined: "2023-08-12",
-      employmentType: "Casual"
+      employmentType: "Casual",
+      promotions: [],
+      education: {
+        highestQualification: "Certificate",
+        qualifications: ["O/L", "A/L", "Certificate"]
+      }
+    },
+    {
+      id: 6,
+      employeeNo: "9517",
+      fullName: "Emily Davis",
+      nameWithInitials: "E.D. Davis",
+      designation: "Senior Developer",
+      division: "IT Services",
+      branch: "Colombo Main",
+      grade: "Grade 1",
+      email: "emily.davis@slbfe.lk",
+      mobile: "077-6789012",
+      civilStatus: "Married",
+      gender: "Female",
+      age: 35,
+      dateOfBirth: "1988-03-18",
+      dateJoined: "2020-03-18",
+      employmentType: "Permanent",
+      promotions: [
+        { date: "2021-03-01", from: "Developer", to: "Senior Developer" }
+      ],
+      education: {
+        highestQualification: "Graduate",
+        qualifications: ["O/L", "A/L", "Bachelor's Degree"]
+      }
+    },
+    {
+      id: 7,
+      employeeNo: "9518",
+      fullName: "Alex Turner",
+      nameWithInitials: "A.T. Turner",
+      designation: "Administrative Assistant",
+      division: "Administration",
+      branch: "Colombo Main",
+      grade: "Grade 3",
+      email: "alex.turner@slbfe.lk",
+      mobile: "077-7890123",
+      civilStatus: "Single",
+      gender: "Male",
+      age: 23,
+      dateOfBirth: "2000-07-25",
+      dateJoined: "2024-01-10",
+      employmentType: "Contract",
+      promotions: [],
+      education: {
+        highestQualification: "A/L",
+        qualifications: ["O/L", "A/L"]
+      }
+    },
+    {
+      id: 8,
+      employeeNo: "9519",
+      fullName: "Maria Garcia",
+      nameWithInitials: "M.G. Garcia",
+      designation: "Quality Assurance Manager",
+      division: "Quality Assurance",
+      branch: "Kandy Branch",
+      grade: "Grade 1",
+      email: "maria.garcia@slbfe.lk",
+      mobile: "077-8901234",
+      civilStatus: "Married",
+      gender: "Female",
+      age: 40,
+      dateOfBirth: "1983-09-12",
+      dateJoined: "2019-09-12",
+      employmentType: "Permanent",
+      promotions: [
+        { date: "2020-09-01", from: "QA Officer", to: "QA Manager" }
+      ],
+      education: {
+        highestQualification: "Graduate",
+        qualifications: ["O/L", "A/L", "Bachelor's Degree", "Master's Degree"]
+      }
     }
   ];
 
+  // Filter handling functions
+  const handleFilterChange = (filterKey: string, value: string) => {
+    setFilters(prev => ({ ...prev, [filterKey]: value }));
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      promotion: 'all',
+      gender: 'all',
+      ageGroup: 'all',
+      education: 'all',
+      employmentType: 'all',
+      division: 'all',
+      branch: 'all',
+      dateFrom: '',
+      dateTo: ''
+    });
+    setSearchTerm('');
+  };
+
+  // Apply filters to employee data
+  const filteredEmployees = employees.filter(employee => {
+    // Search term filter
+    const matchesSearch = searchTerm === '' || 
+      employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.employeeNo.includes(searchTerm) ||
+      employee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.division.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Promotion filter
+    const matchesPromotion = filters.promotion === 'all' || 
+      (filters.promotion === 'promoted' && employee.promotions.length > 0) ||
+      (filters.promotion === 'not-promoted' && employee.promotions.length === 0);
+
+    // Gender filter
+    const matchesGender = filters.gender === 'all' || employee.gender === filters.gender;
+
+    // Age group filter
+    const matchesAgeGroup = filters.ageGroup === 'all' ||
+      (filters.ageGroup === 'male-35+' && employee.gender === 'Male' && employee.age >= 35) ||
+      (filters.ageGroup === 'female-35+' && employee.gender === 'Female' && employee.age >= 35) ||
+      (filters.ageGroup === 'under-30' && employee.age < 30) ||
+      (filters.ageGroup === '30-40' && employee.age >= 30 && employee.age <= 40) ||
+      (filters.ageGroup === 'over-40' && employee.age > 40);
+
+    // Education filter
+    const matchesEducation = filters.education === 'all' ||
+      employee.education.highestQualification === filters.education ||
+      employee.education.qualifications.includes(filters.education);
+
+    // Employment type filter
+    const matchesEmploymentType = filters.employmentType === 'all' || 
+      employee.employmentType === filters.employmentType;
+
+    // Division filter
+    const matchesDivision = filters.division === 'all' || 
+      employee.division === filters.division;
+
+    // Branch filter
+    const matchesBranch = filters.branch === 'all' || 
+      employee.branch === filters.branch;
+
+    // Date range filter (joined date)
+    const matchesDateRange = (!filters.dateFrom || new Date(employee.dateJoined) >= new Date(filters.dateFrom)) &&
+                             (!filters.dateTo || new Date(employee.dateJoined) <= new Date(filters.dateTo));
+
+    return matchesSearch && matchesPromotion && matchesGender && matchesAgeGroup && 
+           matchesEducation && matchesEmploymentType && matchesDivision && 
+           matchesBranch && matchesDateRange;
+  });
+
+  // Get unique values for filter options
+  const divisions = [...new Set(employees.map(emp => emp.division))];
+  const branches = [...new Set(employees.map(emp => emp.branch))];
+
   const employeeStats = {
-    total: 1547,
-    active: 1523,
-    newThisMonth: 45,
-    onLeave: 24
+    total: filteredEmployees.length,
+    active: filteredEmployees.filter(emp => emp.employmentType === 'Permanent').length,
+    newThisMonth: filteredEmployees.filter(emp => {
+      const joinDate = new Date(emp.dateJoined);
+      const currentDate = new Date();
+      return joinDate.getMonth() === currentDate.getMonth() && 
+             joinDate.getFullYear() === currentDate.getFullYear();
+    }).length,
+    onLeave: 24 // This would come from a separate leave management system
   };
 
   const StatCard = ({ title, value, color, icon: Icon }: any) => (
@@ -108,6 +334,41 @@ const Employees = () => {
       </div>
     </div>
   );
+
+  const getPromotionBadge = (promotions: any[]) => {
+    if (promotions.length > 0) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <Award className="w-3 h-3 mr-1" />
+          Promoted ({promotions.length})
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        No Promotions
+      </span>
+    );
+  };
+
+  const getEducationBadge = (education: any) => {
+    const colorMap: {[key: string]: string} = {
+      'O/L': 'bg-blue-100 text-blue-800',
+      'A/L': 'bg-green-100 text-green-800',
+      'Certificate': 'bg-yellow-100 text-yellow-800',
+      'Diploma': 'bg-purple-100 text-purple-800',
+      'Graduate': 'bg-red-100 text-red-800'
+    };
+    
+    const colorClass = colorMap[education.highestQualification] || 'bg-gray-100 text-gray-800';
+    
+    return (
+      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
+        <GraduationCap className="w-3 h-3 mr-1" />
+        {education.highestQualification}
+      </span>
+    );
+  };
 
   const getEmploymentTypeBadge = (type: string) => {
     const typeConfig = {
@@ -135,12 +396,22 @@ const Employees = () => {
             <input
               type="text"
               placeholder="Search employees..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+              showFilters ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
             <Filter className="w-4 h-4 mr-2" />
-            Filter
+            Advanced Filters
+            <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${
+              showFilters ? 'rotate-180' : ''
+            }`} />
           </button>
           <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
             <Plus className="w-4 h-4 mr-2" />
@@ -152,6 +423,210 @@ const Employees = () => {
           </button>
         </div>
       </div>
+
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Filter className="w-5 h-5 mr-2 text-blue-600" />
+              Advanced Filters
+            </h3>
+            <button 
+              onClick={clearAllFilters}
+              className="flex items-center px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+            >
+              <X className="w-4 h-4 mr-1" />
+              Clear All
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* Promotion Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Award className="w-4 h-4 inline mr-1" />
+                Promotion Status
+              </label>
+              <select
+                value={filters.promotion}
+                onChange={(e) => handleFilterChange('promotion', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Employees</option>
+                <option value="promoted">Recently Promoted</option>
+                <option value="not-promoted">No Promotions</option>
+              </select>
+            </div>
+
+            {/* Gender Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <UserCheck className="w-4 h-4 inline mr-1" />
+                Gender
+              </label>
+              <select
+                value={filters.gender}
+                onChange={(e) => handleFilterChange('gender', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+
+            {/* Age Group Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-1" />
+                Age Groups
+              </label>
+              <select
+                value={filters.ageGroup}
+                onChange={(e) => handleFilterChange('ageGroup', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Ages</option>
+                <option value="male-35+">Male 35+ Years</option>
+                <option value="female-35+">Female 35+ Years</option>
+                <option value="under-30">Under 30 Years</option>
+                <option value="30-40">30-40 Years</option>
+                <option value="over-40">Over 40 Years</option>
+              </select>
+            </div>
+
+            {/* Education Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <GraduationCap className="w-4 h-4 inline mr-1" />
+                Education Level
+              </label>
+              <select
+                value={filters.education}
+                onChange={(e) => handleFilterChange('education', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Education Levels</option>
+                <option value="O/L">O/L Only</option>
+                <option value="A/L">A/L Completed</option>
+                <option value="Certificate">Certificate Holders</option>
+                <option value="Diploma">Diploma Holders</option>
+                <option value="Graduate">Graduates</option>
+              </select>
+            </div>
+
+            {/* Employment Type Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FileText className="w-4 h-4 inline mr-1" />
+                Employment Type
+              </label>
+              <select
+                value={filters.employmentType}
+                onChange={(e) => handleFilterChange('employmentType', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Types</option>
+                <option value="Permanent">Permanent</option>
+                <option value="Contract">Contract</option>
+                <option value="Casual">Casual</option>
+              </select>
+            </div>
+
+            {/* Division Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Building className="w-4 h-4 inline mr-1" />
+                Division
+              </label>
+              <select
+                value={filters.division}
+                onChange={(e) => handleFilterChange('division', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Divisions</option>
+                {divisions.map(division => (
+                  <option key={division} value={division}>{division}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Branch Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Building className="w-4 h-4 inline mr-1" />
+                Branch
+              </label>
+              <select
+                value={filters.branch}
+                onChange={(e) => handleFilterChange('branch', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Branches</option>
+                {branches.map(branch => (
+                  <option key={branch} value={branch}>{branch}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date From Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-1" />
+                Joined From
+              </label>
+              <input
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Date To Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-1" />
+                Joined To
+              </label>
+              <input
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Active Filters Display */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">
+                Showing {filteredEmployees.length} of {employees.length} employees
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(filters).map(([key, value]) => {
+                  if (value && value !== 'all' && value !== '') {
+                    return (
+                      <span key={key} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {key}: {value}
+                        <button 
+                          onClick={() => handleFilterChange(key, key.includes('date') ? '' : 'all')}
+                          className="ml-1 hover:text-blue-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -194,7 +669,13 @@ const Employees = () => {
                   Employee
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Designation & Division
+                  Position & Branch
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Demographics
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Education & Promotions
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact Info
@@ -208,7 +689,7 @@ const Employees = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {employees.map((employee) => (
+              {filteredEmployees.map((employee) => (
                 <tr key={employee.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -231,14 +712,35 @@ const Employees = () => {
                         {employee.designation}
                       </div>
                       <div className="text-gray-500">{employee.division}</div>
-                      <div className="text-xs text-gray-400">{employee.grade}</div>
+                      <div className="text-xs text-gray-400 flex items-center">
+                        <Building className="w-3 h-3 mr-1" />
+                        {employee.branch}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm">
+                      <div className="flex items-center text-gray-900 mb-1">
+                        <UserCheck className="w-3 h-3 mr-1 text-gray-400" />
+                        {employee.gender}, {employee.age} years
+                      </div>
+                      <div className="text-xs text-gray-500">{employee.civilStatus}</div>
+                      <div className="text-xs text-gray-400">
+                        DOB: {employee.dateOfBirth}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm space-y-1">
+                      {getEducationBadge(employee.education)}
+                      {getPromotionBadge(employee.promotions)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm">
                       <div className="flex items-center text-gray-900 mb-1">
                         <Mail className="w-3 h-3 mr-1 text-gray-400" />
-                        {employee.email}
+                        <span className="truncate max-w-32">{employee.email}</span>
                       </div>
                       <div className="flex items-center text-gray-500">
                         <Phone className="w-3 h-3 mr-1 text-gray-400" />
@@ -274,6 +776,14 @@ const Employees = () => {
               ))}
             </tbody>
           </table>
+          
+          {filteredEmployees.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No employees found</h3>
+              <p className="mt-1 text-sm text-gray-500">Try adjusting your search criteria or filters.</p>
+            </div>
+          )}
         </div>
       </div>
 
