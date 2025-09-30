@@ -424,6 +424,49 @@ class ApiService {
     });
   }
 
+  // Admin User Management Methods
+  async assignUserRole(userId: string, newRole: string, reason?: string): Promise<ApiResponse<User>> {
+    return this.request<User>(`/admin/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role: newRole, reason }),
+    });
+  }
+
+  async bulkAssignRoles(userIds: string[], newRole: string, reason?: string): Promise<ApiResponse<User[]>> {
+    return this.request<User[]>('/admin/users/bulk-role-assignment', {
+      method: 'POST',
+      body: JSON.stringify({ userIds, role: newRole, reason }),
+    });
+  }
+
+  async getUserRoleHistory(userId: string): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>(`/admin/users/${userId}/role-history`);
+  }
+
+  async getRoleAssignmentLogs(params?: {
+    page?: number;
+    limit?: number;
+    userId?: string;
+    fromRole?: string;
+    toRole?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/role-assignments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async validateRoleChange(userId: string, newRole: string): Promise<ApiResponse<{
+    isValid: boolean;
+    warnings: string[];
+    requirements: string[];
+  }>> {
+    return this.request(`/admin/users/${userId}/validate-role-change`, {
+      method: 'POST',
+      body: JSON.stringify({ role: newRole }),
+    });
+  }
+
   // Employee Methods
   async getEmployees(params?: {
     page?: number;
@@ -1486,6 +1529,16 @@ export const reportsService = {
   downloadEmployeeReport: (generationId: string) => apiService.downloadEmployeeReport(generationId),
   getEmployeeReportTemplates: () => apiService.getEmployeeReportTemplates(),
   previewEmployeeReport: (request: any) => apiService.previewEmployeeReport(request),
+};
+
+// Admin Service (Admin Only)
+export const adminService = {
+  // Role Management
+  assignUserRole: (userId: string, newRole: string, reason?: string) => apiService.assignUserRole(userId, newRole, reason),
+  bulkAssignRoles: (userIds: string[], newRole: string, reason?: string) => apiService.bulkAssignRoles(userIds, newRole, reason),
+  getUserRoleHistory: (userId: string) => apiService.getUserRoleHistory(userId),
+  getRoleAssignmentLogs: (params?: any) => apiService.getRoleAssignmentLogs(params),
+  validateRoleChange: (userId: string, newRole: string) => apiService.validateRoleChange(userId, newRole),
 };
 
 export default apiService;

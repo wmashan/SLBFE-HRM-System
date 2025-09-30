@@ -433,6 +433,14 @@ const AdminDashboard: React.FC = () => {
               <span className="text-sm font-medium text-gray-700">User Management</span>
             </button>
             
+            <button 
+              onClick={() => navigate('/admin/roles')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <UserCheck className="w-8 h-8 text-indigo-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Role Management</span>
+            </button>
+            
             <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <Settings className="w-8 h-8 text-gray-600 mb-2" />
               <span className="text-sm font-medium text-gray-700">System Config</span>

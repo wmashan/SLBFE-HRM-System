@@ -49,6 +49,13 @@ const Sidebar: React.FC = () => {
           roles: ['admin'],
         },
         {
+          id: 'role-management',
+          label: 'Role Management',
+          path: '/admin/roles',
+          icon: UserCheck,
+          roles: ['admin'],
+        },
+        {
           id: 'system-config',
           label: 'System Config',
           path: '/admin/system',
