@@ -13,7 +13,8 @@ import {
   DollarSign,
   UserMinus,
   CreditCard,
-  Shield
+  Shield,
+  BarChart3
 } from 'lucide-react';
 
 // Import dashboard page components
@@ -29,6 +30,7 @@ import SalaryManagement from './SalaryManagement';
 import RetirementManagement from './RetirementManagement';
 import StaffLoanManagement from './StaffLoanManagement';
 import DisciplinaryActions from './DisciplinaryActions';
+import Reports from './Reports';
 
 const HRManagerDashboard = () => {
   const navigate = useNavigate();
@@ -244,6 +246,24 @@ const HRManagerDashboard = () => {
                   </span>
                 </button>
               )}
+
+              {/* Advanced Reports - Senior HR Manager Only */}
+              {userInfo.role === 'senior_hr_manager' && (
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
+                    activeTab === 'reports' 
+                      ? 'bg-indigo-100 text-indigo-700 border-r-2 border-indigo-700' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <BarChart3 className="w-5 h-5 mr-3" />
+                  Advanced Reports
+                  <span className="ml-auto bg-indigo-100 text-indigo-600 text-xs px-2 py-0.5 rounded-full">
+                    SHR
+                  </span>
+                </button>
+              )}
               
               <button
                 onClick={() => setActiveTab('recruitment')}
@@ -296,6 +316,7 @@ const HRManagerDashboard = () => {
           {activeTab === 'retirement' && <RetirementManagement />}
           {activeTab === 'loans' && <StaffLoanManagement />}
           {activeTab === 'disciplinary' && userInfo.role === 'senior_hr_manager' && <DisciplinaryActions />}
+          {activeTab === 'reports' && userInfo.role === 'senior_hr_manager' && <Reports />}
           {activeTab === 'recruitment' && <Recruitment />}
           {activeTab === 'schedule' && <Schedule />}
           {activeTab === 'settings' && <SettingsPage />}

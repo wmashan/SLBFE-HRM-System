@@ -228,6 +228,167 @@ export interface DisciplinaryStats {
   actionsBySeverity: Record<DisciplinarySeverity, number>;
 }
 
+// Reports Types (Senior HR Manager only)
+export interface ReportConfig {
+  id: string;
+  name: string;
+  type: ReportType;
+  category: ReportCategory;
+  description: string;
+  parameters: ReportParameter[];
+  defaultFilters?: Record<string, any>;
+  schedule?: ReportSchedule;
+  outputFormats: OutputFormat[];
+  accessLevel: 'senior_hr_manager' | 'hr' | 'manager' | 'all';
+  isActive: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type ReportType = 
+  | 'employee_summary'
+  | 'attendance_analysis'
+  | 'salary_analysis'
+  | 'disciplinary_summary'
+  | 'recruitment_metrics'
+  | 'loan_analysis'
+  | 'retirement_forecast'
+  | 'performance_analytics'
+  | 'compliance_report'
+  | 'custom_report';
+
+export type ReportCategory = 
+  | 'hr_analytics'
+  | 'financial'
+  | 'compliance'
+  | 'operational'
+  | 'strategic';
+
+export type OutputFormat = 'pdf' | 'excel' | 'csv' | 'json' | 'chart';
+
+export type ReportFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'on_demand';
+
+export interface ReportParameter {
+  name: string;
+  label: string;
+  type: 'date' | 'daterange' | 'select' | 'multiselect' | 'text' | 'number' | 'boolean';
+  required: boolean;
+  defaultValue?: any;
+  options?: { value: string; label: string; }[];
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: RegExp;
+  };
+}
+
+export interface ReportSchedule {
+  frequency: ReportFrequency;
+  dayOfWeek?: number; // 0-6 for weekly
+  dayOfMonth?: number; // 1-31 for monthly
+  time: string; // HH:mm format
+  timezone: string;
+  recipients: string[];
+  isActive: boolean;
+}
+
+export interface ReportGeneration {
+  id: string;
+  configId: string;
+  reportName: string;
+  parameters: Record<string, any>;
+  status: ReportStatus;
+  format: OutputFormat;
+  progress?: number;
+  startTime: Date;
+  endTime?: Date;
+  fileUrl?: string;
+  fileSize?: number;
+  error?: string;
+  generatedBy: string;
+  scheduledRun: boolean;
+}
+
+export type ReportStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
+
+export interface ReportData {
+  metadata: {
+    reportName: string;
+    generatedAt: Date;
+    parameters: Record<string, any>;
+    totalRecords: number;
+    executionTime: number;
+  };
+  data: any[];
+  charts?: ChartData[];
+  summary?: Record<string, any>;
+}
+
+export interface ChartData {
+  id: string;
+  title: string;
+  type: ChartType;
+  data: any[];
+  options?: any;
+}
+
+export type ChartType = 'bar' | 'line' | 'pie' | 'doughnut' | 'area' | 'scatter' | 'gauge';
+
+export interface ReportDashboard {
+  id: string;
+  name: string;
+  description: string;
+  widgets: ReportWidget[];
+  layout: DashboardLayout;
+  refreshInterval?: number;
+  isPublic: boolean;
+  createdBy: string;
+  createdAt: Date;
+}
+
+export interface ReportWidget {
+  id: string;
+  title: string;
+  type: 'chart' | 'metric' | 'table' | 'text';
+  position: { x: number; y: number; width: number; height: number; };
+  config: any;
+  dataSource: string;
+  refreshRate?: number;
+}
+
+export interface DashboardLayout {
+  columns: number;
+  rowHeight: number;
+  margin: [number, number];
+  padding: [number, number];
+}
+
+export interface ReportTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: ReportCategory;
+  template: string; // HTML/template content
+  variables: string[];
+  styles?: string;
+  isDefault: boolean;
+  createdBy: string;
+  createdAt: Date;
+}
+
+export interface ReportAnalytics {
+  totalReportsGenerated: number;
+  mostPopularReports: Array<{ reportId: string; name: string; count: number; }>;
+  reportsGeneratedToday: number;
+  reportsGeneratedThisWeek: number;
+  reportsGeneratedThisMonth: number;
+  averageGenerationTime: number;
+  failureRate: number;
+  storageUsed: number;
+  scheduledReportsActive: number;
+}
+
 // Theme and UI Types
 export interface Theme {
   primary: string;

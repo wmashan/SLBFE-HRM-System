@@ -1076,6 +1076,168 @@ class ApiService {
       body: JSON.stringify({ followUpNotes }),
     });
   }
+
+  // Reports Methods (Senior HR Manager Only)
+  async getReportConfigs(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    type?: string;
+    isActive?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/reports/configs${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getReportConfig(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/configs/${id}`);
+  }
+
+  async createReportConfig(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/configs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateReportConfig(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/configs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteReportConfig(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/reports/configs/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async generateReport(configId: string, parameters: any, format: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/generate', {
+      method: 'POST',
+      body: JSON.stringify({ configId, parameters, format }),
+    });
+  }
+
+  async getReportGenerations(params?: {
+    page?: number;
+    limit?: number;
+    configId?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/reports/generations${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getReportGeneration(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/generations/${id}`);
+  }
+
+  async cancelReportGeneration(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/generations/${id}/cancel`, {
+      method: 'POST',
+    });
+  }
+
+  async downloadReport(generationId: string): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>(`/reports/generations/${generationId}/download`);
+  }
+
+  async getReportAnalytics(): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/analytics');
+  }
+
+  async getReportTemplates(category?: string): Promise<ApiResponse<any[]>> {
+    const queryString = category ? `?category=${category}` : '';
+    return this.request<any[]>(`/reports/templates${queryString}`);
+  }
+
+  async createReportTemplate(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateReportTemplate(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/templates/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteReportTemplate(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/reports/templates/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async scheduleReport(configId: string, schedule: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/configs/${configId}/schedule`, {
+      method: 'POST',
+      body: JSON.stringify(schedule),
+    });
+  }
+
+  async updateReportSchedule(configId: string, schedule: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/configs/${configId}/schedule`, {
+      method: 'PUT',
+      body: JSON.stringify(schedule),
+    });
+  }
+
+  async deleteReportSchedule(configId: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/reports/configs/${configId}/schedule`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getScheduledReports(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/reports/scheduled');
+  }
+
+  async previewReport(configId: string, parameters: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/preview', {
+      method: 'POST',
+      body: JSON.stringify({ configId, parameters }),
+    });
+  }
+
+  async exportReportData(configId: string, parameters: any, format: string): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>('/reports/export', {
+      method: 'POST',
+      body: JSON.stringify({ configId, parameters, format }),
+    });
+  }
+
+  async shareReport(generationId: string, recipients: string[], message?: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/generations/${generationId}/share`, {
+      method: 'POST',
+      body: JSON.stringify({ recipients, message }),
+    });
+  }
+
+  async getReportDashboards(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/reports/dashboards');
+  }
+
+  async createReportDashboard(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/dashboards', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateReportDashboard(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/dashboards/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Create and export API service instance
@@ -1223,6 +1385,46 @@ export const disciplinaryService = {
   // Follow-ups
   getUpcomingFollowUps: (days?: number) => apiService.getUpcomingFollowUps(days),
   markFollowUpComplete: (actionId: string, followUpNotes: string) => apiService.markFollowUpComplete(actionId, followUpNotes),
+};
+
+// Reports Service (Senior HR Manager Only)
+export const reportsService = {
+  // Report Configuration Management
+  getReportConfigs: (params?: any) => apiService.getReportConfigs(params),
+  getReportConfig: (id: string) => apiService.getReportConfig(id),
+  createReportConfig: (data: any) => apiService.createReportConfig(data),
+  updateReportConfig: (id: string, data: any) => apiService.updateReportConfig(id, data),
+  deleteReportConfig: (id: string) => apiService.deleteReportConfig(id),
+  
+  // Report Generation
+  generateReport: (configId: string, parameters: any, format: string) => apiService.generateReport(configId, parameters, format),
+  getReportGenerations: (params?: any) => apiService.getReportGenerations(params),
+  getReportGeneration: (id: string) => apiService.getReportGeneration(id),
+  cancelReportGeneration: (id: string) => apiService.cancelReportGeneration(id),
+  downloadReport: (generationId: string) => apiService.downloadReport(generationId),
+  
+  // Analytics and Templates
+  getReportAnalytics: () => apiService.getReportAnalytics(),
+  getReportTemplates: (category?: string) => apiService.getReportTemplates(category),
+  createReportTemplate: (data: any) => apiService.createReportTemplate(data),
+  updateReportTemplate: (id: string, data: any) => apiService.updateReportTemplate(id, data),
+  deleteReportTemplate: (id: string) => apiService.deleteReportTemplate(id),
+  
+  // Scheduling
+  scheduleReport: (configId: string, schedule: any) => apiService.scheduleReport(configId, schedule),
+  updateReportSchedule: (configId: string, schedule: any) => apiService.updateReportSchedule(configId, schedule),
+  deleteReportSchedule: (configId: string) => apiService.deleteReportSchedule(configId),
+  getScheduledReports: () => apiService.getScheduledReports(),
+  
+  // Preview and Export
+  previewReport: (configId: string, parameters: any) => apiService.previewReport(configId, parameters),
+  exportReportData: (configId: string, parameters: any, format: string) => apiService.exportReportData(configId, parameters, format),
+  shareReport: (generationId: string, recipients: string[], message?: string) => apiService.shareReport(generationId, recipients, message),
+  
+  // Dashboards
+  getReportDashboards: () => apiService.getReportDashboards(),
+  createReportDashboard: (data: any) => apiService.createReportDashboard(data),
+  updateReportDashboard: (id: string, data: any) => apiService.updateReportDashboard(id, data),
 };
 
 export default apiService;
