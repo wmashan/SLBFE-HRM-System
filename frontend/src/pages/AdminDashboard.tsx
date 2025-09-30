@@ -1,6 +1,7 @@
 // Admin Dashboard - System Administration and Management
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Settings, 
@@ -19,6 +20,7 @@ import Layout from '../components/layout/Layout';
 import { AdminDashboardStats } from '../types';
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<AdminDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -423,7 +425,10 @@ const AdminDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => navigate('/admin/users')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Users className="w-8 h-8 text-blue-600 mb-2" />
               <span className="text-sm font-medium text-gray-700">User Management</span>
             </button>
