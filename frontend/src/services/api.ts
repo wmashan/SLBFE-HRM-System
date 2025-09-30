@@ -1,6 +1,6 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, PaginatedResponse, User, LoginCredentials, RegisterData } from '../types';
+import { ApiResponse, User, LoginCredentials, RegisterData } from '../types';
 
 // Salary Management Types
 interface SalaryRecord {
@@ -35,6 +35,25 @@ interface SalaryStats {
   averageSalary: number;
   pendingPayments: number;
   totalEmployees: number;
+}
+
+interface UpcomingIncrement {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  currentSalary: number;
+  incrementAmount: number;
+  newSalary: number;
+  incrementType: 'annual' | 'performance' | 'promotion' | 'market_adjustment';
+  scheduledDate: string;
+  notificationDate: string;
+  isNotified: boolean;
+  approvalRequired: boolean;
+  status: 'scheduled' | 'approved' | 'on_hold' | 'processed';
+  reason?: string;
+  approvedBy?: string;
 }
 
 // Base API configuration
@@ -164,7 +183,7 @@ class ApiService {
     department?: string;
     branch?: string;
     status?: string;
-  }): Promise<PaginatedResponse<User>> {
+  }): Promise<ApiResponse<User[]>> {
     const queryString = params ? new URLSearchParams(params as any).toString() : '';
     return this.request<User[]>(`/employees${queryString ? `?${queryString}` : ''}`);
   }
@@ -318,6 +337,61 @@ class ApiService {
     });
   }
 
+  // Upcoming Increments Methods
+  async getUpcomingIncrements(params?: {
+    page?: number;
+    limit?: number;
+    department?: string;
+    status?: 'scheduled' | 'approved' | 'on_hold' | 'processed';
+    daysAhead?: number;
+  }): Promise<ApiResponse<UpcomingIncrement[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<UpcomingIncrement[]>(`/salary/increments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createUpcomingIncrement(data: Omit<UpcomingIncrement, 'id'>): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>('/salary/increments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUpcomingIncrement(id: string, data: Partial<UpcomingIncrement>): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async approveIncrement(id: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/approve`, {
+      method: 'POST',
+    });
+  }
+
+  async putIncrementOnHold(id: string, reason?: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/hold`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async markIncrementNotified(id: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/notify`, {
+      method: 'POST',
+    });
+  }
+
+  async getIncrementNotifications(): Promise<ApiResponse<UpcomingIncrement[]>> {
+    return this.request<UpcomingIncrement[]>('/salary/increments/notifications');
+  }
+
+  async processIncrement(id: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/process`, {
+      method: 'POST',
+    });
+  }
+
   // Application Methods
   async getApplications(params?: {
     page?: number;
@@ -407,6 +481,15 @@ export const salaryService = {
   rejectSalaryAdjustment: (id: string, reason?: string) => apiService.rejectSalaryAdjustment(id, reason),
   getSalaryStats: () => apiService.getSalaryStats(),
   generateSalaryReport: (params: any) => apiService.generateSalaryReport(params),
+  // Upcoming Increments
+  getUpcomingIncrements: (params?: any) => apiService.getUpcomingIncrements(params),
+  createUpcomingIncrement: (data: Omit<UpcomingIncrement, 'id'>) => apiService.createUpcomingIncrement(data),
+  updateUpcomingIncrement: (id: string, data: Partial<UpcomingIncrement>) => apiService.updateUpcomingIncrement(id, data),
+  approveIncrement: (id: string) => apiService.approveIncrement(id),
+  putIncrementOnHold: (id: string, reason?: string) => apiService.putIncrementOnHold(id, reason),
+  markIncrementNotified: (id: string) => apiService.markIncrementNotified(id),
+  getIncrementNotifications: () => apiService.getIncrementNotifications(),
+  processIncrement: (id: string) => apiService.processIncrement(id),
 };
 
 export default apiService;

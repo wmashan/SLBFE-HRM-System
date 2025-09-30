@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   DollarSign, 
   Search, 
@@ -8,7 +8,11 @@ import {
   Users, 
   Calculator,
   Eye,
-  Plus
+  Plus,
+  Bell,
+  Calendar,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -41,8 +45,27 @@ interface SalaryAdjustment {
   status: 'pending' | 'approved' | 'rejected';
 }
 
+interface UpcomingIncrement {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  currentSalary: number;
+  incrementAmount: number;
+  newSalary: number;
+  incrementType: 'annual' | 'performance' | 'promotion' | 'market_adjustment';
+  scheduledDate: string;
+  notificationDate: string;
+  isNotified: boolean;
+  approvalRequired: boolean;
+  status: 'scheduled' | 'approved' | 'on_hold' | 'processed';
+  reason?: string;
+  approvedBy?: string;
+}
+
 const SalaryManagement = () => {
-  const [activeTab, setActiveTab] = useState<'salaries' | 'adjustments' | 'reports'>('salaries');
+  const [activeTab, setActiveTab] = useState<'salaries' | 'adjustments' | 'increments' | 'reports'>('salaries');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -117,6 +140,61 @@ const SalaryManagement = () => {
     }
   ]);
 
+  const [upcomingIncrements, setUpcomingIncrements] = useState<UpcomingIncrement[]>([
+    {
+      id: '1',
+      employeeId: 'EMP001',
+      employeeName: 'John Doe',
+      department: 'Engineering',
+      position: 'Software Engineer',
+      currentSalary: 120000,
+      incrementAmount: 12000,
+      newSalary: 132000,
+      incrementType: 'annual',
+      scheduledDate: '2024-12-15',
+      notificationDate: '2024-11-15',
+      isNotified: false,
+      approvalRequired: true,
+      status: 'scheduled',
+      reason: 'Annual salary increment'
+    },
+    {
+      id: '2',
+      employeeId: 'EMP002',
+      employeeName: 'Jane Smith',
+      department: 'HR',
+      position: 'HR Manager',
+      currentSalary: 110000,
+      incrementAmount: 8000,
+      newSalary: 118000,
+      incrementType: 'performance',
+      scheduledDate: '2024-11-01',
+      notificationDate: '2024-10-01',
+      isNotified: true,
+      approvalRequired: true,
+      status: 'approved',
+      reason: 'Excellent performance review',
+      approvedBy: 'HR Director'
+    },
+    {
+      id: '3',
+      employeeId: 'EMP005',
+      employeeName: 'Alex Johnson',
+      department: 'Finance',
+      position: 'Financial Analyst',
+      currentSalary: 95000,
+      incrementAmount: 5000,
+      newSalary: 100000,
+      incrementType: 'market_adjustment',
+      scheduledDate: '2024-10-30',
+      notificationDate: '2024-09-30',
+      isNotified: true,
+      approvalRequired: false,
+      status: 'scheduled',
+      reason: 'Market rate adjustment'
+    }
+  ]);
+
   const departments = ['All', 'Engineering', 'HR', 'Finance', 'Marketing', 'Operations'];
 
   const filteredSalaryRecords = salaryRecords.filter(record => {
@@ -157,6 +235,43 @@ const SalaryManagement = () => {
     setAdjustmentRequests(prev => 
       prev.map(adj => adj.id === id ? { ...adj, status: 'rejected' } : adj)
     );
+  };
+
+  // Notification logic for upcoming increments
+  const getUpcomingIncrementsNotifications = useMemo(() => {
+    const today = new Date();
+    const oneMonthFromNow = new Date();
+    oneMonthFromNow.setMonth(today.getMonth() + 1);
+    
+    return upcomingIncrements.filter(increment => {
+      const scheduledDate = new Date(increment.scheduledDate);
+      return scheduledDate <= oneMonthFromNow && scheduledDate >= today && !increment.isNotified;
+    });
+  }, [upcomingIncrements]);
+
+  const handleApproveIncrement = (id: string) => {
+    setUpcomingIncrements(prev => 
+      prev.map(inc => inc.id === id ? { ...inc, status: 'approved', approvedBy: 'HR Manager' } : inc)
+    );
+  };
+
+  const handlePutOnHold = (id: string) => {
+    setUpcomingIncrements(prev => 
+      prev.map(inc => inc.id === id ? { ...inc, status: 'on_hold' } : inc)
+    );
+  };
+
+  const handleMarkNotified = (id: string) => {
+    setUpcomingIncrements(prev => 
+      prev.map(inc => inc.id === id ? { ...inc, isNotified: true } : inc)
+    );
+  };
+
+  const getDaysUntilIncrement = (scheduledDate: string) => {
+    const today = new Date();
+    const scheduled = new Date(scheduledDate);
+    const diffTime = scheduled.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const formatCurrency = (amount: number) => {
@@ -261,6 +376,7 @@ const SalaryManagement = () => {
           {[
             { id: 'salaries', label: 'Employee Salaries', count: salaryRecords.length },
             { id: 'adjustments', label: 'Salary Adjustments', count: adjustmentRequests.filter(adj => adj.status === 'pending').length },
+            { id: 'increments', label: 'Upcoming Increments', count: getUpcomingIncrementsNotifications.length },
             { id: 'reports', label: 'Salary Reports', count: null }
           ].map((tab) => (
             <button
@@ -427,6 +543,161 @@ const SalaryManagement = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'increments' && (
+          <div className="p-6">
+            {/* Notification Alert */}
+            {getUpcomingIncrementsNotifications.length > 0 && (
+              <div className="mb-6 bg-amber-50 border border-amber-200 rounded-md p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-amber-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-amber-800">
+                      Upcoming Increment Notifications
+                    </h3>
+                    <div className="mt-2 text-sm text-amber-700">
+                      <p>
+                        {getUpcomingIncrementsNotifications.length} employee{getUpcomingIncrementsNotifications.length !== 1 ? 's have' : ' has'} increment{getUpcomingIncrementsNotifications.length !== 1 ? 's' : ''} scheduled within the next month that require notification.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Increments List */}
+            <div className="space-y-4">
+              {upcomingIncrements.map((increment) => {
+                const daysUntil = getDaysUntilIncrement(increment.scheduledDate);
+                const isUpcoming = daysUntil <= 30 && daysUntil >= 0;
+                const isOverdue = daysUntil < 0;
+                
+                return (
+                  <div key={increment.id} className={`border rounded-lg p-6 ${
+                    isOverdue ? 'border-red-200 bg-red-50' : 
+                    isUpcoming && !increment.isNotified ? 'border-amber-200 bg-amber-50' : 
+                    'border-gray-200 bg-white'
+                  }`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-medium text-gray-900">{increment.employeeName}</h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            increment.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            increment.status === 'on_hold' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {increment.status.replace('_', ' ')}
+                          </span>
+                          {isUpcoming && !increment.isNotified && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                              <Bell className="w-3 h-3 mr-1" />
+                              Notify Required
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                          <div>
+                            <span className="text-gray-500">Department:</span>
+                            <p className="font-medium">{increment.department}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Position:</span>
+                            <p className="font-medium">{increment.position}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Current Salary:</span>
+                            <p className="font-medium">{formatCurrency(increment.currentSalary)}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">New Salary:</span>
+                            <p className="font-medium text-green-600">{formatCurrency(increment.newSalary)}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">Scheduled: {new Date(increment.scheduledDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className={`font-medium ${
+                            isOverdue ? 'text-red-600' :
+                            isUpcoming ? 'text-amber-600' :
+                            'text-green-600'
+                          }`}>
+                            {isOverdue ? `${Math.abs(daysUntil)} days overdue` :
+                             daysUntil === 0 ? 'Due today' :
+                             daysUntil <= 30 ? `${daysUntil} days remaining` :
+                             'Scheduled'}
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-gray-600">Increment: </span>
+                            <span className="font-medium text-green-600">+{formatCurrency(increment.incrementAmount)}</span>
+                          </div>
+                        </div>
+                        
+                        {increment.reason && (
+                          <p className="text-sm text-gray-600 mt-2">{increment.reason}</p>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col space-y-2 ml-4">
+                        {increment.status === 'scheduled' && increment.approvalRequired && (
+                          <>
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => handleApproveIncrement(increment.id)}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              variant="error"
+                              size="sm"
+                              onClick={() => handlePutOnHold(increment.id)}
+                            >
+                              Put on Hold
+                            </Button>
+                          </>
+                        )}
+                        {isUpcoming && !increment.isNotified && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleMarkNotified(increment.id)}
+                          >
+                            <Bell className="w-4 h-4 mr-1" />
+                            Mark Notified
+                          </Button>
+                        )}
+                        {increment.status === 'approved' && (
+                          <span className="text-xs text-green-600 font-medium flex items-center">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Ready to Process
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {upcomingIncrements.length === 0 && (
+                <div className="text-center py-12">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No Upcoming Increments</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    No salary increments are currently scheduled
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
