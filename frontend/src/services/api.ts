@@ -1238,6 +1238,47 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // Employee Report Methods
+  async generateEmployeeReport(request: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/employee/generate', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async getEmployeeReportData(employeeId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/employee/${employeeId}/data`);
+  }
+
+  async getEmployeeReportGenerations(params?: {
+    employeeId?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/reports/employee/generations${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getEmployeeReportGeneration(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/employee/generations/${id}`);
+  }
+
+  async downloadEmployeeReport(generationId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/reports/employee/generations/${generationId}/download`);
+  }
+
+  async getEmployeeReportTemplates(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/reports/employee/templates');
+  }
+
+  async previewEmployeeReport(request: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/reports/employee/preview', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
 }
 
 // Create and export API service instance
@@ -1425,6 +1466,15 @@ export const reportsService = {
   getReportDashboards: () => apiService.getReportDashboards(),
   createReportDashboard: (data: any) => apiService.createReportDashboard(data),
   updateReportDashboard: (id: string, data: any) => apiService.updateReportDashboard(id, data),
+
+  // Employee Reports
+  generateEmployeeReport: (request: any) => apiService.generateEmployeeReport(request),
+  getEmployeeReportData: (employeeId: string) => apiService.getEmployeeReportData(employeeId),
+  getEmployeeReportGenerations: (params?: any) => apiService.getEmployeeReportGenerations(params),
+  getEmployeeReportGeneration: (id: string) => apiService.getEmployeeReportGeneration(id),
+  downloadEmployeeReport: (generationId: string) => apiService.downloadEmployeeReport(generationId),
+  getEmployeeReportTemplates: () => apiService.getEmployeeReportTemplates(),
+  previewEmployeeReport: (request: any) => apiService.previewEmployeeReport(request),
 };
 
 export default apiService;

@@ -389,6 +389,418 @@ export interface ReportAnalytics {
   scheduledReportsActive: number;
 }
 
+// Comprehensive Employee Report Types (Senior HR Manager only)
+export interface EmployeeReportData {
+  employeeInfo: EmployeePersonalDetails;
+  employmentHistory: EmploymentRecord[];
+  transferHistory: TransferRecord[];
+  disciplinaryHistory: DisciplinaryAction[];
+  serviceRecord: ServiceSummary;
+  performanceHistory: PerformanceRecord[];
+  salaryHistory: SalaryRecord[];
+  leaveHistory: LeaveRecord[];
+  trainingHistory: TrainingRecord[];
+  certifications: Certification[];
+  emergencyContacts: EmergencyContact[];
+  dependents: Dependent[];
+  bankDetails?: BankDetails;
+  documentAttachments: DocumentAttachment[];
+}
+
+export interface EmployeePersonalDetails {
+  id: string;
+  employeeId: string;
+  fullName: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  dateOfBirth: Date;
+  gender: 'male' | 'female' | 'other';
+  maritalStatus: 'single' | 'married' | 'divorced' | 'widowed';
+  nationality: string;
+  ethnicity?: string;
+  religion?: string;
+  bloodGroup?: string;
+  idNumber: string;
+  idType: 'nic' | 'passport' | 'driving_license';
+  passportNumber?: string;
+  permanentAddress: Address;
+  currentAddress: Address;
+  personalPhone: string;
+  personalEmail: string;
+  workPhone?: string;
+  workEmail: string;
+  profilePicture?: string;
+  joinDate: Date;
+  confirmationDate?: Date;
+  probationPeriod?: number;
+  status: EmployeeStatus;
+  terminationDate?: Date;
+  terminationReason?: string;
+  rehireEligible: boolean;
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  district: string;
+  province: string;
+  postalCode: string;
+  country: string;
+}
+
+export interface EmploymentRecord {
+  id: string;
+  startDate: Date;
+  endDate?: Date;
+  position: string;
+  department: string;
+  branch: string;
+  reportingManager: string;
+  workType: 'full_time' | 'part_time' | 'contract' | 'temporary' | 'intern';
+  employmentType: 'permanent' | 'temporary' | 'probation' | 'contract';
+  salary: number;
+  currency: string;
+  benefits: string[];
+  responsibilities: string[];
+  isActive: boolean;
+  reason?: string; // For position changes
+}
+
+export interface TransferRecord {
+  id: string;
+  transferDate: Date;
+  effectiveDate: Date;
+  fromBranch: string;
+  toBranch: string;
+  fromDepartment: string;
+  toDepartment: string;
+  fromPosition: string;
+  toPosition: string;
+  transferType: 'promotion' | 'lateral' | 'demotion' | 'departmental' | 'geographical';
+  reason: string;
+  requestedBy: string;
+  approvedBy: string;
+  salaryChange?: number;
+  benefitsChange?: string[];
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  documents: string[];
+}
+
+export interface ServiceSummary {
+  totalServicePeriod: ServicePeriod;
+  currentPositionPeriod: ServicePeriod;
+  divisionalServicePeriods: DivisionalServiceRecord[];
+  branchServicePeriods: BranchServiceRecord[];
+  departmentServicePeriods: DepartmentServiceRecord[];
+  positionServicePeriods: PositionServiceRecord[];
+  serviceBreaks: ServiceBreak[];
+  totalWorkingDays: number;
+  totalLeaveDays: number;
+  totalAbsentDays: number;
+  serviceAwards: ServiceAward[];
+}
+
+export interface ServicePeriod {
+  years: number;
+  months: number;
+  days: number;
+  totalDays: number;
+  startDate: Date;
+  endDate?: Date;
+}
+
+export interface DivisionalServiceRecord {
+  divisionName: string;
+  startDate: Date;
+  endDate?: Date;
+  servicePeriod: ServicePeriod;
+  positions: string[];
+}
+
+export interface BranchServiceRecord {
+  branchName: string;
+  branchCode: string;
+  city: string;
+  province: string;
+  startDate: Date;
+  endDate?: Date;
+  servicePeriod: ServicePeriod;
+  positions: string[];
+  departments: string[];
+}
+
+export interface DepartmentServiceRecord {
+  departmentName: string;
+  startDate: Date;
+  endDate?: Date;
+  servicePeriod: ServicePeriod;
+  positions: string[];
+}
+
+export interface PositionServiceRecord {
+  positionTitle: string;
+  level: string;
+  startDate: Date;
+  endDate?: Date;
+  servicePeriod: ServicePeriod;
+  department: string;
+  branch: string;
+  reportingManager: string;
+}
+
+export interface ServiceBreak {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  duration: ServicePeriod;
+  reason: string;
+  type: 'leave_without_pay' | 'suspension' | 'medical_leave' | 'maternity_leave' | 'study_leave' | 'other';
+  approved: boolean;
+  paidLeave: boolean;
+}
+
+export interface ServiceAward {
+  id: string;
+  awardName: string;
+  awardDate: Date;
+  reason: string;
+  monetaryValue?: number;
+  certificate?: string;
+  awardedBy: string;
+}
+
+export interface PerformanceRecord {
+  id: string;
+  evaluationPeriod: string;
+  evaluationDate: Date;
+  overallRating: number;
+  maxRating: number;
+  evaluatedBy: string;
+  objectives: PerformanceObjective[];
+  competencies: CompetencyRating[];
+  strengths: string[];
+  areasForImprovement: string[];
+  developmentPlan: string[];
+  employeeComments?: string;
+  managerComments: string;
+  goals: PerformanceGoal[];
+  achievements: Achievement[];
+}
+
+export interface PerformanceObjective {
+  objective: string;
+  weight: number;
+  rating: number;
+  comments: string;
+}
+
+export interface CompetencyRating {
+  competency: string;
+  rating: number;
+  comments?: string;
+}
+
+export interface PerformanceGoal {
+  goal: string;
+  targetDate: Date;
+  status: 'not_started' | 'in_progress' | 'completed' | 'overdue';
+  completionPercentage: number;
+}
+
+export interface Achievement {
+  title: string;
+  description: string;
+  date: Date;
+  recognitionReceived?: string;
+}
+
+export interface SalaryRecord {
+  id: string;
+  effectiveDate: Date;
+  basicSalary: number;
+  allowances: SalaryAllowance[];
+  deductions: SalaryDeduction[];
+  grossSalary: number;
+  netSalary: number;
+  currency: string;
+  payrollCycle: 'monthly' | 'bi_weekly' | 'weekly';
+  changeReason?: string;
+  approvedBy: string;
+  payrollMonth?: string;
+  bonuses?: Bonus[];
+  overtime?: OvertimeRecord[];
+}
+
+export interface SalaryAllowance {
+  type: string;
+  amount: number;
+  percentage?: number;
+  taxable: boolean;
+}
+
+export interface SalaryDeduction {
+  type: string;
+  amount: number;
+  percentage?: number;
+  mandatory: boolean;
+}
+
+export interface Bonus {
+  type: string;
+  amount: number;
+  reason: string;
+  date: Date;
+  taxable: boolean;
+}
+
+export interface OvertimeRecord {
+  date: Date;
+  hours: number;
+  rate: number;
+  totalAmount: number;
+  approved: boolean;
+}
+
+export interface LeaveRecord {
+  id: string;
+  leaveType: string;
+  startDate: Date;
+  endDate: Date;
+  numberOfDays: number;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  appliedDate: Date;
+  approvedBy?: string;
+  approvedDate?: Date;
+  rejectionReason?: string;
+  emergencyContact?: string;
+  documents?: string[];
+}
+
+export interface TrainingRecord {
+  id: string;
+  trainingName: string;
+  trainingProvider: string;
+  trainingType: 'internal' | 'external' | 'online' | 'workshop' | 'certification';
+  startDate: Date;
+  endDate: Date;
+  duration: number;
+  cost?: number;
+  status: 'enrolled' | 'in_progress' | 'completed' | 'cancelled' | 'failed';
+  completionPercentage: number;
+  certificateReceived: boolean;
+  certificateUrl?: string;
+  skills: string[];
+  feedback?: string;
+  rating?: number;
+}
+
+export interface EmergencyContact {
+  id: string;
+  name: string;
+  relationship: string;
+  phone: string;
+  alternatePhone?: string;
+  email?: string;
+  address: Address;
+  isPrimary: boolean;
+}
+
+export interface Dependent {
+  id: string;
+  name: string;
+  relationship: 'spouse' | 'child' | 'parent' | 'sibling' | 'other';
+  dateOfBirth: Date;
+  gender: 'male' | 'female' | 'other';
+  idNumber?: string;
+  isDependent: boolean;
+  medicalInsuranceCovered: boolean;
+  educationSupport?: boolean;
+}
+
+export interface BankDetails {
+  bankName: string;
+  branchName: string;
+  accountNumber: string;
+  accountHolderName: string;
+  swiftCode?: string;
+  routingNumber?: string;
+  isPrimary: boolean;
+}
+
+export interface DocumentAttachment {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  uploadDate: Date;
+  category: DocumentCategory;
+  description?: string;
+  isConfidential: boolean;
+  uploadedBy: string;
+  url: string;
+}
+
+export type DocumentCategory = 
+  | 'identification'
+  | 'educational_certificates'
+  | 'professional_certificates'
+  | 'medical_records'
+  | 'contracts'
+  | 'performance_reviews'
+  | 'disciplinary_records'
+  | 'training_certificates'
+  | 'tax_documents'
+  | 'other';
+
+// Employee Report Generation Types
+export interface EmployeeReportRequest {
+  employeeId: string;
+  reportType: EmployeeReportType;
+  includeConfidential: boolean;
+  includeSalaryDetails: boolean;
+  includePerformanceHistory: boolean;
+  includeDisciplinaryHistory: boolean;
+  dateRange?: {
+    startDate: Date;
+    endDate: Date;
+  };
+  outputFormat: OutputFormat;
+  sections: EmployeeReportSection[];
+}
+
+export type EmployeeReportType = 
+  | 'comprehensive'
+  | 'basic_info'
+  | 'service_record'
+  | 'performance_summary'
+  | 'disciplinary_summary'
+  | 'salary_history'
+  | 'custom';
+
+export type EmployeeReportSection = 
+  | 'personal_details'
+  | 'employment_history'
+  | 'service_summary'
+  | 'transfer_history'
+  | 'disciplinary_history'
+  | 'performance_history'
+  | 'salary_history'
+  | 'leave_history'
+  | 'training_history'
+  | 'certifications'
+  | 'emergency_contacts'
+  | 'dependents'
+  | 'documents';
+
+export interface EmployeeReportGeneration extends ReportGeneration {
+  employeeId: string;
+  employeeName: string;
+  reportSections: EmployeeReportSection[];
+  confidentialDataIncluded: boolean;
+}
+
 // Theme and UI Types
 export interface Theme {
   primary: string;

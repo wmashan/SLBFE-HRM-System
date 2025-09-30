@@ -26,6 +26,7 @@ import {
   Database
 } from 'lucide-react';
 import { Button, Modal } from '../components/ui';
+import { EmployeeReportModal } from '../components/features/reports/EmployeeReportModal';
 import { ReportConfig, ReportGeneration, ReportAnalytics, ReportType, ReportCategory, ReportStatus } from '../types';
 
 const Reports: React.FC = () => {
@@ -41,6 +42,7 @@ const Reports: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showEmployeeReportModal, setShowEmployeeReportModal] = useState(false);
 
   // Mock data for demonstration
   useEffect(() => {
@@ -290,6 +292,16 @@ const Reports: React.FC = () => {
     setShowCreateModal(true);
   };
 
+  const handleEmployeeReport = () => {
+    setShowEmployeeReportModal(true);
+  };
+
+  const handleEmployeeReportGenerated = () => {
+    // Refresh generations list
+    // This would normally fetch updated data from the API
+    console.log('Employee report generated successfully!');
+  };
+
   const handleViewDetails = (report: ReportConfig) => {
     setSelectedReport(report);
     setShowDetailsModal(true);
@@ -323,10 +335,16 @@ const Reports: React.FC = () => {
             <p className="text-sm text-gray-600">Generate and manage comprehensive HR analytics and reports</p>
           </div>
         </div>
-        <Button onClick={handleCreateReport} className="bg-indigo-600 hover:bg-indigo-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Report
-        </Button>
+        <div className="flex space-x-3">
+          <Button onClick={handleEmployeeReport} variant="secondary" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+            <Users className="w-4 h-4 mr-2" />
+            Employee Report
+          </Button>
+          <Button onClick={handleCreateReport} className="bg-indigo-600 hover:bg-indigo-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Report
+          </Button>
+        </div>
       </div>
 
       {/* Analytics Overview */}
@@ -735,6 +753,13 @@ const Reports: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Employee Report Modal */}
+      <EmployeeReportModal
+        isOpen={showEmployeeReportModal}
+        onClose={() => setShowEmployeeReportModal(false)}
+        onReportGenerated={handleEmployeeReportGenerated}
+      />
     </div>
   );
 };
