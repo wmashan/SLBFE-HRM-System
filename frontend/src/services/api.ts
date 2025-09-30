@@ -975,6 +975,107 @@ class ApiService {
   }>> {
     return this.request('/applications/stats');
   }
+
+  // Disciplinary Actions Methods (Senior HR Manager Only)
+  async getDisciplinaryActions(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+    status?: string;
+    severity?: string;
+    employeeId?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/disciplinary-actions${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getDisciplinaryAction(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${id}`);
+  }
+
+  async createDisciplinaryAction(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/disciplinary-actions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateDisciplinaryAction(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteDisciplinaryAction(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/disciplinary-actions/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async approveDisciplinaryAction(id: string, comments?: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ comments }),
+    });
+  }
+
+  async implementDisciplinaryAction(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${id}/implement`, {
+      method: 'POST',
+    });
+  }
+
+  async submitAppeal(id: string, appealReason: string, evidenceUrls?: string[]): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${id}/appeal`, {
+      method: 'POST',
+      body: JSON.stringify({ appealReason, evidenceUrls }),
+    });
+  }
+
+  async reviewAppeal(id: string, decision: 'upheld' | 'overturned', reviewNotes?: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${id}/review-appeal`, {
+      method: 'POST',
+      body: JSON.stringify({ decision, reviewNotes }),
+    });
+  }
+
+  async getDisciplinaryStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/disciplinary-actions/stats');
+  }
+
+  async generateDisciplinaryReport(params: {
+    startDate?: string;
+    endDate?: string;
+    department?: string;
+    severity?: string;
+    actionType?: string;
+    status?: string;
+    format: 'pdf' | 'excel';
+  }): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>('/disciplinary-actions/reports', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  async getEmployeeDisciplinaryHistory(employeeId: string): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>(`/disciplinary-actions/employee/${employeeId}`);
+  }
+
+  async getUpcomingFollowUps(days: number = 30): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>(`/disciplinary-actions/follow-ups?days=${days}`);
+  }
+
+  async markFollowUpComplete(actionId: string, followUpNotes: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/disciplinary-actions/${actionId}/follow-up`, {
+      method: 'POST',
+      body: JSON.stringify({ followUpNotes }),
+    });
+  }
 }
 
 // Create and export API service instance
@@ -1095,6 +1196,33 @@ export const loanService = {
   generateLoanReport: (params: any) => apiService.generateLoanReport(params),
   getUpcomingLoanPayments: (days?: number) => apiService.getUpcomingLoanPayments(days),
   sendPaymentReminder: (repaymentId: string) => apiService.sendPaymentReminder(repaymentId),
+};
+
+// Disciplinary Actions Service (Senior HR Manager Only)
+export const disciplinaryService = {
+  // CRUD Operations
+  getDisciplinaryActions: (params?: any) => apiService.getDisciplinaryActions(params),
+  getDisciplinaryAction: (id: string) => apiService.getDisciplinaryAction(id),
+  createDisciplinaryAction: (data: any) => apiService.createDisciplinaryAction(data),
+  updateDisciplinaryAction: (id: string, data: any) => apiService.updateDisciplinaryAction(id, data),
+  deleteDisciplinaryAction: (id: string) => apiService.deleteDisciplinaryAction(id),
+  
+  // Workflow Management
+  approveDisciplinaryAction: (id: string, comments?: string) => apiService.approveDisciplinaryAction(id, comments),
+  implementDisciplinaryAction: (id: string) => apiService.implementDisciplinaryAction(id),
+  
+  // Appeals
+  submitAppeal: (id: string, appealReason: string, evidenceUrls?: string[]) => apiService.submitAppeal(id, appealReason, evidenceUrls),
+  reviewAppeal: (id: string, decision: 'upheld' | 'overturned', reviewNotes?: string) => apiService.reviewAppeal(id, decision, reviewNotes),
+  
+  // Analytics and Reports
+  getDisciplinaryStats: () => apiService.getDisciplinaryStats(),
+  generateDisciplinaryReport: (params: any) => apiService.generateDisciplinaryReport(params),
+  getEmployeeDisciplinaryHistory: (employeeId: string) => apiService.getEmployeeDisciplinaryHistory(employeeId),
+  
+  // Follow-ups
+  getUpcomingFollowUps: (days?: number) => apiService.getUpcomingFollowUps(days),
+  markFollowUpComplete: (actionId: string, followUpNotes: string) => apiService.markFollowUpComplete(actionId, followUpNotes),
 };
 
 export default apiService;

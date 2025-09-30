@@ -12,7 +12,8 @@ import {
   RotateCcw,
   DollarSign,
   UserMinus,
-  CreditCard
+  CreditCard,
+  Shield
 } from 'lucide-react';
 
 // Import dashboard page components
@@ -27,6 +28,7 @@ import SettingsPage from './dashboard/Settings';
 import SalaryManagement from './SalaryManagement';
 import RetirementManagement from './RetirementManagement';
 import StaffLoanManagement from './StaffLoanManagement';
+import DisciplinaryActions from './DisciplinaryActions';
 
 const HRManagerDashboard = () => {
   const navigate = useNavigate();
@@ -224,6 +226,24 @@ const HRManagerDashboard = () => {
                 <CreditCard className="w-5 h-5 mr-3" />
                 Staff Loan Management
               </button>
+
+              {/* Disciplinary Actions - Senior HR Manager Only */}
+              {userInfo.role === 'senior_hr_manager' && (
+                <button
+                  onClick={() => setActiveTab('disciplinary')}
+                  className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
+                    activeTab === 'disciplinary' 
+                      ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-700' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Shield className="w-5 h-5 mr-3" />
+                  Disciplinary Actions
+                  <span className="ml-auto bg-purple-100 text-purple-600 text-xs px-2 py-0.5 rounded-full">
+                    SHR
+                  </span>
+                </button>
+              )}
               
               <button
                 onClick={() => setActiveTab('recruitment')}
@@ -275,6 +295,7 @@ const HRManagerDashboard = () => {
           {activeTab === 'salary' && <SalaryManagement />}
           {activeTab === 'retirement' && <RetirementManagement />}
           {activeTab === 'loans' && <StaffLoanManagement />}
+          {activeTab === 'disciplinary' && userInfo.role === 'senior_hr_manager' && <DisciplinaryActions />}
           {activeTab === 'recruitment' && <Recruitment />}
           {activeTab === 'schedule' && <Schedule />}
           {activeTab === 'settings' && <SettingsPage />}

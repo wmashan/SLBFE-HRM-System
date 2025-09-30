@@ -138,6 +138,96 @@ export interface NavigationItem {
   roles?: UserRole[];
 }
 
+// Disciplinary Actions Types (Senior HR Manager only)
+export interface DisciplinaryAction {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  branch: string;
+  actionType: DisciplinaryActionType;
+  severity: DisciplinarySeverity;
+  incidentDate: string;
+  reportedDate: string;
+  reportedBy: string;
+  description: string;
+  investigationDetails?: string;
+  witnessStatements?: string[];
+  evidenceAttachments?: string[];
+  actionTaken: string;
+  startDate: string;
+  endDate?: string;
+  followUpRequired: boolean;
+  followUpDate?: string;
+  status: DisciplinaryStatus;
+  approvedBy?: string;
+  approvalDate?: string;
+  employeeResponse?: string;
+  appealSubmitted: boolean;
+  appealDate?: string;
+  appealOutcome?: string;
+  finalDecision: string;
+  impactOnRecord: RecordImpact;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type DisciplinaryActionType = 
+  | 'verbal_warning'
+  | 'written_warning'
+  | 'final_warning'
+  | 'suspension'
+  | 'demotion'
+  | 'salary_reduction'
+  | 'termination'
+  | 'counseling'
+  | 'training_mandatory'
+  | 'transfer';
+
+export type DisciplinarySeverity = 'minor' | 'moderate' | 'major' | 'severe';
+
+export type DisciplinaryStatus = 
+  | 'investigation'
+  | 'pending_approval'
+  | 'approved'
+  | 'implemented'
+  | 'under_appeal'
+  | 'appeal_resolved'
+  | 'completed'
+  | 'dismissed';
+
+export type RecordImpact = 'temporary' | 'permanent' | 'expungeable' | 'none';
+
+export interface DisciplinaryActionForm {
+  employeeId: string;
+  actionType: DisciplinaryActionType;
+  severity: DisciplinarySeverity;
+  incidentDate: string;
+  description: string;
+  investigationDetails?: string;
+  actionTaken: string;
+  startDate: string;
+  endDate?: string;
+  followUpRequired: boolean;
+  followUpDate?: string;
+  employeeResponse?: string;
+  finalDecision: string;
+  impactOnRecord: RecordImpact;
+}
+
+export interface DisciplinaryStats {
+  totalActions: number;
+  pendingInvestigation: number;
+  activeWarnings: number;
+  suspensionsThisYear: number;
+  terminationsThisYear: number;
+  appealsInProgress: number;
+  actionsByType: Record<DisciplinaryActionType, number>;
+  actionsBySeverity: Record<DisciplinarySeverity, number>;
+}
+
 // Theme and UI Types
 export interface Theme {
   primary: string;
