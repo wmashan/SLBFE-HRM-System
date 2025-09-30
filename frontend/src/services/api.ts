@@ -2,6 +2,41 @@
 
 import { ApiResponse, PaginatedResponse, User, LoginCredentials, RegisterData } from '../types';
 
+// Salary Management Types
+interface SalaryRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  baseSalary: number;
+  allowances: number;
+  deductions: number;
+  netSalary: number;
+  paymentDate: string;
+  status: 'paid' | 'pending' | 'processing';
+}
+
+interface SalaryAdjustment {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  currentSalary: number;
+  proposedSalary: number;
+  adjustmentType: 'increase' | 'decrease' | 'bonus' | 'promotion';
+  reason: string;
+  effectiveDate: string;
+  approvedBy?: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+interface SalaryStats {
+  totalSalaryBudget: number;
+  averageSalary: number;
+  pendingPayments: number;
+  totalEmployees: number;
+}
+
 // Base API configuration
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -215,6 +250,74 @@ class ApiService {
     return this.request('/dashboard/stats');
   }
 
+  // Salary Management Methods
+  async getSalaryRecords(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+    status?: string;
+  }): Promise<ApiResponse<SalaryRecord[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<SalaryRecord[]>(`/salary/records${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getSalaryRecord(id: string): Promise<ApiResponse<SalaryRecord>> {
+    return this.request<SalaryRecord>(`/salary/records/${id}`);
+  }
+
+  async updateSalaryRecord(id: string, data: Partial<SalaryRecord>): Promise<ApiResponse<SalaryRecord>> {
+    return this.request<SalaryRecord>(`/salary/records/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getSalaryAdjustments(params?: {
+    page?: number;
+    limit?: number;
+    status?: 'pending' | 'approved' | 'rejected';
+  }): Promise<ApiResponse<SalaryAdjustment[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<SalaryAdjustment[]>(`/salary/adjustments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createSalaryAdjustment(data: Omit<SalaryAdjustment, 'id' | 'status'>): Promise<ApiResponse<SalaryAdjustment>> {
+    return this.request<SalaryAdjustment>('/salary/adjustments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async approveSalaryAdjustment(id: string): Promise<ApiResponse<SalaryAdjustment>> {
+    return this.request<SalaryAdjustment>(`/salary/adjustments/${id}/approve`, {
+      method: 'POST',
+    });
+  }
+
+  async rejectSalaryAdjustment(id: string, reason?: string): Promise<ApiResponse<SalaryAdjustment>> {
+    return this.request<SalaryAdjustment>(`/salary/adjustments/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async getSalaryStats(): Promise<ApiResponse<SalaryStats>> {
+    return this.request<SalaryStats>('/salary/stats');
+  }
+
+  async generateSalaryReport(params: {
+    startDate: string;
+    endDate: string;
+    department?: string;
+    format: 'pdf' | 'excel';
+  }): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>('/salary/reports', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
   // Application Methods
   async getApplications(params?: {
     page?: number;
@@ -292,6 +395,18 @@ export const applicationService = {
     apiService.updateApplicationStatus(id, status),
   deleteApplication: (id: string) => apiService.deleteApplication(id),
   getApplicationStats: () => apiService.getApplicationStats(),
+};
+
+export const salaryService = {
+  getSalaryRecords: (params?: any) => apiService.getSalaryRecords(params),
+  getSalaryRecord: (id: string) => apiService.getSalaryRecord(id),
+  updateSalaryRecord: (id: string, data: Partial<SalaryRecord>) => apiService.updateSalaryRecord(id, data),
+  getSalaryAdjustments: (params?: any) => apiService.getSalaryAdjustments(params),
+  createSalaryAdjustment: (data: Omit<SalaryAdjustment, 'id' | 'status'>) => apiService.createSalaryAdjustment(data),
+  approveSalaryAdjustment: (id: string) => apiService.approveSalaryAdjustment(id),
+  rejectSalaryAdjustment: (id: string, reason?: string) => apiService.rejectSalaryAdjustment(id, reason),
+  getSalaryStats: () => apiService.getSalaryStats(),
+  generateSalaryReport: (params: any) => apiService.generateSalaryReport(params),
 };
 
 export default apiService;
