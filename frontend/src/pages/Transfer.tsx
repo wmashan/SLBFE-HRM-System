@@ -91,6 +91,23 @@ const Transfer: React.FC = () => {
   const [showRequestDetails, setShowRequestDetails] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'timeline' | 'analytics'>('list');
+  
+  // New Transfer Modal States
+  const [showNewTransferModal, setShowNewTransferModal] = useState(false);
+  const [employeeSearch, setEmployeeSearch] = useState('');
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [showEmployeeSuggestions, setShowEmployeeSuggestions] = useState(false);
+  const [newTransferForm, setNewTransferForm] = useState({
+    employeeId: '',
+    grade: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+    seniorHRManager: '',
+    reason: '',
+    priority: 'Medium' as const,
+    transferType: 'Internal' as const
+  });
 
   // Sample transfer requests data
   const sampleTransferRequests: TransferRequest[] = [
@@ -307,6 +324,113 @@ const Transfer: React.FC = () => {
     }
   ];
 
+  // Sample employee data for search
+  const sampleEmployees = [
+    {
+      id: 'EMP001',
+      employeeNumber: 'HR001',
+      name: 'Sarah Johnson',
+      position: 'HR Assistant',
+      department: 'Human Resources',
+      branch: 'Head Office',
+      grade: 'Grade 3',
+      email: 'sarah.johnson@slbfe.com',
+      phone: '+94 11 234 5678'
+    },
+    {
+      id: 'EMP002',
+      employeeNumber: 'IT001',
+      name: 'Michael Chen',
+      position: 'Software Developer',
+      department: 'IT',
+      branch: 'Head Office',
+      grade: 'Grade 4',
+      email: 'michael.chen@slbfe.com',
+      phone: '+94 11 234 5679'
+    },
+    {
+      id: 'EMP003',
+      employeeNumber: 'FN001',
+      name: 'Emily Rodriguez',
+      position: 'Accountant',
+      department: 'Finance',
+      branch: 'Branch B',
+      grade: 'Grade 3',
+      email: 'emily.rodriguez@slbfe.com',
+      phone: '+94 11 234 5680'
+    },
+    {
+      id: 'EMP004',
+      employeeNumber: 'MK001',
+      name: 'David Kumar',
+      position: 'Marketing Specialist',
+      department: 'Marketing',
+      branch: 'Regional Office',
+      grade: 'Grade 3',
+      email: 'david.kumar@slbfe.com',
+      phone: '+94 11 234 5681'
+    },
+    {
+      id: 'EMP005',
+      employeeNumber: 'OP001',
+      name: 'Lisa Wong',
+      position: 'Operations Manager',
+      department: 'Operations',
+      branch: 'Head Office',
+      grade: 'Grade 5',
+      email: 'lisa.wong@slbfe.com',
+      phone: '+94 11 234 5682'
+    },
+    {
+      id: 'EMP006',
+      employeeNumber: 'CS001',
+      name: 'James Wilson',
+      position: 'Customer Service Rep',
+      department: 'Customer Service',
+      branch: 'Branch A',
+      grade: 'Grade 2',
+      email: 'james.wilson@slbfe.com',
+      phone: '+94 11 234 5683'
+    },
+    {
+      id: 'EMP007',
+      employeeNumber: 'QA001',
+      name: 'Amanda Taylor',
+      position: 'QA Team Lead',
+      department: 'Quality Assurance',
+      branch: 'Head Office',
+      grade: 'Grade 4',
+      email: 'amanda.taylor@slbfe.com',
+      phone: '+94 11 234 5684'
+    },
+    {
+      id: 'EMP008',
+      employeeNumber: 'SC001',
+      name: 'Robert Brown',
+      position: 'Security Supervisor',
+      department: 'Security',
+      branch: 'Regional Office',
+      grade: 'Grade 3',
+      email: 'robert.brown@slbfe.com',
+      phone: '+94 11 234 5685'
+    }
+  ];
+
+  // Grade options
+  const gradeOptions = ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'];
+  
+  // Location options
+  const locationOptions = ['Head Office', 'Regional Office', 'Branch A', 'Branch B', 'Branch C', 'Branch D', 'Branch E'];
+  
+  // Senior HR Manager options
+  const seniorHRManagers = [
+    'Mr. Rajesh Perera - Senior HR Manager',
+    'Ms. Priya Fernando - Regional HR Head', 
+    'Mr. Chaminda Silva - HR Director',
+    'Ms. Nisha Jayawardena - Deputy HR Manager',
+    'Mr. Sunil Wickramasinghe - HR Operations Head'
+  ];
+
   // Transfer types and their colors
   const transferTypes = ['All', 'Internal', 'Branch', 'Department', 'Position', 'Promotion'];
   const statusTypes = ['All', 'Pending', 'In Review', 'Approved', 'Rejected', 'Completed'];
@@ -491,6 +615,104 @@ const Transfer: React.FC = () => {
     setRejectionReason('');
   };
 
+  // New Transfer Modal Handlers
+  const openNewTransferModal = () => {
+    setShowNewTransferModal(true);
+    resetNewTransferForm();
+  };
+
+  const closeNewTransferModal = () => {
+    setShowNewTransferModal(false);
+    resetNewTransferForm();
+  };
+
+  const resetNewTransferForm = () => {
+    setNewTransferForm({
+      employeeId: '',
+      grade: '',
+      location: '',
+      startDate: '',
+      endDate: '',
+      seniorHRManager: '',
+      reason: '',
+      priority: 'Medium',
+      transferType: 'Internal'
+    });
+    setEmployeeSearch('');
+    setSelectedEmployee(null);
+    setShowEmployeeSuggestions(false);
+  };
+
+  // Employee search functionality
+  const handleEmployeeSearch = (searchTerm: string) => {
+    setEmployeeSearch(searchTerm);
+    setShowEmployeeSuggestions(searchTerm.length > 0);
+  };
+
+  const selectEmployee = (employee: any) => {
+    setSelectedEmployee(employee);
+    setEmployeeSearch(`${employee.employeeNumber} - ${employee.name}`);
+    setNewTransferForm(prev => ({ ...prev, employeeId: employee.id }));
+    setShowEmployeeSuggestions(false);
+  };
+
+  const filteredEmployees = sampleEmployees.filter(emp => 
+    emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+    emp.employeeNumber.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+    emp.department.toLowerCase().includes(employeeSearch.toLowerCase())
+  );
+
+  // Form validation
+  const isFormValid = () => {
+    return newTransferForm.employeeId &&
+           newTransferForm.grade &&
+           newTransferForm.location &&
+           newTransferForm.startDate &&
+           newTransferForm.endDate &&
+           newTransferForm.seniorHRManager &&
+           newTransferForm.reason.trim().length > 0 &&
+           new Date(newTransferForm.endDate) > new Date(newTransferForm.startDate);
+  };
+
+  // Submit new transfer request
+  const handleSubmitTransfer = () => {
+    if (!isFormValid()) {
+      alert('Please fill in all required fields and ensure end date is after start date.');
+      return;
+    }
+
+    const newTransferRequest: TransferRequest = {
+      id: `TR${(transferRequests.length + 1).toString().padStart(3, '0')}`,
+      employeeId: selectedEmployee.id,
+      employeeName: selectedEmployee.name,
+      employeeNumber: selectedEmployee.employeeNumber,
+      currentPosition: selectedEmployee.position,
+      currentDepartment: selectedEmployee.department,
+      currentBranch: selectedEmployee.branch,
+      requestedPosition: selectedEmployee.position, // Same position for grade/location change
+      requestedDepartment: selectedEmployee.department,
+      requestedBranch: newTransferForm.location,
+      transferType: newTransferForm.transferType,
+      reason: newTransferForm.reason,
+      status: 'Pending',
+      requestDate: new Date().toISOString().split('T')[0],
+      proposedDate: newTransferForm.startDate,
+      priority: newTransferForm.priority,
+      impactAssessment: 'Pending assessment by senior HR manager',
+      requiresTraining: false,
+      budgetImpact: 0,
+      managerApproval: false,
+      hrApproval: false,
+      financeApproval: false,
+      documents: []
+    };
+
+    setTransferRequests(prev => [newTransferRequest, ...prev]);
+    closeNewTransferModal();
+    
+    alert(`Transfer request submitted successfully! \nRequest ID: ${newTransferRequest.id}\nSent to: ${newTransferForm.seniorHRManager}\nTransfer will be effective from: ${newTransferForm.startDate}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -504,7 +726,10 @@ const Transfer: React.FC = () => {
             <Download className="w-4 h-4" />
             <span>Export</span>
           </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+          <button 
+            onClick={openNewTransferModal}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+          >
             <Plus className="w-4 h-4" />
             <span>New Transfer</span>
           </button>
@@ -1124,6 +1349,231 @@ const Transfer: React.FC = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Transfer Modal */}
+      {showNewTransferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-900">Create New Transfer Request</h3>
+              <button
+                onClick={closeNewTransferModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmitTransfer(); }} className="space-y-6">
+                {/* Employee Search Section */}
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                    <Search className="w-5 h-5 mr-2 text-blue-600" />
+                    Employee Search
+                  </h4>
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Search Employee by ID, Name, or Department *</label>
+                    <input
+                      type="text"
+                      value={employeeSearch}
+                      onChange={(e) => handleEmployeeSearch(e.target.value)}
+                      placeholder="Type employee number, name, or department..."
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                    
+                    {/* Employee Suggestions */}
+                    {showEmployeeSuggestions && filteredEmployees.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        {filteredEmployees.slice(0, 5).map(employee => (
+                          <div
+                            key={employee.id}
+                            onClick={() => selectEmployee(employee)}
+                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-gray-900">{employee.name}</div>
+                                <div className="text-sm text-gray-600">{employee.employeeNumber} • {employee.position}</div>
+                                <div className="text-xs text-gray-500">{employee.department} - {employee.branch}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-medium text-blue-600">{employee.grade}</div>
+                                <div className="text-xs text-gray-500">{employee.email}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Selected Employee Details */}
+                  {selectedEmployee && (
+                    <div className="mt-4 bg-white rounded-md border p-4">
+                      <h5 className="font-medium text-gray-900 mb-2">Selected Employee Details</h5>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-gray-600">Name:</span> <span className="font-medium">{selectedEmployee.name}</span></div>
+                        <div><span className="text-gray-600">Employee ID:</span> <span className="font-medium">{selectedEmployee.employeeNumber}</span></div>
+                        <div><span className="text-gray-600">Position:</span> <span className="font-medium">{selectedEmployee.position}</span></div>
+                        <div><span className="text-gray-600">Department:</span> <span className="font-medium">{selectedEmployee.department}</span></div>
+                        <div><span className="text-gray-600">Current Branch:</span> <span className="font-medium">{selectedEmployee.branch}</span></div>
+                        <div><span className="text-gray-600">Current Grade:</span> <span className="font-medium">{selectedEmployee.grade}</span></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Transfer Details Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Grade Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select New Grade *</label>
+                    <select
+                      value={newTransferForm.grade}
+                      onChange={(e) => setNewTransferForm(prev => ({ ...prev, grade: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Choose Grade...</option>
+                      {gradeOptions.map(grade => (
+                        <option key={grade} value={grade}>{grade}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Location Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select New Location *</label>
+                    <select
+                      value={newTransferForm.location}
+                      onChange={(e) => setNewTransferForm(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Choose Location...</option>
+                      {locationOptions.map(location => (
+                        <option key={location} value={location}>{location}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Start Date */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Transfer Start Date *</label>
+                    <input
+                      type="date"
+                      value={newTransferForm.startDate}
+                      onChange={(e) => setNewTransferForm(prev => ({ ...prev, startDate: e.target.value }))}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+
+                  {/* End Date */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Transfer End Date *</label>
+                    <input
+                      type="date"
+                      value={newTransferForm.endDate}
+                      onChange={(e) => setNewTransferForm(prev => ({ ...prev, endDate: e.target.value }))}
+                      min={newTransferForm.startDate || new Date().toISOString().split('T')[0]}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Transfer Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Transfer Type *</label>
+                    <select
+                      value={newTransferForm.transferType}
+                      onChange={(e) => setNewTransferForm(prev => ({ ...prev, transferType: e.target.value as any }))}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="Internal">Internal Transfer</option>
+                      <option value="Branch">Branch Transfer</option>
+                      <option value="Department">Department Transfer</option>
+                      <option value="Position">Position Transfer</option>
+                      <option value="Promotion">Promotion</option>
+                    </select>
+                  </div>
+
+                  {/* Priority */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                    <select
+                      value={newTransferForm.priority}
+                      onChange={(e) => setNewTransferForm(prev => ({ ...prev, priority: e.target.value as any }))}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                      <option value="Urgent">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Senior HR Manager Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Send to Senior HR Manager for Approval *</label>
+                  <select
+                    value={newTransferForm.seniorHRManager}
+                    onChange={(e) => setNewTransferForm(prev => ({ ...prev, seniorHRManager: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select Senior HR Manager...</option>
+                    {seniorHRManagers.map(manager => (
+                      <option key={manager} value={manager}>{manager}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Transfer Reason */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Transfer Reason *</label>
+                  <textarea
+                    value={newTransferForm.reason}
+                    onChange={(e) => setNewTransferForm(prev => ({ ...prev, reason: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    rows={4}
+                    placeholder="Provide detailed reason for the transfer request..."
+                    required
+                  />
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex justify-end space-x-4 pt-6 border-t">
+                  <button
+                    type="button"
+                    onClick={closeNewTransferModal}
+                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!isFormValid()}
+                    className={`px-6 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center space-x-2 ${
+                      isFormValid() 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Submit Transfer Request</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
