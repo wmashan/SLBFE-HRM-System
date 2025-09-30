@@ -56,6 +56,62 @@ interface UpcomingIncrement {
   approvedBy?: string;
 }
 
+// Retirement Management Types
+interface RetirementRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  dateOfBirth: string;
+  joinDate: string;
+  currentAge: number;
+  yearsOfService: number;
+  retirementEligibilityDate: string;
+  plannedRetirementDate?: string;
+  retirementType: 'mandatory' | 'voluntary' | 'early' | 'medical';
+  status: 'active' | 'pre_retirement' | 'retired' | 'extended';
+  pensionEligible: boolean;
+  currentSalary: number;
+  estimatedPension?: number;
+  lastWorkingDay?: string;
+  notificationSent: boolean;
+  handoverStatus?: 'not_started' | 'in_progress' | 'completed';
+}
+
+interface RetirementBenefit {
+  id: string;
+  employeeId: string;
+  benefitType: 'pension' | 'gratuity' | 'leave_encashment' | 'medical' | 'other';
+  amount: number;
+  eligibilityDate: string;
+  status: 'eligible' | 'not_eligible' | 'processed' | 'pending';
+  description: string;
+}
+
+interface RetirementPlanning {
+  id: string;
+  employeeId: string;
+  plannedRetirementDate: string;
+  handoverPlan: string;
+  replacementIdentified: boolean;
+  replacementEmployeeId?: string;
+  knowledgeTransferPlan: string;
+  exitInterviewScheduled: boolean;
+  benefitsProcessed: boolean;
+  status: 'planning' | 'in_progress' | 'completed';
+  notes?: string;
+}
+
+interface RetirementStats {
+  totalUpcoming: number;
+  pendingNotifications: number;
+  inPreRetirement: number;
+  totalRetired: number;
+  upcomingThisYear: number;
+  pensionLiability: number;
+}
+
 // Base API configuration
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -392,6 +448,111 @@ class ApiService {
     });
   }
 
+  // Retirement Management Methods
+  async getRetirementRecords(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+    status?: 'active' | 'pre_retirement' | 'retired' | 'extended';
+    upcomingMonths?: number;
+  }): Promise<ApiResponse<RetirementRecord[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<RetirementRecord[]>(`/retirement/records${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getRetirementRecord(id: string): Promise<ApiResponse<RetirementRecord>> {
+    return this.request<RetirementRecord>(`/retirement/records/${id}`);
+  }
+
+  async updateRetirementRecord(id: string, data: Partial<RetirementRecord>): Promise<ApiResponse<RetirementRecord>> {
+    return this.request<RetirementRecord>(`/retirement/records/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getUpcomingRetirements(months: number = 24): Promise<ApiResponse<RetirementRecord[]>> {
+    return this.request<RetirementRecord[]>(`/retirement/upcoming?months=${months}`);
+  }
+
+  async getRetirementNotifications(): Promise<ApiResponse<RetirementRecord[]>> {
+    return this.request<RetirementRecord[]>('/retirement/notifications');
+  }
+
+  async sendRetirementNotification(employeeId: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/retirement/notify/${employeeId}`, {
+      method: 'POST',
+    });
+  }
+
+  async getRetirementBenefits(employeeId?: string): Promise<ApiResponse<RetirementBenefit[]>> {
+    const endpoint = employeeId ? `/retirement/benefits?employeeId=${employeeId}` : '/retirement/benefits';
+    return this.request<RetirementBenefit[]>(endpoint);
+  }
+
+  async createRetirementBenefit(data: Omit<RetirementBenefit, 'id'>): Promise<ApiResponse<RetirementBenefit>> {
+    return this.request<RetirementBenefit>('/retirement/benefits', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRetirementBenefit(id: string, data: Partial<RetirementBenefit>): Promise<ApiResponse<RetirementBenefit>> {
+    return this.request<RetirementBenefit>(`/retirement/benefits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getRetirementPlanning(employeeId?: string): Promise<ApiResponse<RetirementPlanning[]>> {
+    const endpoint = employeeId ? `/retirement/planning?employeeId=${employeeId}` : '/retirement/planning';
+    return this.request<RetirementPlanning[]>(endpoint);
+  }
+
+  async createRetirementPlan(data: Omit<RetirementPlanning, 'id'>): Promise<ApiResponse<RetirementPlanning>> {
+    return this.request<RetirementPlanning>('/retirement/planning', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRetirementPlan(id: string, data: Partial<RetirementPlanning>): Promise<ApiResponse<RetirementPlanning>> {
+    return this.request<RetirementPlanning>(`/retirement/planning/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async calculatePension(employeeId: string, retirementDate: string): Promise<ApiResponse<{
+    monthlyPension: number;
+    lumpSum: number;
+    gratuity: number;
+    totalBenefits: number;
+  }>> {
+    return this.request(`/retirement/calculate-pension`, {
+      method: 'POST',
+      body: JSON.stringify({ employeeId, retirementDate }),
+    });
+  }
+
+  async getRetirementStats(): Promise<ApiResponse<RetirementStats>> {
+    return this.request<RetirementStats>('/retirement/stats');
+  }
+
+  async generateRetirementReport(params: {
+    startDate?: string;
+    endDate?: string;
+    department?: string;
+    reportType: 'forecast' | 'benefits' | 'planning';
+    format: 'pdf' | 'excel';
+  }): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>('/retirement/reports', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
   // Application Methods
   async getApplications(params?: {
     page?: number;
@@ -490,6 +651,24 @@ export const salaryService = {
   markIncrementNotified: (id: string) => apiService.markIncrementNotified(id),
   getIncrementNotifications: () => apiService.getIncrementNotifications(),
   processIncrement: (id: string) => apiService.processIncrement(id),
+};
+
+export const retirementService = {
+  getRetirementRecords: (params?: any) => apiService.getRetirementRecords(params),
+  getRetirementRecord: (id: string) => apiService.getRetirementRecord(id),
+  updateRetirementRecord: (id: string, data: Partial<RetirementRecord>) => apiService.updateRetirementRecord(id, data),
+  getUpcomingRetirements: (months?: number) => apiService.getUpcomingRetirements(months),
+  getRetirementNotifications: () => apiService.getRetirementNotifications(),
+  sendRetirementNotification: (employeeId: string) => apiService.sendRetirementNotification(employeeId),
+  getRetirementBenefits: (employeeId?: string) => apiService.getRetirementBenefits(employeeId),
+  createRetirementBenefit: (data: Omit<RetirementBenefit, 'id'>) => apiService.createRetirementBenefit(data),
+  updateRetirementBenefit: (id: string, data: Partial<RetirementBenefit>) => apiService.updateRetirementBenefit(id, data),
+  getRetirementPlanning: (employeeId?: string) => apiService.getRetirementPlanning(employeeId),
+  createRetirementPlan: (data: Omit<RetirementPlanning, 'id'>) => apiService.createRetirementPlan(data),
+  updateRetirementPlan: (id: string, data: Partial<RetirementPlanning>) => apiService.updateRetirementPlan(id, data),
+  calculatePension: (employeeId: string, retirementDate: string) => apiService.calculatePension(employeeId, retirementDate),
+  getRetirementStats: () => apiService.getRetirementStats(),
+  generateRetirementReport: (params: any) => apiService.generateRetirementReport(params),
 };
 
 export default apiService;

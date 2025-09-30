@@ -10,7 +10,8 @@ import {
   Bell,
   TrendingUp,
   RotateCcw,
-  DollarSign
+  DollarSign,
+  UserMinus
 } from 'lucide-react';
 
 // Import dashboard page components
@@ -23,6 +24,7 @@ import Recruitment from './dashboard/Recruitment';
 import Schedule from './dashboard/Schedule';
 import SettingsPage from './dashboard/Settings';
 import SalaryManagement from './SalaryManagement';
+import RetirementManagement from './RetirementManagement';
 
 const HRManagerDashboard = () => {
   const navigate = useNavigate();
@@ -165,6 +167,18 @@ const HRManagerDashboard = () => {
               </button>
               
               <button
+                onClick={() => setActiveTab('retirement')}
+                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'retirement' 
+                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <UserMinus className="w-5 h-5 mr-3" />
+                Retirement Management
+              </button>
+              
+              <button
                 onClick={() => setActiveTab('recruitment')}
                 className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
                   activeTab === 'recruitment' 
@@ -212,6 +226,7 @@ const HRManagerDashboard = () => {
           {activeTab === 'leave' && <StaffLeave />}
           {activeTab === 'transfer' && <Transfer />}
           {activeTab === 'salary' && <SalaryManagement />}
+          {activeTab === 'retirement' && <RetirementManagement />}
           {activeTab === 'recruitment' && <Recruitment />}
           {activeTab === 'schedule' && <Schedule />}
           {activeTab === 'settings' && <SettingsPage />}
