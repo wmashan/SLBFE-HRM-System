@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isLoading, error: authError } = useAuth();
+  const { login, isLoading, error: authError, getDashboardPath } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -32,21 +32,9 @@ const LoginPage = () => {
         password: formData.password,
       });
 
-      // Get user data to determine navigation
-      const userData = localStorage.getItem('slbfe_user_data');
-      if (userData) {
-        const user = JSON.parse(userData);
-        // Route based on user role
-        if (user.role === 'hr' || user.role === 'senior_hr_manager') {
-          navigate('/hr-dashboard');
-        } else if (user.role === 'employee') {
-          navigate('/employee-dashboard');
-        } else {
-          navigate('/dashboard');
-        }
-      } else {
-        navigate('/dashboard');
-      }
+      // Use the new getDashboardPath function for role-based navigation
+      const dashboardPath = getDashboardPath();
+      navigate(dashboardPath);
     } catch (error) {
       console.error('Login failed:', error);
       setError('Invalid username or password. Please try again.');
@@ -83,6 +71,7 @@ const LoginPage = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <h3 className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials:</h3>
             <div className="text-xs space-y-1 text-blue-700">
+              <div><strong>System Admin:</strong> admin / admin123</div>
               <div><strong>HR Manager:</strong> hrmanager / hrpass123</div>
               <div><strong>Senior HR Manager:</strong> seniorhrmanager / seniorhrpass123</div>
               <div><strong>Employee:</strong> employee / emp123</div>

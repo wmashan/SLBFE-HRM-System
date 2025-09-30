@@ -133,7 +133,7 @@ export interface NavigationItem {
   id: string;
   label: string;
   path: string;
-  icon?: React.ComponentType;
+  icon?: React.ComponentType<{ className?: string; }>;
   children?: NavigationItem[];
   roles?: UserRole[];
 }
@@ -754,6 +754,318 @@ export type DocumentCategory =
   | 'training_certificates'
   | 'tax_documents'
   | 'other';
+
+// Admin-specific Types
+export interface SystemConfig {
+  id: string;
+  category: SystemConfigCategory;
+  key: string;
+  value: string | number | boolean;
+  description: string;
+  isEditable: boolean;
+  lastModified: Date;
+  modifiedBy: string;
+}
+
+export type SystemConfigCategory = 
+  | 'general'
+  | 'security'
+  | 'email'
+  | 'backup'
+  | 'performance'
+  | 'integration'
+  | 'compliance';
+
+export interface SystemMetrics {
+  totalUsers: number;
+  activeUsers: number;
+  totalEmployees: number;
+  totalBranches: number;
+  totalDepartments: number;
+  systemUptime: number;
+  lastBackup: Date;
+  storageUsed: number;
+  storageTotal: number;
+  recentActivities: AdminActivity[];
+  securityAlerts: SecurityAlert[];
+}
+
+export interface AdminActivity {
+  id: string;
+  action: AdminActionType;
+  performedBy: string;
+  targetResource: string;
+  resourceId: string;
+  timestamp: Date;
+  ipAddress: string;
+  userAgent: string;
+  details?: Record<string, any>;
+}
+
+export type AdminActionType = 
+  | 'user_created'
+  | 'user_updated'
+  | 'user_deleted'
+  | 'user_activated'
+  | 'user_deactivated'
+  | 'role_assigned'
+  | 'role_revoked'
+  | 'system_config_updated'
+  | 'backup_created'
+  | 'backup_restored'
+  | 'security_policy_updated'
+  | 'audit_log_accessed'
+  | 'bulk_operation'
+  | 'data_export'
+  | 'data_import';
+
+export interface SecurityAlert {
+  id: string;
+  type: SecurityAlertType;
+  severity: AlertSeverity;
+  message: string;
+  timestamp: Date;
+  resolved: boolean;
+  resolvedBy?: string;
+  resolvedAt?: Date;
+  details?: Record<string, any>;
+}
+
+export type SecurityAlertType = 
+  | 'failed_login_attempts'
+  | 'unauthorized_access'
+  | 'suspicious_activity'
+  | 'data_breach_attempt'
+  | 'system_vulnerability'
+  | 'compliance_violation';
+
+export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
+
+export interface UserManagementData {
+  users: AdminUserView[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  filters: UserFilter;
+  statistics: UserStatistics;
+}
+
+export interface AdminUserView extends User {
+  lastActivity: Date;
+  sessionsActive: number;
+  totalLogins: number;
+  accountLocked: boolean;
+  passwordLastChanged: Date;
+  twoFactorEnabled: boolean;
+  permissions: Permission[];
+  groups: UserGroup[];
+}
+
+export interface UserFilter {
+  role?: UserRole;
+  status?: 'active' | 'inactive' | 'locked';
+  department?: string;
+  branch?: string;
+  createdAfter?: Date;
+  createdBefore?: Date;
+  lastLoginAfter?: Date;
+  lastLoginBefore?: Date;
+}
+
+export interface UserStatistics {
+  totalUsers: number;
+  usersByRole: Record<UserRole, number>;
+  activeUsers: number;
+  lockedUsers: number;
+  newUsersThisMonth: number;
+  loginActivity: LoginActivityStats;
+}
+
+export interface LoginActivityStats {
+  todayLogins: number;
+  weeklyLogins: number;
+  monthlyLogins: number;
+  averageSessionDuration: number;
+  peakHours: Array<{ hour: number; logins: number; }>;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  resource: string;
+  action: PermissionAction;
+  granted: boolean;
+  inheritedFrom?: string;
+}
+
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'execute' | 'approve';
+
+export interface UserGroup {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  memberCount: number;
+  createdAt: Date;
+}
+
+export interface SystemAudit {
+  id: string;
+  timestamp: Date;
+  userId: string;
+  userName: string;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  previousValue?: any;
+  newValue?: any;
+  ipAddress: string;
+  userAgent: string;
+  sessionId: string;
+  success: boolean;
+  errorMessage?: string;
+}
+
+export interface BackupConfig {
+  id: string;
+  name: string;
+  description: string;
+  schedule: BackupSchedule;
+  retention: BackupRetention;
+  includeFiles: boolean;
+  includeDatabase: boolean;
+  encryptBackup: boolean;
+  storageLocation: BackupStorageType;
+  isActive: boolean;
+  lastBackup?: Date;
+  nextScheduledBackup?: Date;
+  status: BackupStatus;
+}
+
+export interface BackupSchedule {
+  frequency: 'daily' | 'weekly' | 'monthly';
+  time: string; // HH:mm format
+  dayOfWeek?: number; // For weekly backups
+  dayOfMonth?: number; // For monthly backups
+  timezone: string;
+}
+
+export interface BackupRetention {
+  keepDaily: number;
+  keepWeekly: number;
+  keepMonthly: number;
+  keepYearly: number;
+}
+
+export type BackupStorageType = 'local' | 'cloud' | 'network';
+export type BackupStatus = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface AdminDashboardStats {
+  systemHealth: SystemHealth;
+  userActivity: UserActivitySummary;
+  securityOverview: SecurityOverview;
+  recentActions: AdminActivity[];
+  systemAlerts: SystemAlert[];
+  performanceMetrics: PerformanceMetrics;
+}
+
+export interface SystemHealth {
+  cpuUsage: number;
+  memoryUsage: number;
+  diskUsage: number;
+  databaseStatus: 'healthy' | 'warning' | 'error';
+  serviceStatus: ServiceStatus[];
+  uptime: number;
+  lastHealthCheck: Date;
+}
+
+export interface ServiceStatus {
+  name: string;
+  status: 'running' | 'stopped' | 'error';
+  lastChecked: Date;
+  responseTime?: number;
+}
+
+export interface UserActivitySummary {
+  activeUsers: number;
+  onlineUsers: number;
+  totalSessions: number;
+  avgSessionDuration: number;
+  peakConcurrentUsers: number;
+  activityTrend: Array<{ date: string; users: number; }>;
+}
+
+export interface SecurityOverview {
+  totalAlerts: number;
+  criticalAlerts: number;
+  resolvedToday: number;
+  pendingAlerts: number;
+  failedLogins: number;
+  suspiciousActivities: number;
+  securityScore: number;
+}
+
+export interface SystemAlert {
+  id: string;
+  type: SystemAlertType;
+  severity: AlertSeverity;
+  message: string;
+  timestamp: Date;
+  acknowledged: boolean;
+  acknowledgedBy?: string;
+  details?: Record<string, any>;
+}
+
+export type SystemAlertType = 
+  | 'system_error'
+  | 'performance_degradation'
+  | 'storage_full'
+  | 'backup_failed'
+  | 'security_breach'
+  | 'service_unavailable'
+  | 'maintenance_required';
+
+export interface PerformanceMetrics {
+  responseTime: number;
+  throughput: number;
+  errorRate: number;
+  concurrentUsers: number;
+  databaseConnections: number;
+  cacheHitRate: number;
+  queueSize: number;
+}
+
+export interface BulkUserOperation {
+  id: string;
+  operation: BulkOperationType;
+  targetUsers: string[];
+  parameters: Record<string, any>;
+  status: BulkOperationStatus;
+  progress: number;
+  totalUsers: number;
+  processedUsers: number;
+  successfulOperations: number;
+  failedOperations: number;
+  errors: Array<{ userId: string; error: string; }>;
+  startedAt: Date;
+  completedAt?: Date;
+  initiatedBy: string;
+}
+
+export type BulkOperationType = 
+  | 'activate_users'
+  | 'deactivate_users'
+  | 'reset_passwords'
+  | 'assign_role'
+  | 'revoke_role'
+  | 'delete_users'
+  | 'send_notification'
+  | 'export_data';
+
+export type BulkOperationStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 // Employee Report Generation Types
 export interface EmployeeReportRequest {

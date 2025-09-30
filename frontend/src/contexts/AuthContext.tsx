@@ -98,6 +98,8 @@ interface AuthContextType extends AuthState {
   forgotPassword: (email: string) => Promise<void>;
   clearError: () => void;
   loadUser: () => Promise<void>;
+  getDashboardPath: () => string;
+  hasRole: (role: string | string[]) => boolean;
 }
 
 // Create context
@@ -190,6 +192,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
+  const getDashboardPath = (): string => {
+    if (!state.user) return '/login';
+    
+    switch (state.user.role) {
+      case 'admin':
+        return '/admin-dashboard';
+      case 'hr':
+      case 'senior_hr_manager':
+      case 'training_coordinator':
+      case 'branch_manager':
+      case 'program_manager':
+        return '/hr-dashboard';
+      case 'employee':
+        return '/employee-dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
+  const hasRole = (role: string | string[]): boolean => {
+    if (!state.user) return false;
+    
+    if (Array.isArray(role)) {
+      return role.includes(state.user.role);
+    }
+    
+    return state.user.role === role;
+  };
+
   const value: AuthContextType = {
     ...state,
     login,
@@ -198,6 +229,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     forgotPassword,
     clearError,
     loadUser,
+    getDashboardPath,
+    hasRole,
   };
 
   return (

@@ -4,6 +4,7 @@ import UserAccountCreation from './pages/UserAccountCreation';
 import LoginPage from './pages/LoginPage';
 import HRManagerDashboard from './pages/HRManagerDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
@@ -27,6 +28,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['employee']}>
                 <EmployeeDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin-dashboard" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
               </ProtectedRoute>
             } 
           />
