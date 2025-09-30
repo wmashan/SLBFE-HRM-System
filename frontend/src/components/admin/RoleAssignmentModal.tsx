@@ -37,21 +37,6 @@ const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
       value: 'senior_hr_manager', 
       label: 'Senior HR Manager', 
       description: 'Advanced HR management including reports and disciplinary actions' 
-    },
-    { 
-      value: 'training_coordinator', 
-      label: 'Training Coordinator', 
-      description: 'Training program management and coordination' 
-    },
-    { 
-      value: 'branch_manager', 
-      label: 'Branch Manager', 
-      description: 'Branch-level management and oversight' 
-    },
-    { 
-      value: 'program_manager', 
-      label: 'Program Manager', 
-      description: 'Program and project management responsibilities' 
     }
   ];
 

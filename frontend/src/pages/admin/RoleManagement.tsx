@@ -45,30 +45,6 @@ const RoleManagement: React.FC = () => {
       permissions: ['All HR permissions', 'Disciplinary actions', 'Advanced reports'],
       color: 'bg-purple-100 text-purple-800',
       count: 0
-    },
-    {
-      role: 'training_coordinator' as UserRole,
-      name: 'Training Coordinator',
-      description: 'Training program management and coordination',
-      permissions: ['Manage training programs', 'Schedule training', 'Track certifications'],
-      color: 'bg-orange-100 text-orange-800',
-      count: 0
-    },
-    {
-      role: 'branch_manager' as UserRole,
-      name: 'Branch Manager',
-      description: 'Branch-level management and oversight',
-      permissions: ['Manage branch operations', 'Employee oversight', 'Branch reports'],
-      color: 'bg-green-100 text-green-800',
-      count: 0
-    },
-    {
-      role: 'program_manager' as UserRole,
-      name: 'Program Manager',
-      description: 'Program and project management responsibilities',
-      permissions: ['Manage programs', 'Resource allocation', 'Strategic planning'],
-      color: 'bg-indigo-100 text-indigo-800',
-      count: 0
     }
   ];
 
