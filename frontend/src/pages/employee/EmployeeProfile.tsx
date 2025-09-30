@@ -9,7 +9,17 @@ import {
   Edit3, 
   Save, 
   X,
-  Camera
+  Camera,
+  CreditCard,
+  GraduationCap,
+  Briefcase,
+  Shield,
+  UserCheck,
+  Heart,
+  Globe,
+  DollarSign,
+  FileText,
+  Users
 } from 'lucide-react';
 
 interface EmployeeData {
@@ -24,6 +34,45 @@ interface EmployeeData {
   mobile: string;
   joinDate: string;
   status: string;
+  // Personal Details
+  dateOfBirth: string;
+  gender: string;
+  maritalStatus: string;
+  nationality: string;
+  nic: string;
+  passportNo?: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  // Employment Details
+  employeeType: string;
+  workLocation: string;
+  reportingManager: string;
+  department: string;
+  grade: string;
+  basicSalary: number;
+  // Emergency Contact
+  emergencyContactName: string;
+  emergencyContactRelation: string;
+  emergencyContactPhone: string;
+  // Qualifications
+  qualifications: Array<{
+    degree: string;
+    institution: string;
+    year: string;
+    field: string;
+  }>;
+  // Work Experience (before current position)
+  previousExperience: Array<{
+    company: string;
+    position: string;
+    duration: string;
+    description: string;
+  }>;
+  // Bank Details
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
 }
 
 interface EmployeeProfileProps {
