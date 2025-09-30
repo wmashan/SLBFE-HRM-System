@@ -10,7 +10,10 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  Calendar
+  Calendar,
+  MapPin,
+  ArrowRight,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -19,6 +22,7 @@ import EmployeeApplications from './employee/EmployeeApplications';
 import EmployeeProfile from './employee/EmployeeProfileReadOnly';
 import EmployeeNotifications from './employee/EmployeeNotifications';
 import LeaveManagement from './employee/LeaveManagement';
+import TransferNotificationCard from '../components/employee/TransferNotificationCard';
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
@@ -102,10 +106,45 @@ const EmployeeDashboard = () => {
     }
   ];
 
-  // Sample notifications
+  // Sample notifications with transfer details
   const notifications = [
     {
       id: 1,
+      title: 'Upcoming Transfer - Kandy Branch',
+      message: 'Your approved transfer to Kandy Branch is scheduled for November 15, 2024. Please review transfer details and requirements.',
+      date: '2024-10-01',
+      type: 'warning',
+      read: false,
+      isTransfer: true,
+      transferDetails: {
+        fromBranch: 'Colombo Main Branch',
+        toBranch: 'Kandy Branch',
+        transferDate: '2024-11-15',
+        reportingDate: '2024-11-15',
+        reportingTime: '09:00 AM',
+        newDesignation: 'Senior Software Engineer',
+        newDepartment: 'IT Operations',
+        newReportingManager: 'Mr. Kumara Wijesekara',
+        newAddress: 'No. 45, Peradeniya Road, Kandy 20000',
+        contactPerson: 'Ms. Nayani Silva',
+        contactNumber: '+94 81 223 4567',
+        contactEmail: 'nayani.silva@slbfe.lk',
+        requirements: [
+          'Complete handover of current projects',
+          'Return all company assets to Colombo office',
+          'Attend knowledge transfer sessions',
+          'Complete online compliance training'
+        ],
+        documents: [
+          'Transfer order copy',
+          'New office location map',
+          'Accommodation assistance guide',
+          'Local contact directory'
+        ]
+      }
+    },
+    {
+      id: 2,
       title: 'Leave Application Approved',
       message: 'Your annual leave request has been approved by HR.',
       date: '2024-09-26',
@@ -113,7 +152,7 @@ const EmployeeDashboard = () => {
       read: false
     },
     {
-      id: 2,
+      id: 3,
       title: 'Training Opportunity',
       message: 'New training programs available for IT staff.',
       date: '2024-09-25',
@@ -121,7 +160,7 @@ const EmployeeDashboard = () => {
       read: true
     },
     {
-      id: 3,
+      id: 4,
       title: 'Policy Update',
       message: 'Updated company policies have been published.',
       date: '2024-09-24',
@@ -347,6 +386,14 @@ const EmployeeDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Transfer Notifications */}
+              {notifications.filter(notif => notif.isTransfer && !notif.read).map((transferNotif) => (
+                <TransferNotificationCard 
+                  key={transferNotif.id} 
+                  notification={transferNotif} 
+                />
+              ))}
 
               {/* Recent Applications */}
               <div className="bg-white rounded-lg shadow">

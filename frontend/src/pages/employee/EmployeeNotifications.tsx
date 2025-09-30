@@ -6,7 +6,9 @@ import {
   Info, 
   Check, 
   Trash2,
-  Mail
+  Mail,
+  MapPin,
+  AlertTriangle
 } from 'lucide-react';
 
 interface Notification {
@@ -16,6 +18,8 @@ interface Notification {
   date: string;
   type: 'success' | 'warning' | 'info';
   read: boolean;
+  isTransfer?: boolean;
+  transferDetails?: any;
 }
 
 interface EmployeeNotificationsProps {
@@ -26,8 +30,12 @@ const EmployeeNotifications: React.FC<EmployeeNotificationsProps> = ({ notificat
   const [notificationList, setNotificationList] = useState(notifications);
   const [filter, setFilter] = useState('all');
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
+  const getNotificationIcon = (notification: Notification) => {
+    if (notification.isTransfer) {
+      return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+    }
+    
+    switch (notification.type) {
       case 'success':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'warning':
@@ -168,20 +176,47 @@ const EmployeeNotifications: React.FC<EmployeeNotificationsProps> = ({ notificat
               <div
                 key={notification.id}
                 className={`p-6 hover:bg-gray-50 transition-colors ${
-                  !notification.read ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                  !notification.read 
+                    ? notification.isTransfer 
+                      ? 'bg-orange-50 border-l-4 border-orange-500' 
+                      : 'bg-blue-50 border-l-4 border-blue-500'
+                    : ''
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
-                    {getNotificationIcon(notification.type)}
+                    {getNotificationIcon(notification)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                        {notification.isTransfer && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            Transfer
+                          </span>
+                        )}
                         {!notification.read && (
                           <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                         )}
                       </div>
                       <p className="text-gray-700 mb-2">{notification.message}</p>
+                      {notification.isTransfer && notification.transferDetails && (
+                        <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-600">
+                                <strong>From:</strong> {notification.transferDetails.fromBranch}
+                              </span>
+                              <span className="text-gray-600">
+                                <strong>To:</strong> {notification.transferDetails.toBranch}
+                              </span>
+                              <span className="text-gray-600">
+                                <strong>Date:</strong> {new Date(notification.transferDetails.transferDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <p className="text-xs text-gray-500">{notification.date}</p>
                     </div>
                   </div>
