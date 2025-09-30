@@ -61,14 +61,17 @@ interface RetirementRecord {
   id: string;
   employeeId: string;
   employeeName: string;
+  title: string;
   department: string;
   position: string;
   dateOfBirth: string;
   joinDate: string;
+  serviceConfirmationDate?: string;
   currentAge: number;
   yearsOfService: number;
   retirementEligibilityDate: string;
   plannedRetirementDate?: string;
+  actualRetirementDate?: string;
   retirementType: 'mandatory' | 'voluntary' | 'early' | 'medical';
   status: 'active' | 'pre_retirement' | 'retired' | 'extended';
   pensionEligible: boolean;
@@ -76,7 +79,15 @@ interface RetirementRecord {
   estimatedPension?: number;
   lastWorkingDay?: string;
   notificationSent: boolean;
+  threeMonthNotificationSent: boolean;
   handoverStatus?: 'not_started' | 'in_progress' | 'completed';
+  // SLBFE specific fields
+  epfNumber?: string;
+  etfNumber?: string;
+  serviceWithSLBFE: string; // Service duration as of specific date
+  serviceAsAtDate: string; // The date as of which service is calculated
+  confirmationLetterIssued: boolean;
+  confirmationLetterDate?: string;
 }
 
 interface RetirementBenefit {
@@ -486,6 +497,16 @@ class ApiService {
     });
   }
 
+  async sendThreeMonthNotification(employeeId: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/retirement/notify-three-month/${employeeId}`, {
+      method: 'POST',
+    });
+  }
+
+  async getThreeMonthNotifications(): Promise<ApiResponse<RetirementRecord[]>> {
+    return this.request<RetirementRecord[]>('/retirement/three-month-notifications');
+  }
+
   async getRetirementBenefits(employeeId?: string): Promise<ApiResponse<RetirementBenefit[]>> {
     const endpoint = employeeId ? `/retirement/benefits?employeeId=${employeeId}` : '/retirement/benefits';
     return this.request<RetirementBenefit[]>(endpoint);
@@ -660,6 +681,8 @@ export const retirementService = {
   getUpcomingRetirements: (months?: number) => apiService.getUpcomingRetirements(months),
   getRetirementNotifications: () => apiService.getRetirementNotifications(),
   sendRetirementNotification: (employeeId: string) => apiService.sendRetirementNotification(employeeId),
+  sendThreeMonthNotification: (employeeId: string) => apiService.sendThreeMonthNotification(employeeId),
+  getThreeMonthNotifications: () => apiService.getThreeMonthNotifications(),
   getRetirementBenefits: (employeeId?: string) => apiService.getRetirementBenefits(employeeId),
   createRetirementBenefit: (data: Omit<RetirementBenefit, 'id'>) => apiService.createRetirementBenefit(data),
   updateRetirementBenefit: (id: string, data: Partial<RetirementBenefit>) => apiService.updateRetirementBenefit(id, data),
