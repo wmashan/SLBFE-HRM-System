@@ -7,6 +7,7 @@ import EmployeeDashboard from './pages/EmployeeDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
 import RoleManagement from './pages/admin/RoleManagement';
+import BackupRestore from './pages/admin/BackupRestore';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
@@ -54,6 +55,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <RoleManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/backup" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <BackupRestore />
               </ProtectedRoute>
             } 
           />

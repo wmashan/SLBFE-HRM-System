@@ -446,7 +446,10 @@ const AdminDashboard: React.FC = () => {
               <span className="text-sm font-medium text-gray-700">System Config</span>
             </button>
             
-            <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => navigate('/admin/backup')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Database className="w-8 h-8 text-green-600 mb-2" />
               <span className="text-sm font-medium text-gray-700">Backup & Restore</span>
             </button>

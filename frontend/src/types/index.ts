@@ -1134,3 +1134,157 @@ export interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   children: React.ReactNode;
 }
+
+// Backup & Restore Types
+export interface BackupItem {
+  id: string;
+  name: string;
+  type: BackupType;
+  size: string;
+  createdAt: Date;
+  status: BackupItemStatus;
+  description?: string;
+  filePath: string;
+  isAutomatic: boolean;
+  restorePoints: RestorePoint[];
+  checksum?: string;
+  encrypted?: boolean;
+  compressionRatio?: number;
+  createdBy?: string;
+}
+
+export type BackupType = 'full' | 'database' | 'files' | 'configuration' | 'incremental';
+
+export type BackupItemStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled' | 'expired';
+
+export interface RestorePoint {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: Date;
+  backupId: string;
+  systemVersion: string;
+  databaseVersion: string;
+  configVersion: string;
+  canRestore: boolean;
+  restoreEstimatedTime: number; // in minutes
+  dependencies: string[];
+}
+
+export interface BackupScheduleConfig {
+  id: string;
+  name: string;
+  backupType: BackupType;
+  schedule: {
+    frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
+    time: string; // HH:mm format
+    dayOfWeek?: number; // 0-6 for weekly
+    dayOfMonth?: number; // 1-31 for monthly
+    customCron?: string;
+    timezone: string;
+  };
+  retention: {
+    keepDaily: number;
+    keepWeekly: number;
+    keepMonthly: number;
+    keepYearly: number;
+    maxSize: number; // in GB
+  };
+  options: {
+    compress: boolean;
+    encrypt: boolean;
+    verify: boolean;
+    includeFiles: boolean;
+    includeDatabase: boolean;
+    includeConfiguration: boolean;
+    excludePatterns: string[];
+  };
+  notifications: {
+    onSuccess: boolean;
+    onFailure: boolean;
+    recipients: string[];
+  };
+  isActive: boolean;
+  lastRun?: Date;
+  nextRun?: Date;
+  status: 'active' | 'paused' | 'error';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BackupRestoreOperation {
+  id: string;
+  type: 'backup' | 'restore';
+  backupId?: string;
+  restorePointId?: string;
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+  progress: number; // 0-100
+  startTime: Date;
+  endTime?: Date;
+  estimatedCompletion?: Date;
+  currentStep: string;
+  totalSteps: number;
+  completedSteps: number;
+  errorMessage?: string;
+  warnings: string[];
+  logs: BackupOperationLog[];
+  performedBy: string;
+  settings: {
+    verifyIntegrity: boolean;
+    createRestorePoint: boolean;
+    notifyOnCompletion: boolean;
+  };
+}
+
+export interface BackupOperationLog {
+  timestamp: Date;
+  level: 'info' | 'warning' | 'error' | 'debug';
+  message: string;
+  component: string;
+  details?: any;
+}
+
+export interface BackupStorageInfo {
+  totalSpace: number;
+  usedSpace: number;
+  availableSpace: number;
+  backupCount: number;
+  oldestBackup?: Date;
+  newestBackup?: Date;
+  compressionRatio: number;
+  storageLocations: StorageLocation[];
+}
+
+export interface StorageLocation {
+  id: string;
+  name: string;
+  type: 'local' | 'network' | 'cloud';
+  path: string;
+  isDefault: boolean;
+  isAvailable: boolean;
+  freeSpace?: number;
+  totalSpace?: number;
+  connectionStatus: 'connected' | 'disconnected' | 'error';
+  lastChecked: Date;
+}
+
+export interface BackupVerification {
+  id: string;
+  backupId: string;
+  verificationDate: Date;
+  status: 'passed' | 'failed' | 'warning';
+  checksumMatch: boolean;
+  filesVerified: number;
+  totalFiles: number;
+  issues: VerificationIssue[];
+  verifiedBy: string;
+  verificationTime: number; // in seconds
+}
+
+export interface VerificationIssue {
+  type: 'checksum_mismatch' | 'file_missing' | 'corruption_detected' | 'access_denied';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  filePath?: string;
+  recommendation: string;
+}

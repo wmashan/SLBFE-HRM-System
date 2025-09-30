@@ -1333,6 +1333,117 @@ class ApiService {
       body: JSON.stringify(request),
     });
   }
+
+  // Backup & Restore Methods
+  async getBackups(params?: any): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params).toString() : '';
+    return this.request<any[]>(`/admin/backups${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createBackup(type: string, name: string, description?: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backups', {
+      method: 'POST',
+      body: JSON.stringify({ type, name, description }),
+    });
+  }
+
+  async deleteBackup(backupId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async downloadBackup(backupId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}/download`);
+  }
+
+  async restoreBackup(backupId: string, options?: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}/restore`, {
+      method: 'POST',
+      body: JSON.stringify(options || {}),
+    });
+  }
+
+  async getRestorePoints(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/restore-points');
+  }
+
+  async createRestorePoint(name: string, description?: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/restore-points', {
+      method: 'POST',
+      body: JSON.stringify({ name, description }),
+    });
+  }
+
+  async getBackupSchedules(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/backup-schedules');
+  }
+
+  async createBackupSchedule(schedule: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-schedules', {
+      method: 'POST',
+      body: JSON.stringify(schedule),
+    });
+  }
+
+  async updateBackupSchedule(scheduleId: string, schedule: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-schedules/${scheduleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(schedule),
+    });
+  }
+
+  async deleteBackupSchedule(scheduleId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-schedules/${scheduleId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleBackupSchedule(scheduleId: string, active: boolean): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-schedules/${scheduleId}/toggle`, {
+      method: 'PUT',
+      body: JSON.stringify({ active }),
+    });
+  }
+
+  async getBackupOperations(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/backup-operations');
+  }
+
+  async getBackupOperation(operationId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-operations/${operationId}`);
+  }
+
+  async cancelBackupOperation(operationId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-operations/${operationId}/cancel`, {
+      method: 'PUT',
+    });
+  }
+
+  async getBackupStorageInfo(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-storage');
+  }
+
+  async verifyBackup(backupId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}/verify`, {
+      method: 'POST',
+    });
+  }
+
+  async getBackupVerifications(backupId?: string): Promise<ApiResponse<any[]>> {
+    const queryString = backupId ? `?backupId=${backupId}` : '';
+    return this.request<any[]>(`/admin/backup-verifications${queryString}`);
+  }
+
+  async getBackupSystemHealth(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-system-health');
+  }
+
+  async testBackupConnectivity(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-connectivity-test', {
+      method: 'POST',
+    });
+  }
 }
 
 // Create and export API service instance
@@ -1539,6 +1650,41 @@ export const adminService = {
   getUserRoleHistory: (userId: string) => apiService.getUserRoleHistory(userId),
   getRoleAssignmentLogs: (params?: any) => apiService.getRoleAssignmentLogs(params),
   validateRoleChange: (userId: string, newRole: string) => apiService.validateRoleChange(userId, newRole),
+};
+
+// Backup Service (Admin Only)
+export const backupService = {
+  // Backup Management
+  getBackups: (params?: any) => apiService.getBackups(params),
+  createBackup: (type: string, name: string, description?: string) => apiService.createBackup(type, name, description),
+  deleteBackup: (backupId: string) => apiService.deleteBackup(backupId),
+  downloadBackup: (backupId: string) => apiService.downloadBackup(backupId),
+  
+  // Restore Operations
+  restoreBackup: (backupId: string, options?: any) => apiService.restoreBackup(backupId, options),
+  getRestorePoints: () => apiService.getRestorePoints(),
+  createRestorePoint: (name: string, description?: string) => apiService.createRestorePoint(name, description),
+  
+  // Backup Scheduling
+  getBackupSchedules: () => apiService.getBackupSchedules(),
+  createBackupSchedule: (schedule: any) => apiService.createBackupSchedule(schedule),
+  updateBackupSchedule: (scheduleId: string, schedule: any) => apiService.updateBackupSchedule(scheduleId, schedule),
+  deleteBackupSchedule: (scheduleId: string) => apiService.deleteBackupSchedule(scheduleId),
+  toggleBackupSchedule: (scheduleId: string, active: boolean) => apiService.toggleBackupSchedule(scheduleId, active),
+  
+  // Backup Operations
+  getBackupOperations: () => apiService.getBackupOperations(),
+  getBackupOperation: (operationId: string) => apiService.getBackupOperation(operationId),
+  cancelBackupOperation: (operationId: string) => apiService.cancelBackupOperation(operationId),
+  
+  // Storage and Verification
+  getBackupStorageInfo: () => apiService.getBackupStorageInfo(),
+  verifyBackup: (backupId: string) => apiService.verifyBackup(backupId),
+  getBackupVerifications: (backupId?: string) => apiService.getBackupVerifications(backupId),
+  
+  // System Health
+  getBackupSystemHealth: () => apiService.getBackupSystemHealth(),
+  testBackupConnectivity: () => apiService.testBackupConnectivity(),
 };
 
 export default apiService;
