@@ -282,6 +282,16 @@ class ApiService {
     // Demo users for development
     const demoUsers = [
       {
+        id: 'admin001',
+        username: 'admin',
+        email: 'admin@slbfe.com',
+        fullName: 'System Administrator',
+        role: 'admin' as const,
+        isActive: true,
+        createdAt: new Date('2022-01-01'),
+        updatedAt: new Date('2024-09-30')
+      },
+      {
         id: 'hr001',
         username: 'hrmanager',
         email: 'hrmanager@slbfe.com',
@@ -316,6 +326,7 @@ class ApiService {
     // Check demo credentials
     const user = demoUsers.find(u => {
       if (u.username === credentials.username) {
+        if (u.role === 'admin' && credentials.password === 'admin123') return true;
         if (u.role === 'hr' && credentials.password === 'hrpass123') return true;
         if (u.role === 'senior_hr_manager' && credentials.password === 'seniorhrpass123') return true;
         if (u.role === 'employee' && credentials.password === 'emp123') return true;
