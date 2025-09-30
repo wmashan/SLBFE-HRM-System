@@ -36,9 +36,11 @@ const LoginPage = () => {
       const userData = localStorage.getItem('slbfe_user_data');
       if (userData) {
         const user = JSON.parse(userData);
-        // Both HR Manager and Senior HR Manager use the same dashboard
+        // Route based on user role
         if (user.role === 'hr' || user.role === 'senior_hr_manager') {
           navigate('/hr-dashboard');
+        } else if (user.role === 'employee') {
+          navigate('/employee-dashboard');
         } else {
           navigate('/dashboard');
         }
