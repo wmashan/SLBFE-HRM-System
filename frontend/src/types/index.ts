@@ -248,6 +248,7 @@ export interface ReportConfig {
 
 export type ReportType = 
   | 'employee_summary'
+  | 'comprehensive_employee_report'
   | 'attendance_analysis'
   | 'salary_analysis'
   | 'disciplinary_summary'

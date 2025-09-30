@@ -160,6 +160,30 @@ const Reports: React.FC = () => {
           createdBy: 'Sarah Williams',
           createdAt: new Date('2024-06-30'),
           updatedAt: new Date('2024-09-10')
+        },
+        {
+          id: 'RPT006',
+          name: 'Comprehensive Employee Report',
+          type: 'comprehensive_employee_report',
+          category: 'hr_analytics',
+          description: 'Generate detailed individual employee reports including personal details, service history, transfer records, disciplinary actions, performance reviews, salary history, and all available employee data',
+          parameters: [
+            { name: 'employeeId', label: 'Employee', type: 'select', required: true, options: [
+              { value: 'EMP001', label: 'John Doe (EMP001)' },
+              { value: 'EMP002', label: 'Jane Smith (EMP002)' },
+              { value: 'EMP003', label: 'Mike Johnson (EMP003)' }
+            ]},
+            { name: 'includeConfidential', label: 'Include Confidential Information', type: 'boolean', required: false, defaultValue: true },
+            { name: 'includeSalaryDetails', label: 'Include Salary Details', type: 'boolean', required: false, defaultValue: true },
+            { name: 'includePerformanceHistory', label: 'Include Performance History', type: 'boolean', required: false, defaultValue: true },
+            { name: 'includeDisciplinaryHistory', label: 'Include Disciplinary History', type: 'boolean', required: false, defaultValue: true }
+          ],
+          outputFormats: ['pdf', 'excel', 'csv'],
+          accessLevel: 'senior_hr_manager',
+          isActive: true,
+          createdBy: 'Sarah Williams',
+          createdAt: new Date('2024-09-30'),
+          updatedAt: new Date('2024-09-30')
         }
       ];
 
@@ -266,6 +290,8 @@ const Reports: React.FC = () => {
     switch (type) {
       case 'employee_summary':
         return <Users className="w-5 h-5" />;
+      case 'comprehensive_employee_report':
+        return <Database className="w-5 h-5" />;
       case 'salary_analysis':
         return <DollarSign className="w-5 h-5" />;
       case 'disciplinary_summary':
@@ -292,10 +318,6 @@ const Reports: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const handleEmployeeReport = () => {
-    setShowEmployeeReportModal(true);
-  };
-
   const handleEmployeeReportGenerated = () => {
     // Refresh generations list
     // This would normally fetch updated data from the API
@@ -308,8 +330,14 @@ const Reports: React.FC = () => {
   };
 
   const handleGenerateReport = (report: ReportConfig) => {
-    setSelectedReport(report);
-    setShowGenerateModal(true);
+    // Check if it's the Employee Report (RPT006) - open Employee Report Modal
+    if (report.id === 'RPT006' || report.name === 'Comprehensive Employee Report') {
+      setShowEmployeeReportModal(true);
+    } else {
+      // For all other reports, use the regular generate modal
+      setSelectedReport(report);
+      setShowGenerateModal(true);
+    }
   };
 
   if (isLoading) {
@@ -335,16 +363,10 @@ const Reports: React.FC = () => {
             <p className="text-sm text-gray-600">Generate and manage comprehensive HR analytics and reports</p>
           </div>
         </div>
-        <div className="flex space-x-3">
-          <Button onClick={handleEmployeeReport} variant="secondary" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
-            <Users className="w-4 h-4 mr-2" />
-            Employee Report
-          </Button>
-          <Button onClick={handleCreateReport} className="bg-indigo-600 hover:bg-indigo-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Report
-          </Button>
-        </div>
+        <Button onClick={handleCreateReport} className="bg-indigo-600 hover:bg-indigo-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Report
+        </Button>
       </div>
 
       {/* Analytics Overview */}
@@ -457,6 +479,7 @@ const Reports: React.FC = () => {
                 >
                   <option value="all">All Types</option>
                   <option value="employee_summary">Employee Summary</option>
+                  <option value="comprehensive_employee_report">Comprehensive Employee Report</option>
                   <option value="salary_analysis">Salary Analysis</option>
                   <option value="disciplinary_summary">Disciplinary Summary</option>
                   <option value="recruitment_metrics">Recruitment Metrics</option>
