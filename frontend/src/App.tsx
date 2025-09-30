@@ -13,6 +13,8 @@ function App() {
           <Route path="/create-account" element={<UserAccountCreation />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/hr-dashboard" element={<HRManagerDashboard />} />
+          {/* Default dashboard route for backward compatibility */}
+          <Route path="/dashboard" element={<HRManagerDashboard />} />
         </Routes>
       </div>
     </Router>

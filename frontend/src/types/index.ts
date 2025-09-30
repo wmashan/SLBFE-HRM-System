@@ -15,6 +15,7 @@ export interface User {
 export type UserRole = 
   | 'employee' 
   | 'hr' 
+  | 'senior_hr_manager'
   | 'training_coordinator' 
   | 'branch_manager' 
   | 'program_manager' 

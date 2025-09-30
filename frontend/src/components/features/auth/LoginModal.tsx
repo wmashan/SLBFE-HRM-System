@@ -40,7 +40,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           password: formData.password,
         });
         onClose();
-        navigate('/dashboard');
+        
+        // Get user data to determine navigation
+        const userData = localStorage.getItem('slbfe_user_data');
+        if (userData) {
+          const user = JSON.parse(userData);
+          // Both HR Manager and Senior HR Manager use the same dashboard
+          if (user.role === 'hr' || user.role === 'senior_hr_manager') {
+            navigate('/hr-dashboard');
+          } else {
+            navigate('/dashboard');
+          }
+        } else {
+          navigate('/dashboard');
+        }
       } catch (error) {
         console.error('Login failed:', error);
       }
@@ -79,6 +92,27 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           }
         </p>
       </div>
+
+      {/* Demo Credentials Section */}
+      {loginMode === 'login' && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="text-sm font-semibold text-blue-800 mb-3">Demo Credentials:</h4>
+          <div className="text-xs text-blue-700 space-y-2">
+            <div className="flex justify-between">
+              <span className="font-medium">HR Manager:</span>
+              <span>hrmanager / hrpass123</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Senior HR Manager:</span>
+              <span>seniorhrmanager / seniorhrpass123</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Employee:</span>
+              <span>employee / emp123</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">

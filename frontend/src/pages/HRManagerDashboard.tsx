@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
@@ -31,11 +31,40 @@ import StaffLoanManagement from './StaffLoanManagement';
 const HRManagerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [userInfo, setUserInfo] = useState({
+    fullName: 'HR Manager',
+    role: 'hr',
+    initials: 'HM'
+  });
+
+  useEffect(() => {
+    // Get user data from localStorage
+    const userData = localStorage.getItem('slbfe_user_data');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setUserInfo({
+        fullName: user.fullName || 'HR Manager',
+        role: user.role,
+        initials: user.role === 'senior_hr_manager' ? 'SHR' : 'HM'
+      });
+    }
+  }, []);
 
   const handleLogout = () => {
     // Clear any stored authentication data
     localStorage.removeItem('userRole');
+    localStorage.removeItem('slbfe_auth_token');
+    localStorage.removeItem('slbfe_user_data');
     navigate('/');
+  };
+
+  // Get display text based on role
+  const getDashboardTitle = () => {
+    return userInfo.role === 'senior_hr_manager' ? 'Senior HR Manager Dashboard' : 'HR Manager Dashboard';
+  };
+
+  const getUserRoleDisplay = () => {
+    return userInfo.role === 'senior_hr_manager' ? 'Senior HR Manager' : 'HR Manager';
   };
 
   // Sample data for badge display
@@ -56,7 +85,7 @@ const HRManagerDashboard = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">SLBFE HRM</h1>
-                  <p className="text-sm text-gray-600">HR Manager Dashboard</p>
+                  <p className="text-sm text-gray-600">{getDashboardTitle()}</p>
                 </div>
               </div>
             </div>
@@ -70,10 +99,14 @@ const HRManagerDashboard = () => {
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-medium text-sm">HM</span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  userInfo.role === 'senior_hr_manager' ? 'bg-purple-100' : 'bg-blue-100'
+                }`}>
+                  <span className={`font-medium text-sm ${
+                    userInfo.role === 'senior_hr_manager' ? 'text-purple-600' : 'text-blue-600'
+                  }`}>{userInfo.initials}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">HR Manager</span>
+                <span className="text-sm font-medium text-gray-700">{getUserRoleDisplay()}</span>
               </div>
               
               <button

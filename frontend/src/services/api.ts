@@ -279,18 +279,86 @@ class ApiService {
 
   // Authentication Methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
-    const response = await this.request<{ user: User; token: string }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
+    // Demo users for development
+    const demoUsers = [
+      {
+        id: 'hr001',
+        username: 'hrmanager',
+        email: 'hrmanager@slbfe.com',
+        fullName: 'John Anderson',
+        role: 'hr' as const,
+        isActive: true,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2024-09-30')
+      },
+      {
+        id: 'shr001',
+        username: 'seniorhrmanager',
+        email: 'seniorhrmanager@slbfe.com',
+        fullName: 'Sarah Williams',
+        role: 'senior_hr_manager' as const,
+        isActive: true,
+        createdAt: new Date('2022-06-15'),
+        updatedAt: new Date('2024-09-30')
+      },
+      {
+        id: 'emp001',
+        username: 'employee',
+        email: 'employee@slbfe.com',
+        fullName: 'Mike Johnson',
+        role: 'employee' as const,
+        isActive: true,
+        createdAt: new Date('2023-03-10'),
+        updatedAt: new Date('2024-09-30')
+      }
+    ];
+
+    // Check demo credentials
+    const user = demoUsers.find(u => {
+      if (u.username === credentials.username) {
+        if (u.role === 'hr' && credentials.password === 'hrpass123') return true;
+        if (u.role === 'senior_hr_manager' && credentials.password === 'seniorhrpass123') return true;
+        if (u.role === 'employee' && credentials.password === 'emp123') return true;
+      }
+      return false;
     });
 
-    if (response.success && response.data) {
-      this.token = response.data.token;
+    if (user) {
+      const token = 'demo_token_' + user.id + '_' + Date.now();
+      const response = {
+        success: true,
+        data: { user, token },
+        message: 'Login successful'
+      };
+
+      this.token = token;
       localStorage.setItem('slbfe_auth_token', this.token);
-      localStorage.setItem('slbfe_user_data', JSON.stringify(response.data.user));
+      localStorage.setItem('slbfe_user_data', JSON.stringify(user));
+
+      return response;
     }
 
-    return response;
+    // Fallback to API call for production
+    try {
+      const response = await this.request<{ user: User; token: string }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+
+      if (response.success && response.data) {
+        this.token = response.data.token;
+        localStorage.setItem('slbfe_auth_token', this.token);
+        localStorage.setItem('slbfe_user_data', JSON.stringify(response.data.user));
+      }
+
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Invalid username or password',
+        error: 'Authentication failed'
+      };
+    }
   }
 
   async register(userData: RegisterData): Promise<ApiResponse<User>> {

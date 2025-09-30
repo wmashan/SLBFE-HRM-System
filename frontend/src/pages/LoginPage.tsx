@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login, isLoading, error: authError } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,26 +24,31 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError('');
 
-    // Simulate API call delay
-    setTimeout(() => {
-      if (formData.username === 'hrmanager' && formData.password === 'hrpass123') {
-        // Store user role for navigation
-        localStorage.setItem('userRole', 'hrmanager');
-        navigate('/hr-dashboard');
-      } else if (formData.username === 'admin' && formData.password === 'admin123') {
-        localStorage.setItem('userRole', 'admin');
-        alert('Admin dashboard not implemented yet');
-      } else if (formData.username === 'employee' && formData.password === 'emp123') {
-        localStorage.setItem('userRole', 'employee');
-        alert('Employee dashboard not implemented yet');
+    try {
+      await login({
+        username: formData.username,
+        password: formData.password,
+      });
+
+      // Get user data to determine navigation
+      const userData = localStorage.getItem('slbfe_user_data');
+      if (userData) {
+        const user = JSON.parse(userData);
+        // Both HR Manager and Senior HR Manager use the same dashboard
+        if (user.role === 'hr' || user.role === 'senior_hr_manager') {
+          navigate('/hr-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        setError('Invalid username or password. Please try again.');
+        navigate('/dashboard');
       }
-      setIsSubmitting(false);
-    }, 1000);
+    } catch (error) {
+      console.error('Login failed:', error);
+      setError('Invalid username or password. Please try again.');
+    }
   };
 
   return (
@@ -76,15 +82,15 @@ const LoginPage = () => {
             <h3 className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials:</h3>
             <div className="text-xs space-y-1 text-blue-700">
               <div><strong>HR Manager:</strong> hrmanager / hrpass123</div>
-              <div><strong>Admin:</strong> admin / admin123</div>
+              <div><strong>Senior HR Manager:</strong> seniorhrmanager / seniorhrpass123</div>
               <div><strong>Employee:</strong> employee / emp123</div>
             </div>
           </div>
 
           {/* Error Message */}
-          {error && (
+          {(error || authError) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-700 text-sm">{error || authError}</p>
             </div>
           )}
 
@@ -163,10 +169,10 @@ const LoginPage = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isLoading}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isSubmitting ? (
+              {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Signing In...
