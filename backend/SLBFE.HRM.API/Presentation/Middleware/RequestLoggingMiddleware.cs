@@ -1,7 +1,7 @@
 using Serilog;
 using System.Diagnostics;
 
-namespace SLBFE.HRM.API.Middleware
+namespace SLBFE.HRM.API.Presentation.Middleware
 {
     public class RequestLoggingMiddleware
     {

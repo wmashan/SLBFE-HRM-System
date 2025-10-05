@@ -7,8 +7,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
-using SLBFE.HRM.API.Data;
-using SLBFE.HRM.API.Middleware;
+using SLBFE.HRM.API.Infrastructure.Data.Context;
+using SLBFE.HRM.API.Infrastructure.Configuration;
+using SLBFE.HRM.API.Presentation.Extensions;
+using SLBFE.HRM.API.Presentation.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -191,6 +193,9 @@ builder.Services.AddSwaggerGen(c =>
 // builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 // etc.
 
+// Register Infrastructure Services
+builder.Services.AddInfrastructure();
+
 // Data Protection
 builder.Services.AddDataProtection();
 
@@ -220,8 +225,7 @@ else
 }
 
 // Custom Middleware
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseCustomMiddleware();
 
 // Security Headers
 app.Use(async (context, next) =>

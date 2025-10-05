@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.Json;
 using Serilog;
 
-namespace SLBFE.HRM.API.Middleware
+namespace SLBFE.HRM.API.Presentation.Middleware
 {
     public class ExceptionHandlingMiddleware
     {

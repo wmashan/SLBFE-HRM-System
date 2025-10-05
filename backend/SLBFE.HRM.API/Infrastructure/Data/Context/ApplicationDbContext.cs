@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace SLBFE.HRM.API.Data
+namespace SLBFE.HRM.API.Infrastructure.Data.Context
 {
     public class ApplicationDbContext : DbContext
     {
