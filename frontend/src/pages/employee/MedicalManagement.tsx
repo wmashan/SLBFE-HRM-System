@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Activity
 } from 'lucide-react';
+import { generateMedicalClaimPDF, MedicalFormData } from '../../utils/medicalFormPDF';
 
 interface MedicalRequest {
   id: number;
@@ -37,6 +38,17 @@ interface MedicalRequest {
   paymentReference?: string;
   rejectionReason?: string;
   attachments: string[];
+  // New fields
+  employeeNumber?: string;
+  employeeFullName?: string;
+  employeeAddress?: string;
+  patientName?: string;
+  patientDateOfBirth?: string;
+  patientSex?: string;
+  isGovernmentHospital?: boolean;
+  hospitalizationFromDate?: string;
+  hospitalizationToDate?: string;
+  chargesBreakdown?: string;
 }
 
 interface MedicalBalance {
@@ -173,18 +185,36 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
 
   const MedicalApplicationModal = () => {
     const [formData, setFormData] = useState({
-      requestType: '',
-      treatmentDate: '',
-      medicalProvider: '',
-      diagnosis: '',
-      description: '',
-      claimedAmount: '',
+      employeeNo: 'E2024001',
+      employeeFullName: 'John Doe',
+      employeeAddress: 'No. 123, Colombo Road, Colombo 07',
+      patientName: '',
+      patientDOBDay: '',
+      patientDOBMonth: '',
+      patientDOBYear: '',
+      patientSex: '' as 'M' | 'F' | '',
+      hospitalName: '',
+      isGovernmentHospital: false,
+      hospitalizationFromDay: '',
+      hospitalizationFromMonth: '',
+      hospitalizationFromYear: '',
+      hospitalizationToDay: '',
+      hospitalizationToMonth: '',
+      hospitalizationToYear: '',
+      totalCharges: '',
+      chargesBreakdown: '',
       attachments: [] as File[]
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target;
-      setFormData(prev => ({ ...prev, [name]: value }));
+      const { name, value, type } = e.target;
+      
+      if (type === 'checkbox') {
+        const checked = (e.target as HTMLInputElement).checked;
+        setFormData(prev => ({ ...prev, [name]: checked }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,24 +227,50 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
       console.log('Submitting medical request:', formData);
       // Here you would call the API to create the medical request
       setShowApplicationModal(false);
-      setFormData({
-        requestType: '',
-        treatmentDate: '',
-        medicalProvider: '',
-        diagnosis: '',
-        description: '',
-        claimedAmount: '',
-        attachments: []
-      });
+    };
+
+    const handleDownloadPDF = () => {
+      const pdfData: MedicalFormData = {
+        employeeNo: formData.employeeNo,
+        employeeFullName: formData.employeeFullName,
+        employeeAddress: formData.employeeAddress,
+        patientName: formData.patientName,
+        patientDOB: {
+          day: formData.patientDOBDay,
+          month: formData.patientDOBMonth,
+          year: formData.patientDOBYear
+        },
+        patientSex: formData.patientSex as 'M' | 'F',
+        hospitalName: formData.hospitalName,
+        isGovernmentHospital: formData.isGovernmentHospital,
+        hospitalizationFrom: {
+          day: formData.hospitalizationFromDay,
+          month: formData.hospitalizationFromMonth,
+          year: formData.hospitalizationFromYear
+        },
+        hospitalizationTo: {
+          day: formData.hospitalizationToDay,
+          month: formData.hospitalizationToMonth,
+          year: formData.hospitalizationToYear
+        },
+        totalCharges: formData.totalCharges,
+        chargesBreakdown: formData.chargesBreakdown,
+        date: new Date().toLocaleDateString('en-GB')
+      };
+
+      generateMedicalClaimPDF(pdfData);
     };
 
     if (!showApplicationModal) return null;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Apply for Medical Reimbursement</h3>
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Surgical & Hospital Expenses Claim Form</h3>
+              <p className="text-sm text-gray-600">Form No: HR/F/08</p>
+            </div>
             <button
               onClick={() => setShowApplicationModal(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -224,114 +280,311 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Medical Request Type <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="requestType"
-                  value={formData.requestType}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Type</option>
-                  <option value="Hospitalization">Hospitalization</option>
-                  <option value="OutpatientTreatment">Outpatient Treatment</option>
-                  <option value="Prescription">Prescription</option>
-                  <option value="Surgery">Surgery</option>
-                  <option value="DentalTreatment">Dental Treatment</option>
-                  <option value="OpticalTreatment">Optical Treatment</option>
-                  <option value="Laboratory">Laboratory Tests</option>
-                  <option value="Imaging">Medical Imaging</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+            {/* Employee Information */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+              <h4 className="text-sm font-semibold text-blue-900 mb-3">Employee Information</h4>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Employee No <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="employeeNo"
+                    value={formData.employeeNo}
+                    onChange={handleInputChange}
+                    required
+                    readOnly
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Treatment Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="treatmentDate"
-                  value={formData.treatmentDate}
-                  onChange={handleInputChange}
-                  required
-                  max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name of Employee <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="employeeFullName"
+                    value={formData.employeeFullName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Medical Provider/Hospital <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="medicalProvider"
-                  value={formData.medicalProvider}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="e.g., Asiri Central Hospital"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Claimed Amount (LKR) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="claimedAmount"
-                  value={formData.claimedAmount}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="employeeAddress"
+                    value={formData.employeeAddress}
+                    onChange={handleInputChange}
+                    required
+                    rows={2}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Diagnosis <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="diagnosis"
-                value={formData.diagnosis}
-                onChange={handleInputChange}
-                required
-                placeholder="Brief diagnosis or reason for treatment"
-                maxLength={500}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            {/* Section 2: Person in Respect of Whom Claim is Made */}
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+              <h4 className="text-sm font-semibold text-green-900 mb-3">2. Person in Respect of Whom Claim is Made</h4>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="patientName"
+                    value={formData.patientName}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Full name of patient"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date of Birth <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        name="patientDOBDay"
+                        value={formData.patientDOBDay}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="DD"
+                        maxLength={2}
+                        className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                      />
+                      <input
+                        type="text"
+                        name="patientDOBMonth"
+                        value={formData.patientDOBMonth}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="MM"
+                        maxLength={2}
+                        className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                      />
+                      <input
+                        type="text"
+                        name="patientDOBYear"
+                        value={formData.patientDOBYear}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="YYYY"
+                        maxLength={4}
+                        className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Sex <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-6 mt-3">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="patientSex"
+                          value="M"
+                          checked={formData.patientSex === 'M'}
+                          onChange={handleInputChange}
+                          required
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-gray-700">Male (M)</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="patientSex"
+                          value="F"
+                          checked={formData.patientSex === 'F'}
+                          onChange={handleInputChange}
+                          required
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-gray-700">Female (F)</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                rows={4}
-                placeholder="Provide detailed description of the medical treatment and expenses..."
-                maxLength={1000}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.description.length}/1000 characters
-              </p>
+            {/* Section 3: General */}
+            <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+              <h4 className="text-sm font-semibold text-purple-900 mb-3">3. General</h4>
+              
+              <div className="space-y-4">
+                {/* a. Name of the Hospital */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    a. Name of the Hospital <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="hospitalName"
+                    value={formData.hospitalName}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g., Asiri Central Hospital"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* b. Is it a Government Hospital? */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    b. Is it a Government Hospital? <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="isGovernmentHospital"
+                        value="true"
+                        checked={formData.isGovernmentHospital === true}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isGovernmentHospital: true }))}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-gray-700">Yes</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="isGovernmentHospital"
+                        value="false"
+                        checked={formData.isGovernmentHospital === false}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isGovernmentHospital: false }))}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-gray-700">No</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* c. Period of Hospitalization */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    c. Period of Hospitalization
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">From</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          name="hospitalizationFromDay"
+                          value={formData.hospitalizationFromDay}
+                          onChange={handleInputChange}
+                          placeholder="DD"
+                          maxLength={2}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-sm"
+                        />
+                        <input
+                          type="text"
+                          name="hospitalizationFromMonth"
+                          value={formData.hospitalizationFromMonth}
+                          onChange={handleInputChange}
+                          placeholder="MM"
+                          maxLength={2}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-sm"
+                        />
+                        <input
+                          type="text"
+                          name="hospitalizationFromYear"
+                          value={formData.hospitalizationFromYear}
+                          onChange={handleInputChange}
+                          placeholder="YYYY"
+                          maxLength={4}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">To</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          name="hospitalizationToDay"
+                          value={formData.hospitalizationToDay}
+                          onChange={handleInputChange}
+                          placeholder="DD"
+                          maxLength={2}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-sm"
+                        />
+                        <input
+                          type="text"
+                          name="hospitalizationToMonth"
+                          value={formData.hospitalizationToMonth}
+                          onChange={handleInputChange}
+                          placeholder="MM"
+                          maxLength={2}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-sm"
+                        />
+                        <input
+                          type="text"
+                          name="hospitalizationToYear"
+                          value={formData.hospitalizationToYear}
+                          onChange={handleInputChange}
+                          placeholder="YYYY"
+                          maxLength={4}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* d. Hospitalization charges */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    d. Hospitalization charges including Nursing Home charges, Surgeon's fees, Anesthetist's Operation Theatre charges, Expenses for X-Ray, ECG, Laboratory Tests, Medicines and Drugs, Fees paid to medical Practitioner and all other expenses whilst in hospital <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="chargesBreakdown"
+                    value={formData.chargesBreakdown}
+                    onChange={handleInputChange}
+                    required
+                    rows={4}
+                    placeholder="Provide detailed breakdown of all charges..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total Amount (Rs.) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="totalCharges"
+                    value={formData.totalCharges}
+                    onChange={handleInputChange}
+                    required
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
             </div>
 
+            {/* Supporting Documents */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Supporting Documents <span className="text-red-500">*</span>
@@ -345,7 +598,7 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
                     <input
                       type="file"
                       multiple
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      accept=".pdf,.jpg,.jpeg,.png"
                       onChange={handleFileChange}
                       className="hidden"
                       required
@@ -371,28 +624,30 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                Medical Reimbursement Policy Reminder:
-              </h4>
-              <ul className="text-xs text-blue-700 space-y-1">
-                <li>• Annual medical allowance: {formatCurrency(medicalBalance.annualAllowance)}</li>
-                <li>• Remaining balance: {formatCurrency(medicalBalance.remainingBalance)}</li>
-                <li>• Submit claims within 30 days of treatment</li>
-                <li>• All bills and prescriptions must be original or certified copies</li>
-                <li>• Pre-approval required for treatments exceeding LKR 25,000</li>
-                <li>• Reimbursement processed within 14 working days of approval</li>
-              </ul>
+            {/* Declaration */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">DECLARATION</h4>
+              <p className="text-xs text-gray-700 italic">
+                I declare that the particulars given herein above are true and correct to the best of my knowledge and that I have not withheld from the SLBFE any material information connected with this claim.
+              </p>
             </div>
 
+            {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
               <button
                 type="submit"
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2"
               >
                 <Heart className="w-4 h-4" />
-                Submit Medical Request
+                Submit Claim
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download as PDF
               </button>
               <button
                 type="button"
@@ -414,14 +669,14 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Medical Reimbursement</h2>
-          <p className="text-sm text-gray-600 mt-1">Manage your medical claims and view balance</p>
+          <p className="text-sm text-gray-600 mt-1">Surgical & Hospital Expenses Claims</p>
         </div>
         <button
           onClick={() => setShowApplicationModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Apply for Medical
+          New Claim Application
         </button>
       </div>
 

@@ -13,6 +13,21 @@ namespace SLBFE.HRM.API.Core.Entities
         public int EmployeeId { get; set; }
 
         /// <summary>
+        /// Employee Number
+        /// </summary>
+        public string EmployeeNumber { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Full Name of Employee
+        /// </summary>
+        public string EmployeeFullName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Employee Address
+        /// </summary>
+        public string EmployeeAddress { get; set; } = string.Empty;
+
+        /// <summary>
         /// Request number (auto-generated unique identifier)
         /// </summary>
         public string RequestNumber { get; set; } = string.Empty;
@@ -21,6 +36,22 @@ namespace SLBFE.HRM.API.Core.Entities
         /// Type of medical request
         /// </summary>
         public MedicalRequestType RequestType { get; set; }
+
+        // Person in Respect of Whom Claim is Made
+        /// <summary>
+        /// Name of the patient (can be employee or dependent)
+        /// </summary>
+        public string PatientName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Patient's date of birth
+        /// </summary>
+        public DateTime? PatientDateOfBirth { get; set; }
+
+        /// <summary>
+        /// Patient's sex (M/F)
+        /// </summary>
+        public string PatientSex { get; set; } = string.Empty;
 
         /// <summary>
         /// Date of medical treatment
@@ -33,6 +64,21 @@ namespace SLBFE.HRM.API.Core.Entities
         public string MedicalProvider { get; set; } = string.Empty;
 
         /// <summary>
+        /// Is it a Government Hospital?
+        /// </summary>
+        public bool IsGovernmentHospital { get; set; }
+
+        /// <summary>
+        /// Period of Hospitalization - From Date
+        /// </summary>
+        public DateTime? HospitalizationFromDate { get; set; }
+
+        /// <summary>
+        /// Period of Hospitalization - To Date
+        /// </summary>
+        public DateTime? HospitalizationToDate { get; set; }
+
+        /// <summary>
         /// Diagnosis or reason for treatment
         /// </summary>
         public string Diagnosis { get; set; } = string.Empty;
@@ -41,6 +87,11 @@ namespace SLBFE.HRM.API.Core.Entities
         /// Detailed description of the medical request
         /// </summary>
         public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Detailed breakdown of hospitalization charges
+        /// </summary>
+        public string ChargesBreakdown { get; set; } = string.Empty;
 
         /// <summary>
         /// Total amount claimed for reimbursement
