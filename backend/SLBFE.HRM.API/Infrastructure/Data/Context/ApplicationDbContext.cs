@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+ using Microsoft.EntityFrameworkCore;
+using SLBFE.HRM.API.Core.Entities;
 
 namespace SLBFE.HRM.API.Infrastructure.Data.Context
 {
@@ -18,6 +19,8 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
         // public DbSet<RetirementRecord> RetirementRecords { get; set; }
         // public DbSet<DisciplinaryAction> DisciplinaryActions { get; set; }
         // public DbSet<Application> Applications { get; set; }
+        
+        public DbSet<MedicalRequest> MedicalRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +39,22 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
             // modelBuilder.Entity<SalaryRecord>()
             //     .Property(s => s.BaseSalary)
             //     .HasPrecision(18, 2);
+
+            // Configure MedicalRequest entity
+            modelBuilder.Entity<MedicalRequest>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.RequestNumber).IsUnique();
+                entity.Property(e => e.RequestNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.MedicalProvider).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Diagnosis).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.ClaimedAmount).HasPrecision(18, 2);
+                entity.Property(e => e.ApprovedAmount).HasPrecision(18, 2);
+                entity.HasIndex(e => e.EmployeeId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.SubmittedDate);
+            });
 
             // Configure cascade delete behaviors
             // Configure indexes for performance

@@ -55,4 +55,19 @@ namespace SLBFE.HRM.API.Core.Exceptions
         {
         }
     }
+
+    /// <summary>
+    /// Exception thrown when a business logic constraint is violated
+    /// </summary>
+    public class BusinessException : Exception
+    {
+        public BusinessException(string message) : base(message)
+        {
+        }
+
+        public BusinessException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
 }

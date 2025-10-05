@@ -60,4 +60,32 @@ namespace SLBFE.HRM.API.Core.Enums
         Retired = 4,
         Terminated = 5
     }
+
+    /// <summary>
+    /// Medical request status
+    /// </summary>
+    public enum MedicalRequestStatus
+    {
+        Pending = 1,
+        UnderReview = 2,
+        Approved = 3,
+        Rejected = 4,
+        Paid = 5
+    }
+
+    /// <summary>
+    /// Medical request types
+    /// </summary>
+    public enum MedicalRequestType
+    {
+        Hospitalization = 1,
+        OutpatientTreatment = 2,
+        Prescription = 3,
+        Surgery = 4,
+        DentalTreatment = 5,
+        OpticalTreatment = 6,
+        Laboratory = 7,
+        Imaging = 8,
+        Other = 9
+    }
 }
