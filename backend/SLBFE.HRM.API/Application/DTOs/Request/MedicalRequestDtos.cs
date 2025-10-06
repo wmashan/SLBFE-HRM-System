@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace SLBFE.HRM.API.Application.DTOs.Request
 {
     /// <summary>
-    /// DTO for creating a new medical request
+    /// DTO for creating a new medical request - Form No: HR/F/07
     /// </summary>
     public class CreateMedicalRequestDto
     {
@@ -12,61 +12,73 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         [Required(ErrorMessage = "Employee number is required")]
         public string EmployeeNumber { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Employee full name is required")]
-        public string EmployeeFullName { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Division is required")]
+        [StringLength(100, ErrorMessage = "Division cannot exceed 100 characters")]
+        public string Division { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Employee address is required")]
-        public string EmployeeAddress { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Applicant name is required")]
+        [StringLength(200, ErrorMessage = "Applicant name cannot exceed 200 characters")]
+        public string ApplicantName { get; set; } = string.Empty;
 
-        // Person in Respect of Whom Claim is Made
+        [Required(ErrorMessage = "Marital status is required")]
+        [RegularExpression("^(Married|Unmarried)$", ErrorMessage = "Marital status must be Married or Unmarried")]
+        public string MaritalStatus { get; set; } = string.Empty;
+
+        // Patient Information
         [Required(ErrorMessage = "Patient name is required")]
         [StringLength(200, ErrorMessage = "Patient name cannot exceed 200 characters")]
         public string PatientName { get; set; } = string.Empty;
 
-        public DateTime? PatientDateOfBirth { get; set; }
+        [Required(ErrorMessage = "Relationship to applicant is required")]
+        [RegularExpression("^(Self|Spouse|Child|Parent|Other)$", ErrorMessage = "Invalid relationship")]
+        public string RelationshipToApplicant { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Patient sex is required")]
-        [RegularExpression("^(M|F)$", ErrorMessage = "Sex must be M or F")]
-        public string PatientSex { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Patient age is required")]
+        [Range(0, 120, ErrorMessage = "Age must be between 0 and 120")]
+        public int PatientAge { get; set; }
 
-        // General Hospital Information
-        [Required(ErrorMessage = "Hospital name is required")]
-        [StringLength(200, ErrorMessage = "Hospital name cannot exceed 200 characters")]
+        // Medical Treatment Details
+        [Required(ErrorMessage = "Hospital/Pharmacy/Clinic name is required")]
+        [StringLength(200, ErrorMessage = "Medical provider name cannot exceed 200 characters")]
         public string MedicalProvider { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Government hospital status is required")]
-        public bool IsGovernmentHospital { get; set; }
+        [Required(ErrorMessage = "Doctor name is required")]
+        [StringLength(200, ErrorMessage = "Doctor name cannot exceed 200 characters")]
+        public string DoctorName { get; set; } = string.Empty;
 
-        // Period of Hospitalization
-        public DateTime? HospitalizationFromDate { get; set; }
-        
-        public DateTime? HospitalizationToDate { get; set; }
-
-        // Hospitalization Charges and Details
-        [Required(ErrorMessage = "Charges breakdown is required")]
-        [StringLength(2000, ErrorMessage = "Charges breakdown cannot exceed 2000 characters")]
-        public string ChargesBreakdown { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Request type is required")]
-        public MedicalRequestType RequestType { get; set; }
+        [Required(ErrorMessage = "Diagnosis is required")]
+        [StringLength(500, ErrorMessage = "Diagnosis cannot exceed 500 characters")]
+        public string Diagnosis { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Treatment date is required")]
         public DateTime TreatmentDate { get; set; }
 
-        [StringLength(500, ErrorMessage = "Diagnosis cannot exceed 500 characters")]
-        public string? Diagnosis { get; set; }
+        [StringLength(100, ErrorMessage = "Treatment duration cannot exceed 100 characters")]
+        public string? TreatmentDuration { get; set; }
 
-        [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
-        public string? Description { get; set; }
+        // Financial Details
+        [Required(ErrorMessage = "Requested amount is required")]
+        [Range(0.01, 1000000, ErrorMessage = "Requested amount must be greater than 0 and less than 1,000,000")]
+        public decimal RequestedAmount { get; set; }
 
         [Required(ErrorMessage = "Claimed amount is required")]
         [Range(0.01, 1000000, ErrorMessage = "Claimed amount must be greater than 0 and less than 1,000,000")]
         public decimal ClaimedAmount { get; set; }
 
+        public decimal AvailableAmount { get; set; }
+
+        /// <summary>
+        /// Request type - can be inferred or set explicitly
+        /// </summary>
+        public MedicalRequestType RequestType { get; set; } = MedicalRequestType.OutpatientTreatment;
+
         /// <summary>
         /// List of attachment file paths
         /// </summary>
         public List<string>? Attachments { get; set; }
+
+        [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+        public string? Description { get; set; }
     }
 
     /// <summary>

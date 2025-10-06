@@ -4,6 +4,7 @@ namespace SLBFE.HRM.API.Core.Entities
 {
     /// <summary>
     /// Medical request entity for employee medical reimbursement applications
+    /// Form No: HR/F/07
     /// </summary>
     public class MedicalRequest : BaseEntity
     {
@@ -18,14 +19,19 @@ namespace SLBFE.HRM.API.Core.Entities
         public string EmployeeNumber { get; set; } = string.Empty;
 
         /// <summary>
-        /// Full Name of Employee
+        /// Division
         /// </summary>
-        public string EmployeeFullName { get; set; } = string.Empty;
+        public string Division { get; set; } = string.Empty;
 
         /// <summary>
-        /// Employee Address
+        /// Applicant Name
         /// </summary>
-        public string EmployeeAddress { get; set; } = string.Empty;
+        public string ApplicantName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Marital Status - Married or Unmarried
+        /// </summary>
+        public string MaritalStatus { get; set; } = string.Empty;
 
         /// <summary>
         /// Request number (auto-generated unique identifier)
@@ -37,66 +43,63 @@ namespace SLBFE.HRM.API.Core.Entities
         /// </summary>
         public MedicalRequestType RequestType { get; set; }
 
-        // Person in Respect of Whom Claim is Made
+        // Patient Information
         /// <summary>
-        /// Name of the patient (can be employee or dependent)
+        /// Name of those who received treatment
         /// </summary>
         public string PatientName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Patient's date of birth
+        /// Family relationship to the applicant (Self, Spouse, Child, Parent, Other)
         /// </summary>
-        public DateTime? PatientDateOfBirth { get; set; }
+        public string RelationshipToApplicant { get; set; } = string.Empty;
 
         /// <summary>
-        /// Patient's sex (M/F)
+        /// Patient's age
         /// </summary>
-        public string PatientSex { get; set; } = string.Empty;
+        public int PatientAge { get; set; }
 
+        // Medical Treatment Details
         /// <summary>
-        /// Date of medical treatment
-        /// </summary>
-        public DateTime TreatmentDate { get; set; }
-
-        /// <summary>
-        /// Hospital/Clinic/Provider name
+        /// Hospital/Pharmacy/Clinic where treatment was received
         /// </summary>
         public string MedicalProvider { get; set; } = string.Empty;
 
         /// <summary>
-        /// Is it a Government Hospital?
+        /// Name of the doctor who prescribed the treatment
         /// </summary>
-        public bool IsGovernmentHospital { get; set; }
+        public string DoctorName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Period of Hospitalization - From Date
-        /// </summary>
-        public DateTime? HospitalizationFromDate { get; set; }
-
-        /// <summary>
-        /// Period of Hospitalization - To Date
-        /// </summary>
-        public DateTime? HospitalizationToDate { get; set; }
-
-        /// <summary>
-        /// Diagnosis or reason for treatment
+        /// What illness were you treated for?
         /// </summary>
         public string Diagnosis { get; set; } = string.Empty;
 
         /// <summary>
-        /// Detailed description of the medical request
+        /// Date of treatment received
         /// </summary>
-        public string Description { get; set; } = string.Empty;
+        public DateTime TreatmentDate { get; set; }
 
         /// <summary>
-        /// Detailed breakdown of hospitalization charges
+        /// Duration of treatment received
         /// </summary>
-        public string ChargesBreakdown { get; set; } = string.Empty;
+        public string? TreatmentDuration { get; set; }
+
+        // Financial Details
+        /// <summary>
+        /// Requested amount
+        /// </summary>
+        public decimal RequestedAmount { get; set; }
 
         /// <summary>
-        /// Total amount claimed for reimbursement
+        /// Claimed amount
         /// </summary>
         public decimal ClaimedAmount { get; set; }
+
+        /// <summary>
+        /// Available amount (calculated from remaining balance)
+        /// </summary>
+        public decimal AvailableAmount { get; set; }
 
         /// <summary>
         /// Amount approved for reimbursement (may be less than claimed)
@@ -147,5 +150,10 @@ namespace SLBFE.HRM.API.Core.Entities
         /// Rejection reason if rejected
         /// </summary>
         public string? RejectionReason { get; set; }
+
+        /// <summary>
+        /// Additional description
+        /// </summary>
+        public string? Description { get; set; }
     }
 }
