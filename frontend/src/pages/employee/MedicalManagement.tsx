@@ -15,6 +15,7 @@ import {
   Activity
 } from 'lucide-react';
 import { generateMedicalClaimPDF } from '../../utils/medicalFormPdfGenerator';
+import { generateHospitalClaimFormPDF } from '../../utils/hospitalClaimFormPdfGenerator';
 
 interface MedicalRequest {
   id: number;
@@ -212,6 +213,9 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
       attachments: [] as File[]
     });
 
+    const [declarationAccepted, setDeclarationAccepted] = useState(false);
+    const [showInstructions, setShowInstructions] = useState(false);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target;
       
@@ -232,10 +236,10 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
       e.preventDefault();
       console.log('Submitting medical request:', formData);
       // Here you would call the API to create the medical request
-      setShowApplicationModal(false);
+      setShowInstructions(true);
     };
 
-    const handleDownloadPDF = async () => {
+    const handleDownloadHRF07 = async () => {
       try {
         // Prepare the data for PDF generation
         const pdfData = {
@@ -258,14 +262,207 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
 
         // Generate and download the PDF
         await generateMedicalClaimPDF(pdfData);
-        console.log('PDF generated successfully');
+        console.log('HR/F/07 PDF generated successfully');
       } catch (error) {
         console.error('Error generating PDF:', error);
         alert('Failed to generate PDF. Please try again.');
       }
     };
 
+    const handleDownloadHRF08 = async () => {
+      try {
+        // Generate HR/F/08 Hospital Claim Form PDF
+        await generateHospitalClaimFormPDF({
+          employeeNumber: formData.employeeNumber,
+          patientName: formData.patientName
+        });
+        console.log('HR/F/08 PDF generated successfully');
+      } catch (error) {
+        console.error('Error generating HR/F/08 PDF:', error);
+        alert('Failed to generate HR/F/08 form. Please try again.');
+      }
+    };
+
+    const handleCloseModal = () => {
+      setShowApplicationModal(false);
+      setShowInstructions(false);
+      setDeclarationAccepted(false);
+    };
+
     if (!showApplicationModal) return null;
+
+    // Instruction page after form submission
+    if (showInstructions) {
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Next Steps - Medical Claim Submission</h3>
+                <p className="text-sm text-gray-600">Please follow these instructions to complete your claim</p>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Success Message */}
+              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                <div className="flex items-start">
+                  <CheckCircle className="w-6 h-6 text-green-600 mt-0.5 mr-3" />
+                  <div>
+                    <h4 className="text-green-900 font-semibold mb-1">Application Initiated Successfully!</h4>
+                    <p className="text-sm text-green-800">
+                      Your medical claim application has been recorded. Please complete the following steps to finalize your submission.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Important Note */}
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-blue-900 font-semibold mb-2">Important Note</h4>
+                    <p className="text-sm text-blue-800">
+                      Download and print the following documents and fill them with true details. Both forms are required for your claim submission.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Download Forms Section */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900">Step 1: Download Required Forms</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* HR/F/07 Form */}
+                  <div className="border-2 border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-gray-900">HR/F/07 Form</h5>
+                        <p className="text-xs text-gray-600">Medical Claim Form</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 mb-3">
+                      This form contains your submitted details and is automatically filled.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDownloadHRF07}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download HR/F/07
+                    </button>
+                  </div>
+
+                  {/* HR/F/08 Form */}
+                  <div className="border-2 border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-gray-900">HR/F/08 Form</h5>
+                        <p className="text-xs text-gray-600">Hospital Claim Form</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 mb-3">
+                      Please fill this form with hospital/clinic details and get it signed.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDownloadHRF08}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download HR/F/08
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submission Instructions */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900">Step 2: Submit Documents</h4>
+                
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                      1
+                    </div>
+                    <p className="text-sm text-gray-800">
+                      Print both <strong>HR/F/07</strong> and <strong>HR/F/08</strong> forms
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                      2
+                    </div>
+                    <p className="text-sm text-gray-800">
+                      Fill the HR/F/08 form with complete hospital/clinic details and get necessary signatures
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                      3
+                    </div>
+                    <p className="text-sm text-gray-800">
+                      Gather all supporting documents (medical bills, prescriptions, lab reports, etc.)
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                      4
+                    </div>
+                    <p className="text-sm text-gray-800">
+                      Submit filled <strong>HR/F/07 & HR/F/08</strong> forms with supportive documents <strong className="text-red-600">within 1 week</strong> to HR Division
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Evaluation Notice */}
+              <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-purple-600 mt-0.5" />
+                  <div>
+                    <h5 className="text-purple-900 font-semibold mb-1">Step 3: Await Evaluation</h5>
+                    <p className="text-sm text-purple-800">
+                      After evaluation of your submission, our HR team will inform you about your application status via email and system notification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  I Understand
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -276,7 +473,7 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
               <p className="text-sm text-gray-600">Form No: HR/F/07</p>
             </div>
             <button
-              onClick={() => setShowApplicationModal(false)}
+              onClick={handleCloseModal}
               className="text-gray-400 hover:text-gray-600"
             >
               <X className="w-6 h-6" />
@@ -574,7 +771,7 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
             {/* Supporting Documents */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Supporting Documents <span className="text-red-500">*</span>
+                Supporting Documents (Optional)
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                 <div className="text-center">
@@ -588,11 +785,13 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={handleFileChange}
                       className="hidden"
-                      required
                     />
                   </label>
                   <p className="text-xs text-gray-500 mt-2">
                     Medical bills, prescriptions, reports (PDF, JPG, PNG up to 10MB each)
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    You can submit physical documents later to HR Division
                   </p>
                 </div>
                 {formData.attachments.length > 0 && (
@@ -613,32 +812,37 @@ const MedicalManagement: React.FC<MedicalManagementProps> = () => {
 
             {/* Declaration */}
             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">DECLARATION</h4>
-              <p className="text-xs text-gray-700 italic">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">DECLARATION</h4>
+              <p className="text-xs text-gray-700 italic mb-4">
                 I declare that the particulars given herein above are true and correct to the best of my knowledge and that I have not withheld any material information connected with this claim.
               </p>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={declarationAccepted}
+                  onChange={(e) => setDeclarationAccepted(e.target.checked)}
+                  className="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-800 font-medium">
+                  I accept and agree to the above declaration
+                </span>
+              </label>
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
-              <button
-                type="submit"
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2"
-              >
-                <Heart className="w-4 h-4" />
-                Submit Claim
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadPDF}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Download as PDF
-              </button>
+              {declarationAccepted && (
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-all"
+                >
+                  <Heart className="w-4 h-4" />
+                  Submit
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => setShowApplicationModal(false)}
+                onClick={handleCloseModal}
                 className="px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
               >
                 Cancel
