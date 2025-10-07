@@ -14,12 +14,14 @@ import {
   UserMinus,
   CreditCard,
   Shield,
-  BarChart3
+  BarChart3,
+  Heart
 } from 'lucide-react';
 
 // Import dashboard page components
 import Overview from './dashboard/Overview';
 import Applications from './Applications';
+import MedicalManagement from './dashboard/MedicalManagement';
 import Employees from './dashboard/Employees';
 import StaffLeave from './StaffLeave';
 import Transfer from './Transfer';
@@ -182,6 +184,18 @@ const HRManagerDashboard = () => {
               </button>
               
               <button
+                onClick={() => setActiveTab('medical')}
+                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'medical' 
+                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Heart className="w-5 h-5 mr-3" />
+                Medical Claims
+              </button>
+              
+              <button
                 onClick={() => setActiveTab('transfer')}
                 className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
                   activeTab === 'transfer' 
@@ -311,6 +325,7 @@ const HRManagerDashboard = () => {
           {activeTab === 'applications' && <Applications />}
           {activeTab === 'employees' && <Employees />}
           {activeTab === 'leave' && <StaffLeave />}
+          {activeTab === 'medical' && <MedicalManagement />}
           {activeTab === 'transfer' && <Transfer />}
           {activeTab === 'salary' && <SalaryManagement />}
           {activeTab === 'retirement' && <RetirementManagement />}
