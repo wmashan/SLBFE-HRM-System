@@ -41,8 +41,8 @@ const RoleManagement: React.FC = () => {
     {
       role: 'senior_hr_manager' as UserRole,
       name: 'Senior HR Manager',
-      description: 'Advanced HR management including reports and disciplinary actions',
-      permissions: ['All HR permissions', 'Disciplinary actions', 'Advanced reports'],
+      description: 'Advanced HR management including reports and medical claims',
+      permissions: ['All HR permissions', 'Medical claims management', 'Advanced reports'],
       color: 'bg-purple-100 text-purple-800',
       count: 0
     }

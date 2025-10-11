@@ -48,7 +48,7 @@ backend/
 │   │   ├── SalaryController.cs
 │   │   ├── LoansController.cs
 │   │   ├── RetirementController.cs
-│   │   ├── DisciplinaryActionsController.cs
+│   │   ├── MedicalClaimsController.cs
 │   │   ├── ReportsController.cs
 │   │   ├── ApplicationsController.cs
 │   │   └── AdminController.cs
@@ -59,7 +59,7 @@ backend/
 │   │   │   ├── ISalaryService.cs
 │   │   │   ├── ILoanService.cs
 │   │   │   ├── IRetirementService.cs
-│   │   │   ├── IDisciplinaryService.cs
+│   │   │   ├── IMedicalClaimsService.cs
 │   │   │   ├── IReportService.cs
 │   │   │   └── IBackupService.cs
 │   │   └── Implementation/
@@ -68,7 +68,7 @@ backend/
 │   │       ├── SalaryService.cs
 │   │       ├── LoanService.cs
 │   │       ├── RetirementService.cs
-│   │       ├── DisciplinaryService.cs
+│   │       ├── MedicalClaimsService.cs
 │   │       ├── ReportService.cs
 │   │       └── BackupService.cs
 │   ├── Data/                                # Data Access Layer
@@ -84,7 +84,7 @@ backend/
 │   │   ├── SalaryRecord.cs
 │   │   ├── StaffLoan.cs
 │   │   ├── RetirementRecord.cs
-│   │   ├── DisciplinaryAction.cs
+│   │   ├── MedicalClaim.cs
 │   │   ├── Application.cs
 │   │   └── Common/
 │   │       ├── BaseEntity.cs
@@ -199,7 +199,7 @@ backend/
 -- 4. Salary Management
 -- 5. Staff Loans
 -- 6. Retirement Records
--- 7. Disciplinary Actions
+-- 7. Medical Claims
 -- 8. Applications
 -- 9. Reports & Audit Logs
 -- 10. System Configuration

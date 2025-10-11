@@ -42,7 +42,7 @@ backend/SLBFE.HRM.API/
 │   ├── SalaryController.cs
 │   ├── LoansController.cs
 │   ├── RetirementController.cs
-│   ├── DisciplinaryActionsController.cs
+│   ├── MedicalClaimsController.cs
 │   ├── ReportsController.cs
 │   ├── ApplicationsController.cs
 │   └── AdminController.cs
@@ -57,7 +57,7 @@ backend/SLBFE.HRM.API/
 │   ├── SalaryRecord.cs
 │   ├── StaffLoan.cs
 │   ├── RetirementRecord.cs
-│   ├── DisciplinaryAction.cs
+│   ├── MedicalClaim.cs
 │   └── Application.cs
 │
 ├── DTOs/                          ⏳ To be implemented
@@ -141,13 +141,13 @@ Based on the `api.ts` file analysis, the system includes:
 - Handover planning
 - Exit interview scheduling
 
-### 6. **Disciplinary Actions** (Senior HR Only)
-- Action tracking
+### 6. **Medical Claims Management**
+- Claim request handling
+- Document verification
 - Approval workflow
-- Appeal system
-- Follow-up management
-- Employee history
-- Reports generation
+- Status tracking
+- Claim history
+- Notification system
 
 ### 7. **Advanced Reporting System** (Senior HR Only)
 - Custom report configurations
@@ -315,7 +315,7 @@ Based on the `api.ts` file analysis, the system includes:
 - [ ] Implement salary management
 - [ ] Create loan management system
 - [ ] Build retirement management
-- [ ] Develop disciplinary actions module
+- [ ] Develop medical claims module
 
 ### Phase 3: Advanced Features (Week 7-9)
 - [ ] Implement reporting engine

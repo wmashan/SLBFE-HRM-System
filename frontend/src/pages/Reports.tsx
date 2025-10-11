@@ -101,14 +101,14 @@ const Reports: React.FC = () => {
         },
         {
           id: 'RPT003',
-          name: 'Disciplinary Actions Report',
-          type: 'disciplinary_summary',
+          name: 'Medical Claims Report',
+          type: 'medical_claims_summary',
           category: 'compliance',
-          description: 'Summary of all disciplinary actions, trends, and compliance metrics for audit purposes',
+          description: 'Summary of all medical claims, approval rates, and processing metrics for audit purposes',
           parameters: [
             { name: 'dateRange', label: 'Date Range', type: 'daterange', required: true },
-            { name: 'severity', label: 'Severity Level', type: 'multiselect', required: false },
-            { name: 'includeResolved', label: 'Include Resolved Cases', type: 'boolean', required: false, defaultValue: true }
+            { name: 'status', label: 'Claim Status', type: 'multiselect', required: false },
+            { name: 'includeApproved', label: 'Include Approved Claims', type: 'boolean', required: false, defaultValue: true }
           ],
           outputFormats: ['pdf', 'excel'],
           accessLevel: 'senior_hr_manager',
@@ -166,7 +166,7 @@ const Reports: React.FC = () => {
           name: 'Comprehensive Employee Report',
           type: 'comprehensive_employee_report',
           category: 'hr_analytics',
-          description: 'Generate detailed individual employee reports including personal details, service history, transfer records, disciplinary actions, performance reviews, salary history, and all available employee data',
+          description: 'Generate detailed individual employee reports including personal details, service history, transfer records, medical claims, performance reviews, salary history, and all available employee data',
           parameters: [
             { name: 'employeeId', label: 'Employee', type: 'select', required: true, options: [
               { value: 'EMP001', label: 'John Doe (EMP001)' },
@@ -176,7 +176,7 @@ const Reports: React.FC = () => {
             { name: 'includeConfidential', label: 'Include Confidential Information', type: 'boolean', required: false, defaultValue: true },
             { name: 'includeSalaryDetails', label: 'Include Salary Details', type: 'boolean', required: false, defaultValue: true },
             { name: 'includePerformanceHistory', label: 'Include Performance History', type: 'boolean', required: false, defaultValue: true },
-            { name: 'includeDisciplinaryHistory', label: 'Include Disciplinary History', type: 'boolean', required: false, defaultValue: true }
+            { name: 'includeMedicalHistory', label: 'Include Medical Claims History', type: 'boolean', required: false, defaultValue: true }
           ],
           outputFormats: ['pdf', 'excel', 'csv'],
           accessLevel: 'senior_hr_manager',
@@ -294,7 +294,7 @@ const Reports: React.FC = () => {
         return <Database className="w-5 h-5" />;
       case 'salary_analysis':
         return <DollarSign className="w-5 h-5" />;
-      case 'disciplinary_summary':
+      case 'medical_claims_summary':
         return <AlertTriangle className="w-5 h-5" />;
       case 'recruitment_metrics':
         return <Target className="w-5 h-5" />;
@@ -481,7 +481,7 @@ const Reports: React.FC = () => {
                   <option value="employee_summary">Employee Summary</option>
                   <option value="comprehensive_employee_report">Comprehensive Employee Report</option>
                   <option value="salary_analysis">Salary Analysis</option>
-                  <option value="disciplinary_summary">Disciplinary Summary</option>
+                  <option value="medical_claims_summary">Medical Claims Summary</option>
                   <option value="recruitment_metrics">Recruitment Metrics</option>
                   <option value="retirement_forecast">Retirement Forecast</option>
                 </select>

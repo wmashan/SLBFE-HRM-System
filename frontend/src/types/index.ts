@@ -251,7 +251,7 @@ export type ReportType =
   | 'comprehensive_employee_report'
   | 'attendance_analysis'
   | 'salary_analysis'
-  | 'disciplinary_summary'
+  | 'medical_claims_summary'
   | 'recruitment_metrics'
   | 'loan_analysis'
   | 'retirement_forecast'
@@ -1074,7 +1074,7 @@ export interface EmployeeReportRequest {
   includeConfidential: boolean;
   includeSalaryDetails: boolean;
   includePerformanceHistory: boolean;
-  includeDisciplinaryHistory: boolean;
+  includeMedicalHistory: boolean;
   dateRange?: {
     startDate: Date;
     endDate: Date;
@@ -1088,7 +1088,7 @@ export type EmployeeReportType =
   | 'basic_info'
   | 'service_record'
   | 'performance_summary'
-  | 'disciplinary_summary'
+  | 'medical_claims_summary'
   | 'salary_history'
   | 'custom';
 
@@ -1097,7 +1097,7 @@ export type EmployeeReportSection =
   | 'employment_history'
   | 'service_summary'
   | 'transfer_history'
-  | 'disciplinary_history'
+  | 'medical_claims_history'
   | 'performance_history'
   | 'salary_history'
   | 'leave_history'

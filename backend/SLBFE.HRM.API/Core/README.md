@@ -11,7 +11,7 @@ Contains all domain entities (models) that represent the core business objects.
 - SalaryRecord
 - StaffLoan
 - RetirementRecord
-- DisciplinaryAction
+- MedicalClaim
 - Application
 - etc.
 

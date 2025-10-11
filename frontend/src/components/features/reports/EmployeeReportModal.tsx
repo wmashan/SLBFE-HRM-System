@@ -31,14 +31,14 @@ export const EmployeeReportModal: React.FC<EmployeeReportModalProps> = ({
     includeConfidential: true,
     includeSalaryDetails: true,
     includePerformanceHistory: true,
-    includeDisciplinaryHistory: true,
+    includeMedicalHistory: true,
     outputFormat: 'pdf',
     sections: [
       'personal_details',
       'employment_history',
       'service_summary',
       'transfer_history',
-      'disciplinary_history',
+      'medical_claims_history',
       'performance_history',
       'salary_history',
       'leave_history',
@@ -128,7 +128,7 @@ export const EmployeeReportModal: React.FC<EmployeeReportModalProps> = ({
         includeConfidential: reportConfig.includeConfidential || false,
         includeSalaryDetails: reportConfig.includeSalaryDetails || false,
         includePerformanceHistory: reportConfig.includePerformanceHistory || false,
-        includeDisciplinaryHistory: reportConfig.includeDisciplinaryHistory || false,
+        includeMedicalHistory: reportConfig.includeMedicalHistory || false,
         outputFormat: reportConfig.outputFormat || 'pdf',
         sections: reportConfig.sections || [],
       };
@@ -160,14 +160,14 @@ export const EmployeeReportModal: React.FC<EmployeeReportModalProps> = ({
       includeConfidential: true,
       includeSalaryDetails: true,
       includePerformanceHistory: true,
-      includeDisciplinaryHistory: true,
+      includeMedicalHistory: true,
       outputFormat: 'pdf',
       sections: [
         'personal_details',
         'employment_history',
         'service_summary',
         'transfer_history',
-        'disciplinary_history',
+        'medical_claims_history',
         'performance_history',
         'salary_history',
         'leave_history',
@@ -187,7 +187,7 @@ export const EmployeeReportModal: React.FC<EmployeeReportModalProps> = ({
     { key: 'employment_history', label: 'Employment History', icon: History, description: 'Complete employment timeline and positions' },
     { key: 'service_summary', label: 'Service Summary', icon: Calendar, description: 'Total service periods and milestones' },
     { key: 'transfer_history', label: 'Transfer History', icon: FileText, description: 'All transfers between branches/departments' },
-    { key: 'disciplinary_history', label: 'Disciplinary History', icon: Shield, description: 'Disciplinary actions and resolutions' },
+    { key: 'medical_claims_history', label: 'Medical Claims History', icon: Shield, description: 'Medical claims and approvals' },
     { key: 'performance_history', label: 'Performance History', icon: Target, description: 'Performance reviews and ratings' },
     { key: 'salary_history', label: 'Salary History', icon: DollarSign, description: 'Salary progression and changes' },
     { key: 'leave_history', label: 'Leave History', icon: Calendar, description: 'Leave records and balances' },
@@ -317,7 +317,7 @@ export const EmployeeReportModal: React.FC<EmployeeReportModalProps> = ({
                     <option value="basic_info">Basic Information</option>
                     <option value="service_record">Service Record</option>
                     <option value="performance_summary">Performance Summary</option>
-                    <option value="disciplinary_summary">Disciplinary Summary</option>
+                    <option value="medical_claims_summary">Medical Claims Summary</option>
                     <option value="salary_history">Salary History</option>
                     <option value="custom">Custom Report</option>
                   </select>
@@ -372,11 +372,11 @@ export const EmployeeReportModal: React.FC<EmployeeReportModalProps> = ({
                   <label className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      checked={reportConfig.includeDisciplinaryHistory}
-                      onChange={(e) => setReportConfig(prev => ({ ...prev, includeDisciplinaryHistory: e.target.checked }))}
+                      checked={reportConfig.includeMedicalHistory}
+                      onChange={(e) => setReportConfig(prev => ({ ...prev, includeMedicalHistory: e.target.checked }))}
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span className="text-sm text-gray-700">Include disciplinary history</span>
+                    <span className="text-sm text-gray-700">Include medical claims history</span>
                   </label>
                 </div>
               </div>

@@ -36,7 +36,7 @@ const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
     { 
       value: 'senior_hr_manager', 
       label: 'Senior HR Manager', 
-      description: 'Advanced HR management including reports and disciplinary actions' 
+      description: 'Advanced HR management including reports and medical claims' 
     }
   ];
 

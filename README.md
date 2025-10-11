@@ -232,7 +232,7 @@ npm run build
 2. **Salary Management** - Records, adjustments, increments, notifications
 3. **Staff Loan Management** - Applications, approvals, repayments, EMI calculations
 4. **Retirement Management** - Records, benefits, pension calculations, notifications
-5. **Disciplinary Actions** - Tracking, workflow, appeals (Senior HR only)
+5. **Medical Claims Management** - Request handling, document verification, approvals
 6. **Reports & Analytics** - Custom reports, templates, scheduling (Senior HR only)
 7. **User & Role Management** - RBAC, role assignments, audit logs (Admin only)
 8. **Backup & Restore** - Database backups, restore points, automation (Admin only)
@@ -240,8 +240,8 @@ npm run build
 
 ### Role-Based Access
 - **Admin**: Full system access, user management, backups
-- **Senior HR Manager**: All HR operations + reports + disciplinary actions
-- **HR Manager**: Standard HR operations (employees, salary, loans, retirement)
+- **Senior HR Manager**: All HR operations + reports + medical claims
+- **HR Manager**: Standard HR operations (employees, salary, loans, retirement, medical claims)
 - **Employee**: Self-service portal (profile, applications, notifications)
 
 ## 🔧 Configuration
