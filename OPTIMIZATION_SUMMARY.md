@@ -171,10 +171,9 @@ Based on your frontend API analysis, the system supports:
 3. **Staff Loan Management** - Applications, approvals, repayments, EMI
 4. **Retirement Management** - Records, benefits, pension calculations
 5. **Medical Claims Management** - Request handling, document verification, approvals
-6. **Advanced Reporting** - Custom reports, templates (Senior HR only)
-7. **User & Role Management** - RBAC, audit logs (Admin only)
-8. **Backup & Restore** - Automated backups (Admin only)
-9. **Applications** - Leave, transfers, general applications
+6. **User & Role Management** - RBAC, audit logs (Admin only)
+7. **Backup & Restore** - Automated backups (Admin only)
+8. **Applications** - Leave, transfers, general applications
 
 ---
 

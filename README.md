@@ -233,14 +233,13 @@ npm run build
 3. **Staff Loan Management** - Applications, approvals, repayments, EMI calculations
 4. **Retirement Management** - Records, benefits, pension calculations, notifications
 5. **Medical Claims Management** - Request handling, document verification, approvals
-6. **Reports & Analytics** - Custom reports, templates, scheduling (Senior HR only)
-7. **User & Role Management** - RBAC, role assignments, audit logs (Admin only)
-8. **Backup & Restore** - Database backups, restore points, automation (Admin only)
-9. **Applications Management** - Leave, transfers, general applications
+6. **User & Role Management** - RBAC, role assignments, audit logs (Admin only)
+7. **Backup & Restore** - Database backups, restore points, automation (Admin only)
+8. **Applications Management** - Leave, transfers, general applications
 
 ### Role-Based Access
 - **Admin**: Full system access, user management, backups
-- **Senior HR Manager**: All HR operations + reports + medical claims
+- **Senior HR Manager**: All HR operations + medical claims management
 - **HR Manager**: Standard HR operations (employees, salary, loans, retirement, medical claims)
 - **Employee**: Self-service portal (profile, applications, notifications)
 
