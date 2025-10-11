@@ -21,7 +21,7 @@ function App() {
           <Route 
             path="/hr-dashboard" 
             element={
-              <ProtectedRoute allowedRoles={['hr', 'senior_hr_manager']}>
+              <ProtectedRoute allowedRoles={['hr']}>
                 <HRManagerDashboard />
               </ProtectedRoute>
             } 

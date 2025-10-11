@@ -350,9 +350,6 @@ interface MedicalRequest {
 │ ✓ Send notifications                      │
 │ ✓ View employee medical balance           │
 │ ✓ Export reports                          │
-│                                            │
-│ Senior HR Manager                          │
-│ ✓ All HR Manager permissions              │
 │ ✓ Advanced analytics                      │
 │ ✓ Policy configuration                    │
 │                                            │

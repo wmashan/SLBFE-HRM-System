@@ -47,7 +47,7 @@ const HRManagerDashboard = () => {
       setUserInfo({
         fullName: user.fullName || 'HR Manager',
         role: user.role,
-        initials: user.role === 'senior_hr_manager' ? 'SHR' : 'HM'
+        initials: 'HM'
       });
     }
   }, []);
@@ -62,11 +62,11 @@ const HRManagerDashboard = () => {
 
   // Get display text based on role
   const getDashboardTitle = () => {
-    return userInfo.role === 'senior_hr_manager' ? 'Senior HR Manager Dashboard' : 'HR Manager Dashboard';
+    return 'HR Manager Dashboard';
   };
 
   const getUserRoleDisplay = () => {
-    return userInfo.role === 'senior_hr_manager' ? 'Senior HR Manager' : 'HR Manager';
+    return 'HR Manager';
   };
 
   // Sample data for badge display
@@ -101,12 +101,8 @@ const HRManagerDashboard = () => {
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  userInfo.role === 'senior_hr_manager' ? 'bg-purple-100' : 'bg-blue-100'
-                }`}>
-                  <span className={`font-medium text-sm ${
-                    userInfo.role === 'senior_hr_manager' ? 'text-purple-600' : 'text-blue-600'
-                  }`}>{userInfo.initials}</span>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100">
+                  <span className="font-medium text-sm text-blue-600">{userInfo.initials}</span>
                 </div>
                 <span className="text-sm font-medium text-gray-700">{getUserRoleDisplay()}</span>
               </div>

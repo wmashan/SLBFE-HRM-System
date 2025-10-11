@@ -173,13 +173,7 @@ xcopy /E /Y .\dist C:\inetpub\wwwroot\SLBFE-HRM-Frontend\
 - **Username**: `hrmanager`
 - **Password**: `hrpass123`
 - **Role**: HR Manager
-- **Access**: HR operations
-
-### Senior HR Manager
-- **Username**: `seniorhrmanager`
-- **Password**: `seniorhrpass123`
-- **Role**: Senior HR Manager
-- **Access**: HR + Medical Claims
+- **Access**: HR operations + Medical Claims
 
 ### Employee
 - **Username**: `employee`

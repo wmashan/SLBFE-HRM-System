@@ -237,7 +237,7 @@
 - Extension: XXX
 
 ### Policy Questions
-- Contact Senior HR Manager
+- Contact HR Manager
 - Extension: XXX
 
 ### System Training
@@ -301,7 +301,7 @@ Click **"Export Report"** to download:
 **Solution**: Check "Pending Documents" tab, may need to mark received
 
 ### Issue: Need to revise approval amount
-**Solution**: Contact Senior HR Manager for corrections
+**Solution**: Contact HR Manager for corrections
 
 ### Issue: Missing documents
 **Solution**: Contact employee for resubmission
@@ -310,4 +310,4 @@ Click **"Export Report"** to download:
 
 **Last Updated**: October 7, 2025  
 **Version**: 1.0  
-**For**: HR Managers & Senior HR Managers
+**For**: HR Managers

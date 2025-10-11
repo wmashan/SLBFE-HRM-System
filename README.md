@@ -239,7 +239,6 @@ npm run build
 
 ### Role-Based Access
 - **Admin**: Full system access, user management, backups
-- **Senior HR Manager**: All HR operations + medical claims management
 - **HR Manager**: Standard HR operations (employees, salary, loans, retirement, medical claims)
 - **Employee**: Self-service portal (profile, applications, notifications)
 

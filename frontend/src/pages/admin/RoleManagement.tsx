@@ -37,14 +37,6 @@ const RoleManagement: React.FC = () => {
       permissions: ['Manage employees', 'Access HR reports', 'Process applications'],
       color: 'bg-blue-100 text-blue-800',
       count: 0
-    },
-    {
-      role: 'senior_hr_manager' as UserRole,
-      name: 'Senior HR Manager',
-      description: 'Advanced HR management including medical claims management',
-      permissions: ['All HR permissions', 'Medical claims management'],
-      color: 'bg-purple-100 text-purple-800',
-      count: 0
     }
   ];
 
@@ -79,14 +71,6 @@ const RoleManagement: React.FC = () => {
           createdAt: new Date(Date.now() - 86400000 * 45), updatedAt: new Date(),
           lastActivity: new Date(Date.now() - 86400000 * 1), sessionsActive: 1, totalLogins: 67,
           accountLocked: false, passwordLastChanged: new Date(Date.now() - 86400000 * 20),
-          twoFactorEnabled: true, permissions: [], groups: []
-        },
-        {
-          id: '4', username: 'sarah.johnson', email: 'sarah.johnson@slbfe.lk', fullName: 'Sarah Johnson',
-          role: 'senior_hr_manager', profilePicture: undefined, isActive: true, lastLogin: new Date(Date.now() - 7200000),
-          createdAt: new Date(Date.now() - 86400000 * 120), updatedAt: new Date(),
-          lastActivity: new Date(Date.now() - 7200000), sessionsActive: 1, totalLogins: 234,
-          accountLocked: false, passwordLastChanged: new Date(Date.now() - 86400000 * 10),
           twoFactorEnabled: true, permissions: [], groups: []
         }
       ];

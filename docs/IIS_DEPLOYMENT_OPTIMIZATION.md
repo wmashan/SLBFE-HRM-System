@@ -516,8 +516,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
-    options.AddPolicy("HRManagerOnly", policy => policy.RequireRole("hr", "senior_hr_manager"));
-    options.AddPolicy("SeniorHROnly", policy => policy.RequireRole("senior_hr_manager"));
+    options.AddPolicy("HRManagerOnly", policy => policy.RequireRole("hr"));
 });
 ```
 

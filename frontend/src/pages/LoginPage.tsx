@@ -73,7 +73,6 @@ const LoginPage = () => {
             <div className="text-xs space-y-1 text-blue-700">
               <div><strong>System Admin:</strong> admin / admin123</div>
               <div><strong>HR Manager:</strong> hrmanager / hrpass123</div>
-              <div><strong>Senior HR Manager:</strong> seniorhrmanager / seniorhrpass123</div>
               <div><strong>Employee:</strong> employee / emp123</div>
             </div>
           </div>

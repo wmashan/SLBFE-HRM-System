@@ -302,16 +302,6 @@ class ApiService {
         updatedAt: new Date('2024-09-30')
       },
       {
-        id: 'shr001',
-        username: 'seniorhrmanager',
-        email: 'seniorhrmanager@slbfe.com',
-        fullName: 'Sarah Williams',
-        role: 'senior_hr_manager' as const,
-        isActive: true,
-        createdAt: new Date('2022-06-15'),
-        updatedAt: new Date('2024-09-30')
-      },
-      {
         id: 'emp001',
         username: 'employee',
         email: 'employee@slbfe.com',
@@ -328,7 +318,6 @@ class ApiService {
       if (u.username === credentials.username) {
         if (u.role === 'admin' && credentials.password === 'admin123') return true;
         if (u.role === 'hr' && credentials.password === 'hrpass123') return true;
-        if (u.role === 'senior_hr_manager' && credentials.password === 'seniorhrpass123') return true;
         if (u.role === 'employee' && credentials.password === 'emp123') return true;
       }
       return false;

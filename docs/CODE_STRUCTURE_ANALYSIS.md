@@ -105,7 +105,7 @@ Based on the `api.ts` file analysis, the system includes:
 
 ### 1. **Authentication & Authorization**
 - JWT-based authentication
-- Role-based access control (Admin, HR Manager, Senior HR Manager, Employee)
+- Role-based access control (Admin, HR Manager, Employee)
 - Password reset functionality
 - User profile management
 

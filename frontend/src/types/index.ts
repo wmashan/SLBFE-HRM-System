@@ -15,7 +15,6 @@ export interface User {
 export type UserRole = 
   | 'employee' 
   | 'hr' 
-  | 'senior_hr_manager'
   | 'training_coordinator' 
   | 'branch_manager' 
   | 'program_manager' 
@@ -138,7 +137,7 @@ export interface NavigationItem {
   roles?: UserRole[];
 }
 
-// Disciplinary Actions Types (Senior HR Manager only)
+// Disciplinary Actions Types
 export interface DisciplinaryAction {
   id: string;
   employeeId: string;
@@ -228,7 +227,7 @@ export interface DisciplinaryStats {
   actionsBySeverity: Record<DisciplinarySeverity, number>;
 }
 
-// Reports Types (Senior HR Manager only)
+// Reports Types
 export interface ReportConfig {
   id: string;
   name: string;
@@ -239,7 +238,7 @@ export interface ReportConfig {
   defaultFilters?: Record<string, any>;
   schedule?: ReportSchedule;
   outputFormats: OutputFormat[];
-  accessLevel: 'senior_hr_manager' | 'hr' | 'manager' | 'all';
+  accessLevel: 'hr' | 'manager' | 'all';
   isActive: boolean;
   createdBy: string;
   createdAt: Date;
@@ -390,7 +389,7 @@ export interface ReportAnalytics {
   scheduledReportsActive: number;
 }
 
-// Comprehensive Employee Report Types (Senior HR Manager only)
+// Comprehensive Employee Report Types
 export interface EmployeeReportData {
   employeeInfo: EmployeePersonalDetails;
   employmentHistory: EmploymentRecord[];

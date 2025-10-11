@@ -248,7 +248,7 @@ GET /api/medical-claims/{id}/attachments/{attachmentId}
    - Added component rendering for 'medical' tab
 
 ## Access Control
-- **Role Required**: HR Manager or Senior HR Manager
+- **Role Required**: HR Manager
 - **Menu Location**: HR Manager Dashboard → Medical Claims
 - **Permissions**: 
   - View all medical claims

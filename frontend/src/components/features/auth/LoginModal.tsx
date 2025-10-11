@@ -45,8 +45,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         const userData = localStorage.getItem('slbfe_user_data');
         if (userData) {
           const user = JSON.parse(userData);
-          // Both HR Manager and Senior HR Manager use the same dashboard
-          if (user.role === 'hr' || user.role === 'senior_hr_manager') {
+          // HR Manager uses the HR dashboard
+          if (user.role === 'hr') {
             navigate('/hr-dashboard');
           } else {
             navigate('/dashboard');
@@ -101,10 +101,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <div className="flex justify-between">
               <span className="font-medium">HR Manager:</span>
               <span>hrmanager / hrpass123</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-medium">Senior HR Manager:</span>
-              <span>seniorhrmanager / seniorhrpass123</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Employee:</span>

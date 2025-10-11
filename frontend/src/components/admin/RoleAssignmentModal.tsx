@@ -32,11 +32,6 @@ const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
       value: 'hr', 
       label: 'HR Manager', 
       description: 'Human Resources management with employee administration rights' 
-    },
-    { 
-      value: 'senior_hr_manager', 
-      label: 'Senior HR Manager', 
-      description: 'Advanced HR management including medical claims' 
     }
   ];
 
@@ -73,8 +68,6 @@ const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
 
   const getRoleColor = (role: UserRole) => {
     switch (role) {
-      case 'senior_hr_manager':
-        return 'text-purple-600 bg-purple-100';
       case 'hr':
         return 'text-blue-600 bg-blue-100';
       case 'branch_manager':
