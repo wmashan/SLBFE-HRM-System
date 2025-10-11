@@ -168,12 +168,11 @@ Based on your frontend API analysis, the system supports:
 
 1. **Employee Management** - CRUD, search, filtering
 2. **Salary Management** - Records, adjustments, increments, notifications
-3. **Staff Loan Management** - Applications, approvals, repayments, EMI
-4. **Retirement Management** - Records, benefits, pension calculations
-5. **Medical Claims Management** - Request handling, document verification, approvals
-6. **User & Role Management** - RBAC, audit logs (Admin only)
-7. **Backup & Restore** - Automated backups (Admin only)
-8. **Applications** - Leave, transfers, general applications
+3. **Retirement Management** - Records, benefits, pension calculations
+4. **Medical Claims Management** - Request handling, document verification, approvals
+5. **User & Role Management** - RBAC, audit logs (Admin only)
+6. **Backup & Restore** - Automated backups (Admin only)
+7. **Applications** - Leave, transfers, general applications
 
 ---
 

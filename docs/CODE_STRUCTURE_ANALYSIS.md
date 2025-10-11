@@ -123,17 +123,7 @@ Based on the `api.ts` file analysis, the system includes:
 - Automated notifications
 - Salary reports generation
 
-### 4. **Staff Loan Management**
-- Loan applications
-- Approval workflow
-- Loan disbursement
-- Repayment tracking
-- EMI calculations
-- Overdue payment management
-- Eligibility checking
-- Payment reminders
-
-### 5. **Retirement Management**
+### 4. **Retirement Management**
 - Retirement records tracking
 - Benefit calculations
 - Pension calculations
@@ -141,7 +131,7 @@ Based on the `api.ts` file analysis, the system includes:
 - Handover planning
 - Exit interview scheduling
 
-### 6. **Medical Claims Management**
+### 5. **Medical Claims Management**
 - Claim request handling
 - Document verification
 - Approval workflow
@@ -313,7 +303,6 @@ Based on the `api.ts` file analysis, the system includes:
 - [ ] Implement authentication service
 - [ ] Create employee management endpoints
 - [ ] Implement salary management
-- [ ] Create loan management system
 - [ ] Build retirement management
 - [ ] Develop medical claims module
 

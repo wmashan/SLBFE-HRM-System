@@ -230,16 +230,15 @@ npm run build
 ### Core Modules
 1. **Employee Management** - Complete lifecycle management
 2. **Salary Management** - Records, adjustments, increments, notifications
-3. **Staff Loan Management** - Applications, approvals, repayments, EMI calculations
-4. **Retirement Management** - Records, benefits, pension calculations, notifications
-5. **Medical Claims Management** - Request handling, document verification, approvals
-6. **User & Role Management** - RBAC, role assignments, audit logs (Admin only)
-7. **Backup & Restore** - Database backups, restore points, automation (Admin only)
-8. **Applications Management** - Leave, transfers, general applications
+3. **Retirement Management** - Records, benefits, pension calculations, notifications
+4. **Medical Claims Management** - Request handling, document verification, approvals
+5. **User & Role Management** - RBAC, role assignments, audit logs (Admin only)
+6. **Backup & Restore** - Database backups, restore points, automation (Admin only)
+7. **Applications Management** - Leave, transfers, general applications
 
 ### Role-Based Access
 - **Admin**: Full system access, user management, backups
-- **HR Manager**: Standard HR operations (employees, salary, loans, retirement, medical claims)
+- **HR Manager**: Standard HR operations (employees, salary, retirement, medical claims)
 - **Employee**: Self-service portal (profile, applications, notifications)
 
 ## 🔧 Configuration

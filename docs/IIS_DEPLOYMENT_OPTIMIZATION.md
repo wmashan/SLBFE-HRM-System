@@ -197,12 +197,11 @@ backend/
 -- 2. Employees
 -- 3. Departments & Branches
 -- 4. Salary Management
--- 5. Staff Loans
--- 6. Retirement Records
--- 7. Medical Claims
--- 8. Applications
--- 9. Reports & Audit Logs
--- 10. System Configuration
+-- 5. Retirement Records
+-- 6. Medical Claims
+-- 7. Applications
+-- 8. Reports & Audit Logs
+-- 9. System Configuration
 ```
 
 ### 2.2 Connection String Configuration

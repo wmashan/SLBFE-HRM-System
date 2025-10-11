@@ -252,7 +252,6 @@ export type ReportType =
   | 'salary_analysis'
   | 'medical_claims_summary'
   | 'recruitment_metrics'
-  | 'loan_analysis'
   | 'retirement_forecast'
   | 'performance_analytics'
   | 'compliance_report'
