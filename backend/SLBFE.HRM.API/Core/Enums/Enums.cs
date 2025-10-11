@@ -37,19 +37,6 @@ namespace SLBFE.HRM.API.Core.Enums
     }
 
     /// <summary>
-    /// Loan status
-    /// </summary>
-    public enum LoanStatus
-    {
-        Pending = 1,
-        Approved = 2,
-        Rejected = 3,
-        Active = 4,
-        Completed = 5,
-        Defaulted = 6
-    }
-
-    /// <summary>
     /// Employment status
     /// </summary>
     public enum EmploymentStatus

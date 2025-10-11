@@ -40,7 +40,6 @@ backend/SLBFE.HRM.API/
 │   ├── AuthController.cs
 │   ├── EmployeesController.cs
 │   ├── SalaryController.cs
-│   ├── LoansController.cs
 │   ├── RetirementController.cs
 │   ├── MedicalClaimsController.cs
 │   ├── ReportsController.cs
@@ -55,7 +54,6 @@ backend/SLBFE.HRM.API/
 │   ├── User.cs
 │   ├── Employee.cs
 │   ├── SalaryRecord.cs
-│   ├── StaffLoan.cs
 │   ├── RetirementRecord.cs
 │   ├── MedicalClaim.cs
 │   └── Application.cs
@@ -429,7 +427,7 @@ npm run dev
 1. **Implement Core Controllers**
    - Employees
    - Salary
-   - Loans
+   - Retirement
 
 2. **Create DTOs and Validators**
    - Request/Response models

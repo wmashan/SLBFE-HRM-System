@@ -46,7 +46,6 @@ backend/
 │   │   ├── AuthController.cs
 │   │   ├── EmployeesController.cs
 │   │   ├── SalaryController.cs
-│   │   ├── LoansController.cs
 │   │   ├── RetirementController.cs
 │   │   ├── MedicalClaimsController.cs
 │   │   ├── ReportsController.cs
@@ -57,7 +56,6 @@ backend/
 │   │   │   ├── IAuthService.cs
 │   │   │   ├── IEmployeeService.cs
 │   │   │   ├── ISalaryService.cs
-│   │   │   ├── ILoanService.cs
 │   │   │   ├── IRetirementService.cs
 │   │   │   ├── IMedicalClaimsService.cs
 │   │   │   ├── IReportService.cs
@@ -66,7 +64,6 @@ backend/
 │   │       ├── AuthService.cs
 │   │       ├── EmployeeService.cs
 │   │       ├── SalaryService.cs
-│   │       ├── LoanService.cs
 │   │       ├── RetirementService.cs
 │   │       ├── MedicalClaimsService.cs
 │   │       ├── ReportService.cs
@@ -82,7 +79,6 @@ backend/
 │   │   ├── Employee.cs
 │   │   ├── User.cs
 │   │   ├── SalaryRecord.cs
-│   │   ├── StaffLoan.cs
 │   │   ├── RetirementRecord.cs
 │   │   ├── MedicalClaim.cs
 │   │   ├── Application.cs
@@ -93,7 +89,6 @@ backend/
 │   │   ├── Auth/
 │   │   ├── Employee/
 │   │   ├── Salary/
-│   │   ├── Loan/
 │   │   ├── Retirement/
 │   │   └── Reports/
 │   ├── Middleware/                          # Custom Middleware
@@ -235,7 +230,7 @@ backend/
 ### 2.3 Database Performance Optimizations
 
 1. **Indexes**: Create indexes on frequently queried columns
-2. **Partitioning**: Partition large tables (salary, loans, audit logs) by date
+2. **Partitioning**: Partition large tables (salary, audit logs) by date
 3. **Stored Procedures**: Use for complex queries and reports
 4. **Backup Strategy**: 
    - Full backup: Daily at 2 AM

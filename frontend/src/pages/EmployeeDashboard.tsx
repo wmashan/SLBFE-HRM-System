@@ -14,7 +14,6 @@ import {
   MapPin,
   ArrowRight,
   AlertTriangle,
-  DollarSign,
   Heart
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,7 +23,6 @@ import EmployeeApplications from './employee/EmployeeApplications';
 import EmployeeProfile from './employee/EmployeeProfileReadOnly';
 import EmployeeNotifications from './employee/EmployeeNotifications';
 import LeaveManagement from './employee/LeaveManagement';
-import LoanManagement from './employee/LoanManagement';
 import MedicalManagement from './employee/MedicalManagement';
 import TransferNotificationCard from '../components/employee/TransferNotificationCard';
 
@@ -294,18 +292,6 @@ const EmployeeDashboard = () => {
               </button>
               
               <button
-                onClick={() => setActiveTab('loans')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'loans' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <DollarSign className="w-5 h-5 mr-3" />
-                Loan Requests
-              </button>
-              
-              <button
                 onClick={() => setActiveTab('medical')}
                 className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
                   activeTab === 'medical' 
@@ -515,11 +501,6 @@ const EmployeeDashboard = () => {
           {/* Leave Management Tab */}
           {activeTab === 'leave' && (
             <LeaveManagement />
-          )}
-
-          {/* Loan Management Tab */}
-          {activeTab === 'loans' && (
-            <LoanManagement />
           )}
 
           {/* Medical Management Tab */}

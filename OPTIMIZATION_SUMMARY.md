@@ -274,7 +274,6 @@ VITE_API_BASE_URL=https://hrm-api.slbfe.lk/api
 - [ ] Implement AuthController
 - [ ] Create EmployeesController
 - [ ] Implement SalaryController
-- [ ] Create LoansController
 - [ ] Implement RetirementController
 - [ ] Create business logic services
 

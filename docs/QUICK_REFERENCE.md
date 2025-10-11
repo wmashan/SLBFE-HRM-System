@@ -250,12 +250,6 @@ npm run build
 - `POST /api/salary/adjustments/{id}/approve` - Approve adjustment
 - `GET /api/salary/increments` - List upcoming increments
 
-### Loans
-- `GET /api/loans` - List loans
-- `POST /api/loans` - Create loan
-- `POST /api/loans/{id}/approve` - Approve loan
-- `GET /api/loans/eligibility` - Check eligibility
-
 ### Reports
 - `GET /api/reports/configs` - List report configs
 - `POST /api/reports/generate` - Generate report

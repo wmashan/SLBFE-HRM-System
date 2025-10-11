@@ -15,9 +15,7 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
         // public DbSet<User> Users { get; set; }
         // public DbSet<Employee> Employees { get; set; }
         // public DbSet<SalaryRecord> SalaryRecords { get; set; }
-        // public DbSet<StaffLoan> StaffLoans { get; set; }
         // public DbSet<RetirementRecord> RetirementRecords { get; set; }
-        // public DbSet<DisciplinaryAction> DisciplinaryActions { get; set; }
         // public DbSet<Application> Applications { get; set; }
         
         public DbSet<MedicalRequest> MedicalRequests { get; set; }

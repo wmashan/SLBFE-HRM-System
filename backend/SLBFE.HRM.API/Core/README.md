@@ -9,7 +9,6 @@ Contains all domain entities (models) that represent the core business objects.
 - User
 - Employee
 - SalaryRecord
-- StaffLoan
 - RetirementRecord
 - MedicalClaim
 - Application

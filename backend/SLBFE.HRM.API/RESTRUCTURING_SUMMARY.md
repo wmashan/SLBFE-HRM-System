@@ -133,7 +133,7 @@ Presentation → Application → Core
 
 ### Immediate Next Steps:
 1. **Create Domain Entities** in `Core/Entities/`
-   - User, Employee, SalaryRecord, StaffLoan, etc.
+   - User, Employee, SalaryRecord, RetirementRecord, MedicalClaim, etc.
 
 2. **Define Repository Interfaces** in `Core/Interfaces/`
    - IEmployeeRepository, ISalaryRepository, etc.
