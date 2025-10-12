@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { 
   GraduationCap, 
   Search, 
@@ -24,8 +24,10 @@ import {
   Link2,
   Copy,
   BarChart3,
-  MessageSquare
+  MessageSquare,
+  QrCode
 } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
@@ -140,6 +142,7 @@ const TrainingManagement = () => {
   const [isFeedbackLinkModalOpen, setIsFeedbackLinkModalOpen] = useState(false);
   const [isFeedbackResultsModalOpen, setIsFeedbackResultsModalOpen] = useState(false);
   const [feedbackData, setFeedbackData] = useState<TrainingFeedback[]>([]);
+  const qrCodeRef = useRef<HTMLDivElement>(null);
   
   // Mock data - in real app, this would come from API
   const [trainingPrograms, setTrainingPrograms] = useState<TrainingProgram[]>([
@@ -423,6 +426,18 @@ const TrainingManagement = () => {
   const copyFeedbackLink = (link: string) => {
     navigator.clipboard.writeText(link);
     alert('Feedback link copied to clipboard!');
+  };
+
+  // Download QR code as PNG
+  const downloadQRCode = (programName: string) => {
+    const canvas = qrCodeRef.current?.querySelector('canvas');
+    if (canvas) {
+      const url = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${programName.replace(/\s+/g, '_')}_Feedback_QR.png`;
+      link.href = url;
+      link.click();
+    }
   };
 
   // Calculate feedback statistics
@@ -2148,6 +2163,56 @@ const TrainingManagement = () => {
             </div>
           </div>
 
+          {/* QR Code Section */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 p-5 rounded-lg">
+            <div className="flex flex-col md:flex-row gap-6 items-center">
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <QrCode className="w-5 h-5 text-purple-600" />
+                  Quick Access QR Code
+                </h4>
+                <p className="text-sm text-gray-700 mb-3">
+                  Scan this QR code with any mobile device to instantly access the feedback form. Perfect for sharing in training sessions!
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    className="flex items-center gap-2"
+                    onClick={() => selectedProgramForFeedback && downloadQRCode(selectedProgramForFeedback.programName)}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download QR Code
+                  </Button>
+                  <span className="text-xs text-gray-600 flex items-center">
+                    (PNG format, ready to print or share)
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex-shrink-0" ref={qrCodeRef}>
+                <div className="bg-white p-4 rounded-xl shadow-lg border-2 border-purple-300">
+                  {selectedProgramForFeedback && (
+                    <QRCodeCanvas
+                      value={generateFeedbackLink(selectedProgramForFeedback.id)}
+                      size={200}
+                      level="H"
+                      includeMargin={true}
+                      imageSettings={{
+                        src: "",
+                        height: 0,
+                        width: 0,
+                        excavate: true,
+                      }}
+                    />
+                  )}
+                  <p className="text-center text-xs text-gray-600 mt-2 font-medium">
+                    Scan to Access Form
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4 text-gray-600" />
@@ -2183,7 +2248,7 @@ const TrainingManagement = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
             <Button
               variant="secondary"
               className="flex-1 justify-center"
@@ -2193,6 +2258,14 @@ const TrainingManagement = () => {
               }}
             >
               Close
+            </Button>
+            <Button
+              variant="secondary"
+              className="flex-1 justify-center"
+              onClick={() => selectedProgramForFeedback && downloadQRCode(selectedProgramForFeedback.programName)}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download QR
             </Button>
             <Button
               variant="primary"
