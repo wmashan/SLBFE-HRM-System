@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
 import RoleManagement from './pages/admin/RoleManagement';
 import BackupRestore from './pages/admin/BackupRestore';
+import TrainingFeedbackForm from './pages/TrainingFeedbackForm';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
@@ -18,6 +19,10 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/create-account" element={<UserAccountCreation />} />
           <Route path="/login" element={<LoginPage />} />
+          
+          {/* Public Training Feedback Form - No authentication required */}
+          <Route path="/training-feedback/:programId" element={<TrainingFeedbackForm />} />
+          
           <Route 
             path="/hr-dashboard" 
             element={
