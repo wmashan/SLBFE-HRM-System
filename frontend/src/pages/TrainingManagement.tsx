@@ -20,7 +20,11 @@ import {
   X,
   CalendarDays,
   MapPin,
-  Edit
+  Edit,
+  Link2,
+  Copy,
+  BarChart3,
+  MessageSquare
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -46,6 +50,22 @@ interface TrainingProgram {
   requestReason?: string;
   employeeIds?: string[];
   isSpecialTraining?: boolean;
+  feedbackLink?: string;
+  feedbackCount?: number;
+}
+
+interface TrainingFeedback {
+  id: string;
+  programId: string;
+  trainingSubject: string;
+  trainingDate: string;
+  trainingInstitute: string;
+  objectiveClear: 1 | 2 | 3 | 4 | 5; // 1=Strongly Disagree, 5=Strongly Agree
+  contentRelevant: 1 | 2 | 3 | 4 | 5;
+  presentationEffective: 1 | 2 | 3 | 4 | 5;
+  materialsUseful: 1 | 2 | 3 | 4 | 5;
+  additionalComments: string;
+  submittedDate: string;
 }
 
 interface TrainingEnrollment {
@@ -116,9 +136,13 @@ const TrainingManagement = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [programType, setProgramType] = useState<'regular' | 'special'>('regular');
   const [requestType, setRequestType] = useState<'divisional_request' | 'increment_form' | 'sectional_request' | 'performance_improvement'>('divisional_request');
+  const [selectedProgramForFeedback, setSelectedProgramForFeedback] = useState<TrainingProgram | null>(null);
+  const [isFeedbackLinkModalOpen, setIsFeedbackLinkModalOpen] = useState(false);
+  const [isFeedbackResultsModalOpen, setIsFeedbackResultsModalOpen] = useState(false);
+  const [feedbackData, setFeedbackData] = useState<TrainingFeedback[]>([]);
   
   // Mock data - in real app, this would come from API
-  const [trainingPrograms] = useState<TrainingProgram[]>([
+  const [trainingPrograms, setTrainingPrograms] = useState<TrainingProgram[]>([
     {
       id: '1',
       programName: 'Leadership Development Program',
@@ -389,6 +413,40 @@ const TrainingManagement = () => {
     });
   };
 
+  // Generate unique feedback link for a program
+  const generateFeedbackLink = (programId: string) => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/training-feedback/${programId}`;
+  };
+
+  // Copy link to clipboard
+  const copyFeedbackLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    alert('Feedback link copied to clipboard!');
+  };
+
+  // Calculate feedback statistics
+  const calculateFeedbackStats = (programId: string) => {
+    const programFeedback = feedbackData.filter(f => f.programId === programId);
+    if (programFeedback.length === 0) {
+      return null;
+    }
+
+    const avgObjectiveClear = programFeedback.reduce((sum, f) => sum + f.objectiveClear, 0) / programFeedback.length;
+    const avgContentRelevant = programFeedback.reduce((sum, f) => sum + f.contentRelevant, 0) / programFeedback.length;
+    const avgPresentationEffective = programFeedback.reduce((sum, f) => sum + f.presentationEffective, 0) / programFeedback.length;
+    const avgMaterialsUseful = programFeedback.reduce((sum, f) => sum + f.materialsUseful, 0) / programFeedback.length;
+
+    return {
+      count: programFeedback.length,
+      avgObjectiveClear,
+      avgContentRelevant,
+      avgPresentationEffective,
+      avgMaterialsUseful,
+      overallAvg: (avgObjectiveClear + avgContentRelevant + avgPresentationEffective + avgMaterialsUseful) / 4
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -612,6 +670,9 @@ const TrainingManagement = () => {
                     Enrollment
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Progress
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -656,6 +717,42 @@ const TrainingManagement = () => {
                           style={{ width: `${(program.enrolled / program.capacity) * 100}%` }}
                         />
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {(() => {
+                        const stats = calculateFeedbackStats(program.id);
+                        return stats ? (
+                          <div>
+                            <button
+                              onClick={() => {
+                                setSelectedProgramForFeedback(program);
+                                setIsFeedbackResultsModalOpen(true);
+                              }}
+                              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              {stats.count} Feedback
+                            </button>
+                            <div className="flex items-center gap-1 mt-1">
+                              <BarChart3 className="w-3 h-3 text-gray-400" />
+                              <span className="text-xs text-gray-600">
+                                Avg: {stats.overallAvg.toFixed(1)}/5
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setSelectedProgramForFeedback(program);
+                              setIsFeedbackLinkModalOpen(true);
+                            }}
+                            className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600"
+                          >
+                            <Link2 className="w-4 h-4" />
+                            <span>Get Feedback</span>
+                          </button>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(program.status)}`}>
@@ -2008,6 +2105,300 @@ const TrainingManagement = () => {
               {selectedEvent ? 'Update Event' : 'Create Event'}
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Feedback Link Modal */}
+      <Modal
+        isOpen={isFeedbackLinkModalOpen}
+        onClose={() => {
+          setIsFeedbackLinkModalOpen(false);
+          setSelectedProgramForFeedback(null);
+        }}
+        title="Generate Feedback Link"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Link2 className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Training Evaluation Sheet - HRF/26(E)
+                </h3>
+                <p className="text-sm text-gray-700 mb-3">
+                  Share this link with participants to collect anonymous feedback about the training program: <strong>{selectedProgramForFeedback?.programName}</strong>
+                </p>
+                <div className="bg-white border border-gray-300 rounded-lg p-3 mt-3">
+                  <p className="text-xs text-gray-600 mb-2">Feedback Link:</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-sm text-blue-600 bg-gray-50 px-3 py-2 rounded border border-gray-200 break-all">
+                      {selectedProgramForFeedback && generateFeedbackLink(selectedProgramForFeedback.id)}
+                    </code>
+                    <button
+                      onClick={() => selectedProgramForFeedback && copyFeedbackLink(generateFeedbackLink(selectedProgramForFeedback.id))}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-gray-600" />
+              Feedback Form Includes:
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                Training subject, date, and institute information
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                4 evaluation criteria with 5-point agreement scale
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                Additional comments and suggestions section
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                Anonymous submission via mobile devices
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div className="text-sm text-yellow-800">
+                <p className="font-medium">Mobile-Friendly Form</p>
+                <p className="mt-1">Participants can fill this form anonymously using their mobile devices. All feedback will be collected and displayed in the Progress section.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              className="flex-1 justify-center"
+              onClick={() => {
+                setIsFeedbackLinkModalOpen(false);
+                setSelectedProgramForFeedback(null);
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1 justify-center"
+              onClick={() => {
+                if (selectedProgramForFeedback) {
+                  copyFeedbackLink(generateFeedbackLink(selectedProgramForFeedback.id));
+                }
+              }}
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Copy Link & Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Feedback Results Modal */}
+      <Modal
+        isOpen={isFeedbackResultsModalOpen}
+        onClose={() => {
+          setIsFeedbackResultsModalOpen(false);
+          setSelectedProgramForFeedback(null);
+        }}
+        title={`Feedback Results - ${selectedProgramForFeedback?.programName}`}
+        size="xl"
+      >
+        <div className="space-y-4">
+          {(() => {
+            const stats = selectedProgramForFeedback ? calculateFeedbackStats(selectedProgramForFeedback.id) : null;
+            const programFeedback = selectedProgramForFeedback ? feedbackData.filter(f => f.programId === selectedProgramForFeedback.id) : [];
+
+            if (!stats) {
+              return (
+                <div className="text-center py-8">
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No feedback received yet</p>
+                </div>
+              );
+            }
+
+            return (
+              <>
+                {/* Summary Statistics */}
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 p-5 rounded-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                      Overall Feedback Summary
+                    </h3>
+                    <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium">
+                      {stats.count} Responses
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Objective Clear */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-600 mb-1">Objective Clarity</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stats.avgObjectiveClear.toFixed(1)}
+                        </p>
+                        <p className="text-sm text-gray-500">/5.0</p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all"
+                          style={{ width: `${(stats.avgObjectiveClear / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Content Relevant */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-600 mb-1">Content Relevance</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stats.avgContentRelevant.toFixed(1)}
+                        </p>
+                        <p className="text-sm text-gray-500">/5.0</p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-green-600 h-2 rounded-full transition-all"
+                          style={{ width: `${(stats.avgContentRelevant / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Presentation Effective */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-600 mb-1">Presentation Quality</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stats.avgPresentationEffective.toFixed(1)}
+                        </p>
+                        <p className="text-sm text-gray-500">/5.0</p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-purple-600 h-2 rounded-full transition-all"
+                          style={{ width: `${(stats.avgPresentationEffective / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Materials Useful */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <p className="text-xs text-gray-600 mb-1">Materials Quality</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-gray-900">
+                          {stats.avgMaterialsUseful.toFixed(1)}
+                        </p>
+                        <p className="text-sm text-gray-500">/5.0</p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-orange-600 h-2 rounded-full transition-all"
+                          style={{ width: `${(stats.avgMaterialsUseful / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Overall Score */}
+                  <div className="mt-4 bg-white p-4 rounded-lg shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-white">
+                            {stats.overallAvg.toFixed(1)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Overall Average Rating</p>
+                          <p className="text-lg font-bold text-gray-900">
+                            {stats.overallAvg >= 4.5 ? 'Excellent' : stats.overallAvg >= 3.5 ? 'Very Good' : stats.overallAvg >= 2.5 ? 'Good' : stats.overallAvg >= 1.5 ? 'Fair' : 'Needs Improvement'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-3xl font-bold text-gray-900">{((stats.overallAvg / 5) * 100).toFixed(0)}%</p>
+                        <p className="text-sm text-gray-600">Satisfaction</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Individual Feedback Comments */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-gray-600" />
+                    Participant Comments ({programFeedback.filter(f => f.additionalComments).length})
+                  </h4>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {programFeedback.filter(f => f.additionalComments).length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">No comments provided</p>
+                    ) : (
+                      programFeedback
+                        .filter(f => f.additionalComments)
+                        .map((feedback, idx) => (
+                          <div key={feedback.id} className="bg-white p-3 rounded-lg border border-gray-200">
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <span className="text-sm font-medium text-blue-600">#{idx + 1}</span>
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-700">{feedback.additionalComments}</p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  Submitted on {formatDate(feedback.submittedDate)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                    variant="secondary"
+                    className="flex-1 justify-center"
+                    onClick={() => {
+                      setIsFeedbackResultsModalOpen(false);
+                      setSelectedProgramForFeedback(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="flex-1 justify-center"
+                    onClick={() => {
+                      alert('Export feedback report functionality will be implemented');
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Report
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </Modal>
     </div>
