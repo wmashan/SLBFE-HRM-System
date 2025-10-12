@@ -18,7 +18,9 @@ import {
   Trash2,
   Save,
   X,
-  CalendarDays
+  CalendarDays,
+  MapPin,
+  Edit
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -37,6 +39,13 @@ interface TrainingProgram {
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   location: string;
   description: string;
+  programType?: 'regular' | 'special';
+  requestType?: 'divisional_request' | 'increment_form' | 'sectional_request' | 'performance_improvement';
+  requestedBy?: string;
+  requestingDepartment?: string;
+  requestReason?: string;
+  employeeIds?: string[];
+  isSpecialTraining?: boolean;
 }
 
 interface TrainingEnrollment {
@@ -70,12 +79,14 @@ interface CalendarEvent {
   id: string;
   programId: string;
   programName: string;
+  title?: string; // Added for special training display
   category: string;
   instructor: string;
   startDate: string;
   endDate: string;
   startTime: string;
   endTime: string;
+  duration?: string; // Added for special training display
   location: string;
   capacity: number;
   enrolled: number;
@@ -85,7 +96,12 @@ interface CalendarEvent {
   targetAudience: string;
   materials: string[];
   notes: string;
+  description?: string; // Added for special training display
   color: string;
+  programType?: 'regular' | 'special';
+  requestType?: 'divisional_request' | 'increment_form' | 'sectional_request' | 'performance_improvement';
+  requestedBy?: string;
+  isSpecialTraining?: boolean;
 }
 
 const TrainingManagement = () => {
@@ -98,6 +114,8 @@ const TrainingManagement = () => {
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'list'>('month');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [programType, setProgramType] = useState<'regular' | 'special'>('regular');
+  const [requestType, setRequestType] = useState<'divisional_request' | 'increment_form' | 'sectional_request' | 'performance_improvement'>('divisional_request');
   
   // Mock data - in real app, this would come from API
   const [trainingPrograms] = useState<TrainingProgram[]>([
@@ -930,16 +948,128 @@ const TrainingManagement = () => {
 
           {/* Calendar Events List View */}
           {calendarView === 'list' && (
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-              <div className="p-4 bg-gray-50 border-b">
-                <h4 className="font-semibold text-gray-900">All Training Events - {selectedYear}</h4>
+            <>
+              {/* Special Training Section */}
+              <div className="bg-white rounded-lg shadow-sm border overflow-hidden mb-6">
+                <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 border-b border-orange-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-orange-600" />
+                      <h4 className="font-semibold text-gray-900">Special Training Programs - {selectedYear}</h4>
+                      <span className="px-2 py-0.5 text-xs bg-orange-600 text-white rounded-full">
+                        {calendarEvents.filter(e => 
+                          new Date(e.startDate).getFullYear() === selectedYear && 
+                          e.isSpecialTraining === true
+                        ).length}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">Manager requests, increment requirements, and performance improvement programs</p>
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {calendarEvents
+                    .filter(event => {
+                      const eventDate = new Date(event.startDate);
+                      return eventDate.getFullYear() === selectedYear && event.isSpecialTraining === true;
+                    })
+                    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+                    .map(event => (
+                      <div key={event.id} className="p-4 hover:bg-orange-50 transition-colors border-l-4 border-l-orange-600">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h5 className="font-semibold text-gray-900">{event.title}</h5>
+                              <span className="px-2 py-0.5 text-xs bg-orange-600 text-white rounded">Special</span>
+                              {event.requestType && (
+                                <span className="px-2 py-0.5 text-xs bg-gray-600 text-white rounded">
+                                  {event.requestType.replace('_', ' ').toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}</span>
+                              </div>
+                              {event.requestedBy && (
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4" />
+                                  <span>Requested by: {event.requestedBy}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                <span>{event.location}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                <span>{event.duration}</span>
+                              </div>
+                              {event.description && (
+                                <div className="mt-2 text-gray-700">
+                                  <p>{event.description}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                // Edit functionality
+                                alert('Edit special training event');
+                              }}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit Event"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm('Are you sure you want to delete this special training event?')) {
+                                  setCalendarEvents(calendarEvents.filter(e => e.id !== event.id));
+                                }
+                              }}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete Event"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  {calendarEvents.filter(e => 
+                    new Date(e.startDate).getFullYear() === selectedYear && 
+                    e.isSpecialTraining === true
+                  ).length === 0 && (
+                    <div className="text-center py-8">
+                      <FileText className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-500 text-sm">No special training programs scheduled for {selectedYear}</p>
+                      <p className="text-gray-400 text-xs mt-1">Create special training programs via "Add Training Program" button</p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="divide-y divide-gray-200">
-                {calendarEvents
-                  .filter(event => {
-                    const eventDate = new Date(event.startDate);
-                    return eventDate.getFullYear() === selectedYear;
-                  })
+
+              {/* Regular Training Section */}
+              <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <div className="p-4 bg-gray-50 border-b">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-gray-900">Regular Training Events - {selectedYear}</h4>
+                    <span className="px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full">
+                      {calendarEvents.filter(e => 
+                        new Date(e.startDate).getFullYear() === selectedYear && 
+                        e.isSpecialTraining !== true
+                      ).length}
+                    </span>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {calendarEvents
+                    .filter(event => {
+                      const eventDate = new Date(event.startDate);
+                      return eventDate.getFullYear() === selectedYear && event.isSpecialTraining !== true;
+                    })
                   .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
                   .map((event) => (
                     <div key={event.id} className="p-6 hover:bg-gray-50 transition-colors">
@@ -1066,22 +1196,18 @@ const TrainingManagement = () => {
                       </div>
                     </div>
                   ))}
-              </div>
-              {calendarEvents.filter(e => new Date(e.startDate).getFullYear() === selectedYear).length === 0 && (
-                <div className="text-center py-12">
-                  <CalendarDays className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No training events scheduled for {selectedYear}</p>
-                  <Button
-                    variant="primary"
-                    className="mt-4"
-                    onClick={() => setIsCalendarEventModalOpen(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add First Event
-                  </Button>
+                  {calendarEvents.filter(e => 
+                    new Date(e.startDate).getFullYear() === selectedYear && 
+                    e.isSpecialTraining !== true
+                  ).length === 0 && (
+                    <div className="text-center py-8">
+                      <Calendar className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-500 text-sm">No regular training events scheduled for {selectedYear}</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            </>
           )}
 
           {/* Month/Week View - Simplified Calendar Grid */}
@@ -1183,12 +1309,431 @@ const TrainingManagement = () => {
       {/* Modals */}
       <Modal
         isOpen={isAddProgramModalOpen}
-        onClose={() => setIsAddProgramModalOpen(false)}
+        onClose={() => {
+          setIsAddProgramModalOpen(false);
+          setProgramType('regular');
+          setRequestType('divisional_request');
+        }}
         title="Add Training Program"
+        size="xl"
       >
-        <div className="space-y-4">
-          <p className="text-gray-600">Form to add new training program will be implemented here</p>
-          {/* Add form fields here */}
+        <div className="space-y-5">
+          {/* Program Type Selection */}
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <label className="block text-sm font-semibold text-gray-900 mb-3">
+              Program Type *
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setProgramType('regular')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  programType === 'regular'
+                    ? 'border-blue-600 bg-blue-50 shadow-md'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    programType === 'regular' ? 'border-blue-600' : 'border-gray-300'
+                  }`}>
+                    {programType === 'regular' && (
+                      <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                    )}
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-gray-900">Regular Training</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Standard training programs for general employee development
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setProgramType('special')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  programType === 'special'
+                    ? 'border-orange-600 bg-orange-50 shadow-md'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    programType === 'special' ? 'border-orange-600' : 'border-gray-300'
+                  }`}>
+                    {programType === 'special' && (
+                      <div className="w-3 h-3 rounded-full bg-orange-600"></div>
+                    )}
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-gray-900 flex items-center gap-2">
+                      Special Training
+                      <span className="px-2 py-0.5 text-xs bg-orange-600 text-white rounded">Special</span>
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Training based on special requests or mandatory requirements
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Special Request Type - Only shown for Special Training */}
+          {programType === 'special' && (
+            <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
+                Special Request Type *
+              </label>
+              <div className="grid grid-cols-1 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRequestType('divisional_request')}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    requestType === 'divisional_request'
+                      ? 'border-orange-600 bg-white shadow-sm'
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      requestType === 'divisional_request' ? 'border-orange-600' : 'border-gray-300'
+                    }`}>
+                      {requestType === 'divisional_request' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-orange-600"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Divisional Request</div>
+                      <div className="text-xs text-gray-600">Requested by relevant divisional manager</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRequestType('sectional_request')}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    requestType === 'sectional_request'
+                      ? 'border-orange-600 bg-white shadow-sm'
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      requestType === 'sectional_request' ? 'border-orange-600' : 'border-gray-300'
+                    }`}>
+                      {requestType === 'sectional_request' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-orange-600"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Sectional Request</div>
+                      <div className="text-xs text-gray-600">Requested by relevant sectional manager</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRequestType('increment_form')}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    requestType === 'increment_form'
+                      ? 'border-orange-600 bg-white shadow-sm'
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      requestType === 'increment_form' ? 'border-orange-600' : 'border-gray-300'
+                    }`}>
+                      {requestType === 'increment_form' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-orange-600"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Increment Form Requirement</div>
+                      <div className="text-xs text-gray-600">Training required if increment was not issued</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRequestType('performance_improvement')}
+                  className={`p-3 rounded-lg border-2 transition-all text-left ${
+                    requestType === 'performance_improvement'
+                      ? 'border-orange-600 bg-white shadow-sm'
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      requestType === 'performance_improvement' ? 'border-orange-600' : 'border-gray-300'
+                    }`}>
+                      {requestType === 'performance_improvement' && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-orange-600"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Performance Improvement</div>
+                      <div className="text-xs text-gray-600">Training for performance enhancement</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Request Details - Only shown for Special Training */}
+          {programType === 'special' && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-orange-600" />
+                Request Details
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Requested By *
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Manager name or Employee ID"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Requesting Department/Division *
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="e.g., IT Department, Sales Division"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Request Reason *
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                    rows={3}
+                    placeholder="Detailed reason for this special training request"
+                  />
+                </div>
+                {requestType === 'increment_form' && (
+                  <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                      <div className="text-sm text-yellow-800">
+                        <p className="font-medium">Increment Form Reference</p>
+                        <p className="mt-1">This training is mandatory for employees who were denied increment. Please specify the employees and increment cycle details below.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Target Employee IDs (comma-separated)
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="EMP001, EMP002, EMP003"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Leave empty if targeting all employees in department</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Basic Information Section */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-blue-600" />
+              Program Information
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Program Name *
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g., Customer Service Excellence"
+                  className="w-full"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category *
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Management">Management</option>
+                    <option value="Technical">Technical</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Soft Skills">Soft Skills</option>
+                    <option value="Compliance">Compliance</option>
+                    <option value="Safety">Safety</option>
+                    <option value="Performance">Performance Improvement</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Duration *
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="e.g., 2 weeks, 3 months"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Instructor *
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Instructor name"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                  rows={3}
+                  placeholder="Brief description of the training program"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Schedule & Logistics Section */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              Schedule & Logistics
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Date *
+                  </label>
+                  <Input
+                    type="date"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End Date *
+                  </label>
+                  <Input
+                    type="date"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location *
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g., Training Room A or Online"
+                  className="w-full"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Capacity *
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="25"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="upcoming">Upcoming</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Confirmation Message */}
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">
+                  {programType === 'special' ? 'Special Training Program' : 'Regular Training Program'}
+                </p>
+                <p className="mt-1">
+                  {programType === 'special' 
+                    ? `This program will be added to the annual calendar under "Special Training" section and will be marked as a ${requestType.replace('_', ' ')} requirement.`
+                    : 'This program will be added to the regular training calendar.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              className="flex-1 justify-center"
+              onClick={() => {
+                setIsAddProgramModalOpen(false);
+                setProgramType('regular');
+                setRequestType('divisional_request');
+              }}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1 justify-center"
+              onClick={() => {
+                // Form submission logic will be implemented here
+                const message = programType === 'special' 
+                  ? `Special training program will be created and added to the calendar under "Special Training" section.`
+                  : 'Regular training program will be created and added to the calendar.';
+                alert(message + '\n\nAPI integration pending.');
+                setIsAddProgramModalOpen(false);
+                setProgramType('regular');
+                setRequestType('divisional_request');
+              }}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Create Program
+            </Button>
+          </div>
         </div>
       </Modal>
 
