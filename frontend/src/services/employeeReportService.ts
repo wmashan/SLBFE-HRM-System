@@ -116,12 +116,13 @@ export interface EmployeeReportSummary {
     totalPromoted: number;
     promotionRate: number;
   };
+  strategicInsights?: string; // Markdown-formatted strategic analysis for department-wise reports
 }
 
 export interface ChartData {
   id: string;
   title: string;
-  type: 'bar' | 'pie' | 'line' | 'doughnut';
+  type: 'bar' | 'pie' | 'line' | 'doughnut' | 'scatter';
   data: any;
   options?: any;
 }
@@ -153,10 +154,20 @@ export const PREDEFINED_REPORTS: EmployeeReportConfig[] = [
   },
   {
     id: 'department_wise',
-    name: 'Department-wise Employee Report',
-    description: 'Employee breakdown by departments',
+    name: 'Department-wise Strategic Analytics Report',
+    description: 'Comprehensive departmental analysis with managerial insights, performance metrics, and predictive analytics for strategic decision-making',
     type: 'department_wise_analysis',
-    includedSections: ['personal_details', 'employment_history'],
+    includedSections: [
+      'personal_details', 
+      'employment_history', 
+      'performance_metrics', 
+      'cost_analysis', 
+      'productivity_metrics',
+      'retention_analytics',
+      'skill_assessment',
+      'succession_planning',
+      'risk_analysis'
+    ],
     filters: {},
     outputFormat: 'excel',
     includeCharts: true,
@@ -328,7 +339,7 @@ class EmployeeReportService {
     const mockData = this.getMockEmployeeData();
     const filteredData = this.applyFilters(mockData, config.filters);
     const processedData = this.processReportData(filteredData, config);
-    const summary = this.generateSummary(processedData);
+    const summary = this.generateSummary(processedData, config);
     const charts = config.includeCharts ? this.generateCharts(processedData, config) : [];
 
     const result: EmployeeReportResult = {
@@ -484,7 +495,8 @@ class EmployeeReportService {
   }
 
   // Generate report summary statistics
-  private generateSummary(data: any[]): EmployeeReportSummary {
+  // Enhanced generateSummary with strategic insights
+  private generateSummary(data: any[], config?: EmployeeReportConfig): EmployeeReportSummary {
     const employees = data.filter(item => !item.isGroupHeader);
     
     const genderDistribution = employees.reduce((acc, emp) => {
@@ -534,7 +546,7 @@ class EmployeeReportService {
       max: Math.max(...salaries)
     };
 
-    return {
+    const baseSummary = {
       totalEmployees: employees.length,
       demographics: {
         averageAge: Math.round(averageAge * 10) / 10,
@@ -551,6 +563,17 @@ class EmployeeReportService {
         promotionRate: Math.round((promotedEmployees.length / employees.length) * 100)
       }
     };
+
+    // Add strategic insights for department-wise reports
+    if (config && config.type === 'department_wise_analysis') {
+      const strategicAnalysis = this.generateDepartmentSummary(employees);
+      return {
+        ...baseSummary,
+        strategicInsights: strategicAnalysis
+      };
+    }
+
+    return baseSummary;
   }
 
   // Generate charts for the report
@@ -1006,7 +1029,183 @@ class EmployeeReportService {
       }
     });
 
-    // Employment type by department
+    // Performance Rating by Department (Managerial Decision Factor)
+    const deptPerformance = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = { total: 0, count: 0 };
+      }
+      acc[emp.division].total += emp.performanceRating || 3.5;
+      acc[emp.division].count += 1;
+      return acc;
+    }, {} as { [key: string]: { total: number, count: number } });
+
+    const performanceData = Object.entries(deptPerformance).map(([dept, data]) => ({
+      department: dept,
+      avgRating: (data as { total: number, count: number }).total / (data as { total: number, count: number }).count
+    }));
+
+    charts.push({
+      id: 'department_performance',
+      title: 'Average Performance Rating by Department',
+      type: 'bar',
+      data: {
+        labels: performanceData.map(d => d.department),
+        datasets: [{
+          label: 'Average Performance Rating',
+          data: performanceData.map(d => d.avgRating),
+          backgroundColor: '#10B981'
+        }]
+      }
+    });
+
+    // ROI Analysis by Department (Critical for Budget Allocation)
+    const deptROI = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = { totalROI: 0, totalCost: 0, count: 0 };
+      }
+      acc[emp.division].totalROI += emp.roiGenerated || 150000;
+      acc[emp.division].totalCost += emp.totalCompensation || 80000;
+      acc[emp.division].count += 1;
+      return acc;
+    }, {} as { [key: string]: { totalROI: number, totalCost: number, count: number } });
+
+    const roiData = Object.entries(deptROI).map(([dept, data]) => ({
+      department: dept,
+      roiRatio: (data as { totalROI: number, totalCost: number, count: number }).totalROI / 
+                (data as { totalROI: number, totalCost: number, count: number }).totalCost
+    }));
+
+    charts.push({
+      id: 'department_roi_efficiency',
+      title: 'ROI Efficiency by Department (Revenue/Cost Ratio)',
+      type: 'bar',
+      data: {
+        labels: roiData.map(d => d.department),
+        datasets: [{
+          label: 'ROI Ratio',
+          data: roiData.map(d => d.roiRatio),
+          backgroundColor: '#F59E0B'
+        }]
+      }
+    });
+
+    // Retention Risk Analysis by Department (Critical for HR Planning)
+    const deptRetention = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = { 
+          highRisk: 0, 
+          mediumRisk: 0, 
+          lowRisk: 0, 
+          total: 0,
+          avgRetentionProb: 0
+        };
+      }
+      
+      const flightRisk = emp.flightRisk || 'Low';
+      if (flightRisk === 'High' || flightRisk === 'Very High') {
+        acc[emp.division].highRisk += 1;
+      } else if (flightRisk === 'Medium') {
+        acc[emp.division].mediumRisk += 1;
+      } else {
+        acc[emp.division].lowRisk += 1;
+      }
+      
+      acc[emp.division].avgRetentionProb += emp.retentionProbability || 75;
+      acc[emp.division].total += 1;
+      return acc;
+    }, {} as { [key: string]: { highRisk: number, mediumRisk: number, lowRisk: number, total: number, avgRetentionProb: number } });
+
+    const retentionData = Object.entries(deptRetention).map(([dept, data]) => {
+      const typedData = data as { highRisk: number, mediumRisk: number, lowRisk: number, total: number, avgRetentionProb: number };
+      return {
+        department: dept,
+        avgRetention: typedData.avgRetentionProb / typedData.total,
+        riskDistribution: {
+          high: typedData.highRisk,
+          medium: typedData.mediumRisk,
+          low: typedData.lowRisk
+        }
+      };
+    });
+
+    charts.push({
+      id: 'department_retention_risk',
+      title: 'Retention Probability by Department',
+      type: 'bar',
+      data: {
+        labels: retentionData.map(d => d.department),
+        datasets: [{
+          label: 'Average Retention Probability (%)',
+          data: retentionData.map(d => d.avgRetention),
+          backgroundColor: '#8B5CF6'
+        }]
+      }
+    });
+
+    // Skills Gap Analysis by Department (Training Investment Priority)
+    const deptSkillsGap = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = { totalGap: 0, count: 0 };
+      }
+      acc[emp.division].totalGap += emp.criticalSkillsGap || 20;
+      acc[emp.division].count += 1;
+      return acc;
+    }, {} as { [key: string]: { totalGap: number, count: number } });
+
+    const skillsGapData = Object.entries(deptSkillsGap).map(([dept, data]) => ({
+      department: dept,
+      avgSkillsGap: (data as { totalGap: number, count: number }).totalGap / (data as { totalGap: number, count: number }).count
+    }));
+
+    charts.push({
+      id: 'department_skills_gap',
+      title: 'Critical Skills Gap by Department (%)',
+      type: 'bar',
+      data: {
+        labels: skillsGapData.map(d => d.department),
+        datasets: [{
+          label: 'Average Skills Gap (%)',
+          data: skillsGapData.map(d => d.avgSkillsGap),
+          backgroundColor: '#EF4444'
+        }]
+      }
+    });
+
+    // Succession Planning Readiness (Leadership Pipeline Analysis)
+    const deptSuccession = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = { totalReadiness: 0, highPotential: 0, count: 0 };
+      }
+      acc[emp.division].totalReadiness += emp.promotionReadiness || 50;
+      if (emp.leadershipPotential === 'High' || emp.leadershipPotential === 'Very High') {
+        acc[emp.division].highPotential += 1;
+      }
+      acc[emp.division].count += 1;
+      return acc;
+    }, {} as { [key: string]: { totalReadiness: number, highPotential: number, count: number } });
+
+    const successionData = Object.entries(deptSuccession).map(([dept, data]) => ({
+      department: dept,
+      avgReadiness: (data as { totalReadiness: number, highPotential: number, count: number }).totalReadiness / 
+                   (data as { totalReadiness: number, highPotential: number, count: number }).count,
+      potentialLeaders: (data as { totalReadiness: number, highPotential: number, count: number }).highPotential
+    }));
+
+    charts.push({
+      id: 'department_succession_readiness',
+      title: 'Succession Planning Readiness by Department',
+      type: 'bar',
+      data: {
+        labels: successionData.map(d => d.department),
+        datasets: [{
+          label: 'Average Promotion Readiness (%)',
+          data: successionData.map(d => d.avgReadiness),
+          backgroundColor: '#14B8A6'
+        }]
+      }
+    });
+
+    // Employment type by department (Workforce Composition)
     const empTypeByDept = employees.reduce((acc, emp) => {
       if (!acc[emp.division]) acc[emp.division] = {};
       acc[emp.division][emp.employmentType] = (acc[emp.division][emp.employmentType] || 0) + 1;
@@ -1018,7 +1217,7 @@ class EmployeeReportService {
     
     charts.push({
       id: 'employment_type_by_department',
-      title: 'Employment Type by Department',
+      title: 'Employment Type Distribution by Department',
       type: 'bar',
       data: {
         labels: deptNames,
@@ -1030,7 +1229,241 @@ class EmployeeReportService {
       }
     });
 
+    // Productivity vs Cost Analysis (Strategic Decision Making)
+    const deptProductivityCost = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = { totalProductivity: 0, totalCost: 0, count: 0 };
+      }
+      acc[emp.division].totalProductivity += emp.productivityScore || 80;
+      acc[emp.division].totalCost += (emp.totalCompensation || 80000) / 1000; // Convert to thousands
+      acc[emp.division].count += 1;
+      return acc;
+    }, {} as { [key: string]: { totalProductivity: number, totalCost: number, count: number } });
+
+    const productivityCostData = Object.entries(deptProductivityCost).map(([dept, data]) => ({
+      department: dept,
+      avgProductivity: (data as { totalProductivity: number, totalCost: number, count: number }).totalProductivity / 
+                      (data as { totalProductivity: number, totalCost: number, count: number }).count,
+      avgCost: (data as { totalProductivity: number, totalCost: number, count: number }).totalCost / 
+               (data as { totalProductivity: number, totalCost: number, count: number }).count
+    }));
+
+    charts.push({
+      id: 'department_productivity_cost',
+      title: 'Productivity vs Cost Analysis by Department',
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'Departments',
+          data: productivityCostData.map(d => ({
+            x: d.avgCost,
+            y: d.avgProductivity,
+            label: d.department
+          })),
+          backgroundColor: '#EC4899'
+        }]
+      }
+    });
+
     return charts;
+  }
+
+  // Generate comprehensive department summary with managerial insights
+  private generateDepartmentSummary(employees: any[]): string {
+    const deptAnalysis = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) {
+        acc[emp.division] = {
+          count: 0,
+          totalSalary: 0,
+          totalROI: 0,
+          performanceSum: 0,
+          retentionSum: 0,
+          skillsGapSum: 0,
+          productivitySum: 0,
+          flightRiskHigh: 0,
+          flightRiskMedium: 0,
+          flightRiskLow: 0,
+          highPotential: 0,
+          promotionReady: 0,
+          burnoutRisk: 0,
+          permanentEmployees: 0,
+          contractEmployees: 0,
+          casualEmployees: 0,
+          trainingInvestment: 0
+        };
+      }
+
+      const dept = acc[emp.division];
+      dept.count += 1;
+      dept.totalSalary += emp.totalCompensation || 80000;
+      dept.totalROI += emp.roiGenerated || 150000;
+      dept.performanceSum += emp.performanceRating || 3.5;
+      dept.retentionSum += emp.retentionProbability || 75;
+      dept.skillsGapSum += emp.criticalSkillsGap || 20;
+      dept.productivitySum += emp.productivityScore || 80;
+      dept.trainingInvestment += emp.trainingInvestment || 15000;
+
+      // Risk Analysis
+      const flightRisk = emp.flightRisk || 'Low';
+      if (flightRisk === 'High' || flightRisk === 'Very High') dept.flightRiskHigh += 1;
+      else if (flightRisk === 'Medium') dept.flightRiskMedium += 1;
+      else dept.flightRiskLow += 1;
+
+      // Leadership & Succession
+      if (emp.leadershipPotential === 'High' || emp.leadershipPotential === 'Very High') {
+        dept.highPotential += 1;
+      }
+      if ((emp.promotionReadiness || 50) >= 80) {
+        dept.promotionReady += 1;
+      }
+      if (emp.burnoutRisk === 'High' || emp.burnoutRisk === 'Medium') {
+        dept.burnoutRisk += 1;
+      }
+
+      // Employment Type
+      if (emp.employmentType === 'Permanent') dept.permanentEmployees += 1;
+      else if (emp.employmentType === 'Contract') dept.contractEmployees += 1;
+      else dept.casualEmployees += 1;
+
+      return acc;
+    }, {} as { [key: string]: any });
+
+    let summary = `# Department-wise Strategic Analysis & Managerial Insights\n\n`;
+    
+    // Overall Summary
+    const totalEmployees = employees.length;
+    const totalSalary = Object.values(deptAnalysis).reduce((sum: number, dept: any) => sum + dept.totalSalary, 0);
+    const totalROI = Object.values(deptAnalysis).reduce((sum: number, dept: any) => sum + dept.totalROI, 0);
+    const avgROIRatio = totalROI / totalSalary;
+
+    summary += `## Executive Summary\n`;
+    summary += `- **Total Employees**: ${totalEmployees}\n`;
+    summary += `- **Total Compensation Cost**: LKR ${(totalSalary / 1000000).toFixed(2)}M\n`;
+    summary += `- **Total Revenue Generated**: LKR ${(totalROI / 1000000).toFixed(2)}M\n`;
+    summary += `- **Overall ROI Ratio**: ${avgROIRatio.toFixed(2)}x\n`;
+    summary += `- **Company Performance Score**: ${((totalROI / totalSalary) * 100).toFixed(1)}%\n\n`;
+
+    // Department Analysis
+    summary += `## Department-wise Analysis\n\n`;
+
+    Object.entries(deptAnalysis).forEach(([deptName, data]: [string, any]) => {
+      const avgPerformance = (data.performanceSum / data.count).toFixed(2);
+      const avgRetention = (data.retentionSum / data.count).toFixed(1);
+      const avgSkillsGap = (data.skillsGapSum / data.count).toFixed(1);
+      const avgProductivity = (data.productivitySum / data.count).toFixed(1);
+      const roiRatio = (data.totalROI / data.totalSalary).toFixed(2);
+      const retentionRiskPercent = ((data.flightRiskMedium + data.flightRiskHigh) / data.count * 100).toFixed(1);
+      const leadershipPipelinePercent = (data.highPotential / data.count * 100).toFixed(1);
+
+      summary += `### ${deptName} Department\n`;
+      summary += `**Workforce Composition**: ${data.count} employees (${data.permanentEmployees} Permanent, ${data.contractEmployees} Contract, ${data.casualEmployees} Casual)\n\n`;
+
+      // Performance Metrics
+      summary += `**Performance Indicators:**\n`;
+      summary += `- Average Performance Rating: ${avgPerformance}/5.0\n`;
+      summary += `- Average Productivity Score: ${avgProductivity}%\n`;
+      summary += `- ROI Efficiency: ${roiRatio}x (LKR ${(data.totalROI/1000000).toFixed(2)}M revenue vs LKR ${(data.totalSalary/1000000).toFixed(2)}M cost)\n\n`;
+
+      // Risk Assessment
+      summary += `**Risk Assessment:**\n`;
+      summary += `- Retention Risk: ${retentionRiskPercent}% (${data.flightRiskHigh} high risk, ${data.flightRiskMedium} medium risk)\n`;
+      summary += `- Average Retention Probability: ${avgRetention}%\n`;
+      summary += `- Skills Gap: ${avgSkillsGap}% critical skills missing\n`;
+      summary += `- Burnout Risk: ${data.burnoutRisk} employees at risk\n\n`;
+
+      // Strategic Insights
+      summary += `**Strategic Insights:**\n`;
+      summary += `- Leadership Pipeline: ${leadershipPipelinePercent}% high-potential leaders (${data.highPotential} employees)\n`;
+      summary += `- Promotion Ready: ${data.promotionReady} employees ready for advancement\n`;
+      summary += `- Training Investment: LKR ${(data.trainingInvestment/1000).toFixed(0)}K per employee\n\n`;
+
+      // Management Recommendations
+      summary += `**Management Recommendations:**\n`;
+      
+      if (parseFloat(roiRatio) < 2.0) {
+        summary += `- ⚠️ **PRIORITY**: ROI below target (${roiRatio}x). Review resource allocation and productivity initiatives.\n`;
+      } else if (parseFloat(roiRatio) > 4.0) {
+        summary += `- ✅ **EXCELLENT**: High ROI efficiency (${roiRatio}x). Consider expanding this department.\n`;
+      }
+
+      if (parseFloat(retentionRiskPercent) > 30) {
+        summary += `- ⚠️ **URGENT**: High retention risk (${retentionRiskPercent}%). Implement retention strategies immediately.\n`;
+      }
+
+      if (parseFloat(avgSkillsGap) > 25) {
+        summary += `- 📚 **ACTION NEEDED**: Critical skills gap (${avgSkillsGap}%). Prioritize training and development.\n`;
+      }
+
+      if (data.highPotential === 0) {
+        summary += `- 👥 **SUCCESSION RISK**: No high-potential leaders identified. Focus on leadership development.\n`;
+      }
+
+      if (parseFloat(avgPerformance) < 3.5) {
+        summary += `- 📈 **PERFORMANCE**: Below average performance (${avgPerformance}). Review management practices and support systems.\n`;
+      }
+
+      summary += `\n---\n\n`;
+    });
+
+    // Strategic Recommendations
+    summary += `## Company-wide Strategic Recommendations\n\n`;
+    
+    const depts = Object.entries(deptAnalysis);
+    let bestROI = { name: depts[0][0], data: depts[0][1] as any };
+    let worstROI = { name: depts[0][0], data: depts[0][1] as any };
+    
+    depts.forEach(([name, data]: [string, any]) => {
+      const currentROI = data.totalROI / data.totalSalary;
+      const bestCurrentROI = bestROI.data.totalROI / bestROI.data.totalSalary;
+      const worstCurrentROI = worstROI.data.totalROI / worstROI.data.totalSalary;
+      
+      if (currentROI > bestCurrentROI) {
+        bestROI = { name, data };
+      }
+      if (currentROI < worstCurrentROI) {
+        worstROI = { name, data };
+      }
+    });
+
+    summary += `### Investment Priorities\n`;
+    summary += `1. **Expand High-Performing Department**: ${bestROI.name} shows highest ROI (${(bestROI.data.totalROI / bestROI.data.totalSalary).toFixed(2)}x)\n`;
+    summary += `2. **Restructure Underperforming Department**: ${worstROI.name} needs attention (ROI: ${(worstROI.data.totalROI / worstROI.data.totalSalary).toFixed(2)}x)\n\n`;
+
+    const highRetentionRiskDepts = depts.filter(([_, data]: [string, any]) => 
+      ((data.flightRiskMedium + data.flightRiskHigh) / data.count) > 0.3
+    );
+
+    if (highRetentionRiskDepts.length > 0) {
+      summary += `### Immediate Actions Required\n`;
+      summary += `**Retention Crisis Management:**\n`;
+      highRetentionRiskDepts.forEach(([name, data]: [string, any]) => {
+        summary += `- ${name}: ${((data.flightRiskMedium + data.flightRiskHigh) / data.count * 100).toFixed(1)}% retention risk\n`;
+      });
+      summary += `\n`;
+    }
+
+    const skillsGapDepts = depts.filter(([_, data]: [string, any]) => 
+      (data.skillsGapSum / data.count) > 25
+    );
+
+    if (skillsGapDepts.length > 0) {
+      summary += `**Skills Development Priority:**\n`;
+      skillsGapDepts.forEach(([name, data]: [string, any]) => {
+        summary += `- ${name}: ${(data.skillsGapSum / data.count).toFixed(1)}% critical skills gap\n`;
+      });
+    }
+
+    summary += `\n### Key Performance Indicators to Monitor\n`;
+    summary += `- Monthly ROI ratio by department\n`;
+    summary += `- Employee retention rates and exit interview feedback\n`;
+    summary += `- Skills assessment progress and training completion rates\n`;
+    summary += `- Leadership pipeline development and succession readiness\n`;
+    summary += `- Employee engagement and satisfaction scores\n`;
+    summary += `- Performance improvement trajectories\n\n`;
+
+    summary += `---\n*Report generated on ${new Date().toLocaleDateString()} for strategic decision-making and workforce planning.*`;
+
+    return summary;
   }
 
   // Generate general charts (fallback)
@@ -1081,7 +1514,7 @@ class EmployeeReportService {
     return charts;
   }
 
-  // Get mock employee data (using the same data from Employees component)
+  // Get comprehensive mock employee data with managerial analytics
   private getMockEmployeeData(): any[] {
     return [
       {
@@ -1101,6 +1534,63 @@ class EmployeeReportService {
         dateOfBirth: "1995-05-15",
         dateJoined: "2023-01-15",
         employmentType: "Permanent",
+        
+        // Performance Metrics
+        performanceRating: 4.2,
+        kpiScore: 87,
+        projectCompletionRate: 92,
+        clientSatisfactionScore: 4.5,
+        innovationScore: 3.8,
+        teamCollaborationScore: 4.1,
+        
+        // Cost Analysis
+        monthlySalary: 85000,
+        totalCompensation: 102000, // Including benefits
+        costPerProject: 42000,
+        roiGenerated: 285000, // Revenue/value generated
+        trainingInvestment: 25000,
+        benefitsCost: 17000,
+        
+        // Productivity Metrics
+        hoursWorked: 165, // Monthly
+        productivityScore: 89,
+        tasksCompletedOnTime: 94, // percentage
+        codeQualityScore: 87,
+        meetingEfficiency: 78,
+        
+        // Retention Analytics
+        retentionProbability: 85, // percentage likelihood to stay
+        satisfactionScore: 4.3,
+        engagementLevel: "High",
+        careerGrowthSatisfaction: 4.0,
+        workLifeBalanceScore: 3.9,
+        
+        // Skills & Competencies
+        skillLevel: "Advanced",
+        criticalSkillsGap: 15, // percentage
+        skillDevelopmentProgress: 82,
+        certifications: ["AWS Certified", "Scrum Master"],
+        skillMatrix: {
+          technical: 88,
+          leadership: 65,
+          communication: 78,
+          analytical: 85
+        },
+        
+        // Succession Planning
+        promotionReadiness: 75, // percentage
+        leadershipPotential: "High",
+        successorRisk: "Low", // if this person leaves
+        mentoringCapability: 70,
+        knowledgeTransferScore: 82,
+        
+        // Risk Analysis
+        flightRisk: "Low",
+        burnoutRisk: "Medium",
+        skillObsolescenceRisk: "Low",
+        disciplinaryIssues: 0,
+        absenteeismRate: 2.1, // percentage
+        
         promotions: [
           { date: "2023-12-01", from: "Junior Software Engineer", to: "Software Engineer" }
         ],
@@ -1126,6 +1616,63 @@ class EmployeeReportService {
         dateOfBirth: "1987-08-22",
         dateJoined: "2022-06-10",
         employmentType: "Permanent",
+        
+        // Performance Metrics
+        performanceRating: 4.6,
+        kpiScore: 93,
+        projectCompletionRate: 96,
+        clientSatisfactionScore: 4.7,
+        innovationScore: 4.2,
+        teamCollaborationScore: 4.8,
+        
+        // Cost Analysis
+        monthlySalary: 125000,
+        totalCompensation: 150000,
+        costPerProject: 65000,
+        roiGenerated: 420000,
+        trainingInvestment: 35000,
+        benefitsCost: 25000,
+        
+        // Productivity Metrics
+        hoursWorked: 168,
+        productivityScore: 94,
+        tasksCompletedOnTime: 97,
+        codeQualityScore: 0, // N/A for non-technical role
+        meetingEfficiency: 89,
+        
+        // Retention Analytics
+        retentionProbability: 92,
+        satisfactionScore: 4.6,
+        engagementLevel: "Very High",
+        careerGrowthSatisfaction: 4.4,
+        workLifeBalanceScore: 4.2,
+        
+        // Skills & Competencies
+        skillLevel: "Expert",
+        criticalSkillsGap: 8,
+        skillDevelopmentProgress: 91,
+        certifications: ["SHRM-CP", "PHR", "Leadership Excellence"],
+        skillMatrix: {
+          technical: 45,
+          leadership: 95,
+          communication: 92,
+          analytical: 88
+        },
+        
+        // Succession Planning
+        promotionReadiness: 90,
+        leadershipPotential: "Very High",
+        successorRisk: "High", // Critical role
+        mentoringCapability: 95,
+        knowledgeTransferScore: 89,
+        
+        // Risk Analysis
+        flightRisk: "Very Low",
+        burnoutRisk: "Low",
+        skillObsolescenceRisk: "Very Low",
+        disciplinaryIssues: 0,
+        absenteeismRate: 1.2,
+        
         promotions: [
           { date: "2023-01-01", from: "Senior HR Officer", to: "HR Manager" }
         ],
@@ -1151,6 +1698,63 @@ class EmployeeReportService {
         dateOfBirth: "1992-12-10",
         dateJoined: "2023-03-20",
         employmentType: "Contract",
+        
+        // Performance Metrics
+        performanceRating: 3.8,
+        kpiScore: 82,
+        projectCompletionRate: 88,
+        clientSatisfactionScore: 4.1,
+        innovationScore: 4.0,
+        teamCollaborationScore: 3.9,
+        
+        // Cost Analysis
+        monthlySalary: 75000,
+        totalCompensation: 85000,
+        costPerProject: 38000,
+        roiGenerated: 195000,
+        trainingInvestment: 18000,
+        benefitsCost: 10000,
+        
+        // Productivity Metrics
+        hoursWorked: 162,
+        productivityScore: 85,
+        tasksCompletedOnTime: 91,
+        codeQualityScore: 82,
+        meetingEfficiency: 72,
+        
+        // Retention Analytics
+        retentionProbability: 68, // Lower for contract
+        satisfactionScore: 3.9,
+        engagementLevel: "Medium",
+        careerGrowthSatisfaction: 3.5,
+        workLifeBalanceScore: 4.1,
+        
+        // Skills & Competencies
+        skillLevel: "Intermediate",
+        criticalSkillsGap: 25,
+        skillDevelopmentProgress: 76,
+        certifications: ["Google Analytics", "Tableau Desktop"],
+        skillMatrix: {
+          technical: 82,
+          leadership: 45,
+          communication: 68,
+          analytical: 90
+        },
+        
+        // Succession Planning
+        promotionReadiness: 55,
+        leadershipPotential: "Medium",
+        successorRisk: "Medium",
+        mentoringCapability: 45,
+        knowledgeTransferScore: 68,
+        
+        // Risk Analysis
+        flightRisk: "Medium", // Contract employee
+        burnoutRisk: "Low",
+        skillObsolescenceRisk: "Medium",
+        disciplinaryIssues: 0,
+        absenteeismRate: 3.2,
+        
         promotions: [],
         education: {
           highestQualification: "Diploma",
@@ -1174,6 +1778,63 @@ class EmployeeReportService {
         dateOfBirth: "1985-11-05",
         dateJoined: "2021-11-05",
         employmentType: "Permanent",
+        
+        // Performance Metrics
+        performanceRating: 4.4,
+        kpiScore: 91,
+        projectCompletionRate: 94,
+        clientSatisfactionScore: 4.6,
+        innovationScore: 4.0,
+        teamCollaborationScore: 4.5,
+        
+        // Cost Analysis
+        monthlySalary: 95000,
+        totalCompensation: 115000,
+        costPerProject: 48000,
+        roiGenerated: 350000,
+        trainingInvestment: 18000,
+        benefitsCost: 20000,
+        
+        // Productivity Metrics
+        hoursWorked: 162,
+        productivityScore: 92,
+        tasksCompletedOnTime: 96,
+        campaignSuccessRate: 88,
+        meetingEfficiency: 85,
+        
+        // Retention Analytics
+        retentionProbability: 92,
+        satisfactionScore: 4.5,
+        engagementLevel: "High",
+        careerGrowthSatisfaction: 4.3,
+        workLifeBalanceScore: 4.2,
+        
+        // Skills & Competencies
+        skillLevel: "Advanced",
+        criticalSkillsGap: 10,
+        skillDevelopmentProgress: 88,
+        certifications: ["Digital Marketing", "Google Ads", "HubSpot"],
+        skillMatrix: {
+          technical: 85,
+          leadership: 88,
+          communication: 92,
+          analytical: 87
+        },
+        
+        // Succession Planning
+        promotionReadiness: 88,
+        leadershipPotential: "High",
+        successorRisk: "High",
+        mentoringCapability: 85,
+        knowledgeTransferScore: 90,
+        
+        // Risk Analysis
+        flightRisk: "Low",
+        burnoutRisk: "Low",
+        skillObsolescenceRisk: "Low",
+        disciplinaryIssues: 0,
+        absenteeismRate: 1.8,
+        
         promotions: [
           { date: "2022-11-01", from: "Marketing Officer", to: "Marketing Manager" }
         ],
@@ -1199,6 +1860,63 @@ class EmployeeReportService {
         dateOfBirth: "1997-08-12",
         dateJoined: "2023-08-12",
         employmentType: "Casual",
+        
+        // Performance Metrics
+        performanceRating: 3.8,
+        kpiScore: 82,
+        projectCompletionRate: 85,
+        clientSatisfactionScore: 4.2,
+        innovationScore: 3.5,
+        teamCollaborationScore: 3.9,
+        
+        // Cost Analysis
+        monthlySalary: 65000,
+        totalCompensation: 73000,
+        costPerProject: 32000,
+        roiGenerated: 180000,
+        trainingInvestment: 12000,
+        benefitsCost: 8000,
+        
+        // Productivity Metrics
+        hoursWorked: 158,
+        productivityScore: 84,
+        tasksCompletedOnTime: 87,
+        accuracyRate: 96,
+        meetingEfficiency: 78,
+        
+        // Retention Analytics
+        retentionProbability: 65, // Lower due to casual employment
+        satisfactionScore: 3.8,
+        engagementLevel: "Medium",
+        careerGrowthSatisfaction: 3.2,
+        workLifeBalanceScore: 4.0,
+        
+        // Skills & Competencies
+        skillLevel: "Intermediate",
+        criticalSkillsGap: 30,
+        skillDevelopmentProgress: 72,
+        certifications: ["QuickBooks", "Excel Advanced"],
+        skillMatrix: {
+          technical: 78,
+          leadership: 35,
+          communication: 65,
+          analytical: 82
+        },
+        
+        // Succession Planning
+        promotionReadiness: 45,
+        leadershipPotential: "Medium",
+        successorRisk: "Low",
+        mentoringCapability: 40,
+        knowledgeTransferScore: 65,
+        
+        // Risk Analysis
+        flightRisk: "High", // Casual employee seeking permanent position
+        burnoutRisk: "Medium",
+        skillObsolescenceRisk: "Medium",
+        disciplinaryIssues: 0,
+        absenteeismRate: 4.2,
+        
         promotions: [],
         education: {
           highestQualification: "Certificate",
@@ -1222,6 +1940,63 @@ class EmployeeReportService {
         dateOfBirth: "1988-03-18",
         dateJoined: "2020-03-18",
         employmentType: "Permanent",
+        
+        // Performance Metrics
+        performanceRating: 4.7,
+        kpiScore: 95,
+        projectCompletionRate: 98,
+        clientSatisfactionScore: 4.8,
+        innovationScore: 4.5,
+        teamCollaborationScore: 4.6,
+        
+        // Cost Analysis
+        monthlySalary: 120000,
+        totalCompensation: 145000,
+        costPerProject: 58000,
+        roiGenerated: 420000,
+        trainingInvestment: 22000,
+        benefitsCost: 25000,
+        
+        // Productivity Metrics
+        hoursWorked: 170,
+        productivityScore: 96,
+        tasksCompletedOnTime: 98,
+        codeQualityScore: 94,
+        meetingEfficiency: 88,
+        
+        // Retention Analytics
+        retentionProbability: 95,
+        satisfactionScore: 4.7,
+        engagementLevel: "Very High",
+        careerGrowthSatisfaction: 4.5,
+        workLifeBalanceScore: 4.3,
+        
+        // Skills & Competencies
+        skillLevel: "Expert",
+        criticalSkillsGap: 5,
+        skillDevelopmentProgress: 92,
+        certifications: ["AWS Solutions Architect", "Kubernetes", "Docker", "React"],
+        skillMatrix: {
+          technical: 95,
+          leadership: 82,
+          communication: 85,
+          analytical: 92
+        },
+        
+        // Succession Planning
+        promotionReadiness: 92,
+        leadershipPotential: "Very High",
+        successorRisk: "Very High",
+        mentoringCapability: 90,
+        knowledgeTransferScore: 95,
+        
+        // Risk Analysis
+        flightRisk: "Very Low",
+        burnoutRisk: "Medium", // High performer risk
+        skillObsolescenceRisk: "Very Low",
+        disciplinaryIssues: 0,
+        absenteeismRate: 1.2,
+        
         promotions: [
           { date: "2021-03-01", from: "Developer", to: "Senior Developer" }
         ],
@@ -1675,7 +2450,7 @@ class EmployeeReportService {
       generatedAt: new Date(),
       totalRecords: mockData.length,
       data: mockData,
-      summary: this.generateSummary(mockData),
+      summary: this.generateSummary(mockData, report),
       charts: report.includeCharts ? this.generateCharts(mockData, report) : [],
       downloadUrl: '',
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
