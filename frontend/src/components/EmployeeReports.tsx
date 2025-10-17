@@ -28,6 +28,7 @@ import {
   PREDEFINED_REPORTS,
   EmployeeReportType
 } from '../services/employeeReportService';
+import SimpleChart from './SimpleChart';
 
 interface EmployeeReportsProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
   const [reportHistory, setReportHistory] = useState<EmployeeReportResult[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<EmployeeReportResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'predefined' | 'custom' | 'history'>('predefined');
+  const [activeTab, setActiveTab] = useState<'predefined' | 'history'>('predefined');
 
   useEffect(() => {
     if (isOpen) {
@@ -81,18 +82,44 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
 
   const handleDownloadReport = async (reportId: string) => {
     try {
+      const report = reportHistory.find(r => r.id === reportId) || generatedReport;
+      if (!report) return;
+
       const response = await employeeReportService.downloadReport(reportId);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `employee_report_${reportId}.xlsx`;
+      
+      // Get filename from response headers or generate one
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `employee_report_${reportId}.csv`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+?)"?(?:;|$)/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      } else {
+        // Generate filename based on report type and format
+        const reportName = report.config.name.replace(/\s+/g, '_').toLowerCase();
+        const date = new Date().toISOString().split('T')[0];
+        const extension = report.config.outputFormat === 'pdf' ? 'pdf' : 'csv';
+        filename = `${reportName}_${date}.${extension}`;
+      }
+      
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+
+      // Show success message (you can replace this with a toast notification)
+      console.log(`Report "${report.config.name}" downloaded successfully as ${filename}`);
     } catch (error) {
       console.error('Failed to download report:', error);
+      // Show error message (you can replace this with a toast notification)
+      alert('Failed to download report. Please try again.');
     }
   };
 
@@ -163,7 +190,17 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
               <BarChart3 className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Employee Reports</h2>
+              <div className="flex items-center space-x-3">
+                <h2 className="text-2xl font-bold text-gray-900">Employee Reports</h2>
+                {reportHistory.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                      {reportHistory.length} report{reportHistory.length !== 1 ? 's' : ''} available
+                    </span>
+                  </div>
+                )}
+              </div>
               <p className="text-sm text-gray-600">Generate comprehensive employee reports and analytics</p>
             </div>
           </div>
@@ -185,17 +222,7 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Predefined Reports
-          </button>
-          <button
-            onClick={() => setActiveTab('custom')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'custom'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Custom Reports
+            Available Reports
           </button>
           <button
             onClick={() => setActiveTab('history')}
@@ -316,23 +343,39 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
                       </div>
 
                       {/* Generate Button */}
-                      <button
-                        onClick={() => handleGenerateReport(selectedReport)}
-                        disabled={isGenerating}
-                        className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {isGenerating ? (
-                          <>
-                            <Loader className="w-5 h-5 mr-2 animate-spin" />
-                            Generating Report...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-5 h-5 mr-2" />
-                            Generate Report
-                          </>
-                        )}
-                      </button>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => handleGenerateReport(selectedReport)}
+                          disabled={isGenerating}
+                          className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <Loader className="w-5 h-5 mr-2 animate-spin" />
+                              Generating Report...
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-5 h-5 mr-2" />
+                              Generate Report
+                            </>
+                          )}
+                        </button>
+                        
+                        <button
+                          onClick={async () => {
+                            // Generate a sample report and download directly
+                            const sampleReport = await employeeReportService.generateReport(selectedReport);
+                            if (sampleReport.success && sampleReport.data) {
+                              handleDownloadReport(sampleReport.data.id);
+                            }
+                          }}
+                          className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <Download className="w-5 h-5 mr-2" />
+                          Download Sample Report
+                        </button>
+                      </div>
                     </div>
 
                     {/* Generated Report Preview */}
@@ -393,6 +436,21 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
                           </div>
                         </div>
 
+                        {/* Charts */}
+                        {generatedReport.charts && generatedReport.charts.length > 0 && (
+                          <div className="bg-white border rounded-lg p-4 mb-4">
+                            <h5 className="font-medium text-gray-900 mb-3 flex items-center">
+                              <BarChart3 className="w-4 h-4 mr-2" />
+                              Visual Analytics
+                            </h5>
+                            <div className="grid grid-cols-1 gap-4">
+                              {generatedReport.charts.map((chart) => (
+                                <SimpleChart key={chart.id} chart={chart} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         <button
                           onClick={() => handleDownloadReport(generatedReport.id)}
                           className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -413,21 +471,20 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
             </div>
           )}
 
-          {activeTab === 'custom' && (
-            <div className="p-6">
-              <div className="text-center text-gray-500">
-                <Settings className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium mb-2">Custom Report Builder</h3>
-                <p className="mb-4">Custom report builder coming soon...</p>
-                <p className="text-sm">This feature will allow you to create custom reports with specific fields, filters, and formatting options.</p>
-              </div>
-            </div>
-          )}
+
 
           {activeTab === 'history' && (
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Report History</h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Report History</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {reportHistory.length > 0 
+                      ? `${reportHistory.length} reports generated • Most recent: ${new Date(reportHistory[0]?.generatedAt).toLocaleDateString()}`
+                      : 'No reports generated yet'
+                    }
+                  </p>
+                </div>
                 <button
                   onClick={loadReportHistory}
                   className="flex items-center px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -439,55 +496,124 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
 
               {reportHistory.length > 0 ? (
                 <div className="space-y-4">
-                  {reportHistory.map((report) => (
-                    <div key={report.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-start space-x-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getReportTypeColor(report.config.type)}`}>
-                            {React.createElement(getReportTypeIcon(report.config.type), { className: "w-5 h-5" })}
+                  {reportHistory.map((report, index) => {
+                    const isRecent = index === 0; // Most recent report
+                    const generatedHours = Math.floor((Date.now() - new Date(report.generatedAt).getTime()) / (1000 * 60 * 60));
+                    const isVeryRecent = generatedHours < 6;
+                    
+                    return (
+                      <div key={report.id} className={`border rounded-lg p-4 transition-all hover:shadow-md ${
+                        isRecent ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
+                      }`}>
+                        {isRecent && (
+                          <div className="flex items-center justify-between mb-3 pb-3 border-b border-blue-200">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-medium text-blue-900">Most Recent Report</span>
+                            </div>
+                            {isVeryRecent && (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                New
+                              </span>
+                            )}
                           </div>
-                          <div>
-                            <h4 className="font-medium text-gray-900">{report.config.name}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{report.config.description}</p>
-                            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                              <span>Generated: {new Date(report.generatedAt).toLocaleString()}</span>
-                              <span>Records: {report.totalRecords}</span>
-                              <span>Format: {report.config.outputFormat.toUpperCase()}</span>
+                        )}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getReportTypeColor(report.config.type)}`}>
+                              {React.createElement(getReportTypeIcon(report.config.type), { className: "w-5 h-5" })}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2">
+                                <h4 className="font-medium text-gray-900">{report.config.name}</h4>
+                                {report.config.includeCharts && (
+                                  <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+                                    With Charts
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">{report.config.description}</p>
+                              
+                              <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                <span className="flex items-center">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {generatedHours === 0 ? 'Just now' : 
+                                   generatedHours === 1 ? '1 hour ago' : 
+                                   generatedHours < 24 ? `${generatedHours} hours ago` :
+                                   `${Math.floor(generatedHours / 24)} days ago`}
+                                </span>
+                                <span className="flex items-center">
+                                  <Users className="w-3 h-3 mr-1" />
+                                  {report.totalRecords} records
+                                </span>
+                                <span className="flex items-center">
+                                  <FileText className="w-3 h-3 mr-1" />
+                                  {report.config.outputFormat.toUpperCase()}
+                                </span>
+                                <span className="flex items-center">
+                                  <Building className="w-3 h-3 mr-1" />
+                                  {Object.keys(report.summary.departments).length} departments
+                                </span>
+                              </div>
+
+                              {/* Quick Summary Stats */}
+                              <div className="grid grid-cols-3 gap-4 mt-3 p-2 bg-white bg-opacity-50 rounded">
+                                <div className="text-center">
+                                  <div className="text-lg font-semibold text-gray-900">{report.summary.demographics.averageAge}</div>
+                                  <div className="text-xs text-gray-500">Avg Age</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-lg font-semibold text-gray-900">{report.summary.promotions.promotionRate}%</div>
+                                  <div className="text-xs text-gray-500">Promoted</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-lg font-semibold text-gray-900">{report.summary.demographics.averageServiceYears}</div>
+                                  <div className="text-xs text-gray-500">Avg Service</div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => setGeneratedReport(report)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                            title="View Report"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDownloadReport(report.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                            title="Download Report"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteReport(report.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                            title="Delete Report"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          
+                          <div className="flex flex-col items-center space-y-2 ml-4">
+                            <button
+                              onClick={() => setGeneratedReport(report)}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDownloadReport(report.id)}
+                              className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                              title="Download Report"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReport(report.id)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                              title="Delete Report"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
-                <div className="text-center text-gray-500">
+                <div className="text-center text-gray-500 py-12">
                   <Clock className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-medium mb-2">No Reports Generated</h3>
-                  <p>Generate your first report to see it here</p>
+                  <p className="mb-4">Generate your first report to see it here</p>
+                  <button
+                    onClick={() => setActiveTab('predefined')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Browse Available Reports
+                  </button>
                 </div>
               )}
             </div>
