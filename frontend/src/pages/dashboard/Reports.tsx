@@ -10,13 +10,102 @@ import {
   Search,
   RefreshCw,
   Eye,
-  Trash2
+  Trash2,
+  Heart,
+  DollarSign,
+  GraduationCap,
+  UserMinus,
+  Shield,
+  Plane
 } from 'lucide-react';
 import EmployeeReports from '../../components/EmployeeReports';
+import SimpleChart from '../../components/SimpleChart';
 
 const Reports = () => {
   const [showEmployeeReports, setShowEmployeeReports] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Mock data for quick insights charts
+  const quickInsightsData = {
+    departmentDistribution: {
+      labels: ['IT Services', 'Human Resources', 'Finance', 'Marketing', 'Operations', 'Administration'],
+      data: [35, 12, 18, 22, 28, 15]
+    },
+    employmentTypes: {
+      labels: ['Permanent', 'Contract', 'Casual', 'Probation'],
+      data: [85, 25, 18, 12]
+    },
+    medicalClaims: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      data: [15, 22, 18, 28, 25, 32]
+    },
+    salaryGrades: {
+      labels: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'],
+      data: [12, 28, 35, 22, 18]
+    },
+    leaveUtilization: {
+      labels: ['Annual', 'Sick', 'Casual', 'Medical', 'Maternity'],
+      data: [65, 42, 38, 15, 8]
+    },
+    trainingCompletion: {
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      data: [78, 85, 92, 88]
+    }
+  };
+
+  // Quick insights charts
+  const quickInsightCharts = [
+    {
+      id: 'dept_distribution',
+      title: 'Employee Distribution by Department',
+      type: 'pie' as const,
+      data: {
+        labels: quickInsightsData.departmentDistribution.labels,
+        datasets: [{
+          data: quickInsightsData.departmentDistribution.data,
+          backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#6B7280']
+        }]
+      }
+    },
+    {
+      id: 'employment_types',
+      title: 'Employment Type Distribution',
+      type: 'doughnut' as const,
+      data: {
+        labels: quickInsightsData.employmentTypes.labels,
+        datasets: [{
+          data: quickInsightsData.employmentTypes.data,
+          backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6']
+        }]
+      }
+    },
+    {
+      id: 'medical_claims_trend',
+      title: 'Monthly Medical Claims Trend',
+      type: 'bar' as const,
+      data: {
+        labels: quickInsightsData.medicalClaims.labels,
+        datasets: [{
+          label: 'Medical Claims',
+          data: quickInsightsData.medicalClaims.data,
+          backgroundColor: '#EF4444'
+        }]
+      }
+    },
+    {
+      id: 'training_progress',
+      title: 'Quarterly Training Completion %',
+      type: 'line' as const,
+      data: {
+        labels: quickInsightsData.trainingCompletion.labels,
+        datasets: [{
+          label: 'Completion Rate',
+          data: quickInsightsData.trainingCompletion.data,
+          backgroundColor: '#10B981'
+        }]
+      }
+    }
+  ];
 
   // Sample recent reports data
   const recentReports = [
@@ -24,72 +113,232 @@ const Reports = () => {
       id: 1,
       name: 'Employee Summary Report',
       type: 'employee_summary',
-      generatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      generatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
       records: 156,
       downloadUrl: '#',
       size: '2.3 MB'
     },
     {
       id: 2,
-      name: 'Department Analysis',
-      type: 'department_wise_analysis',
-      generatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      records: 156,
+      name: 'Medical Claims Analysis',
+      type: 'medical_claims_report',
+      generatedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+      records: 89,
       downloadUrl: '#',
       size: '1.8 MB'
     },
     {
       id: 3,
-      name: 'Demographics Report',
-      type: 'demographics_analysis',
-      generatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      name: 'Salary Management Report',
+      type: 'salary_report',
+      generatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
       records: 156,
       downloadUrl: '#',
-      size: '1.5 MB'
+      size: '3.1 MB'
+    },
+    {
+      id: 4,
+      name: 'Training Completion Report',
+      type: 'training_report',
+      generatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      records: 234,
+      downloadUrl: '#',
+      size: '1.9 MB'
+    },
+    {
+      id: 5,
+      name: 'Leave Utilization Report',
+      type: 'leave_report',
+      generatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      records: 567,
+      downloadUrl: '#',
+      size: '2.7 MB'
     }
   ];
 
-  // Report categories for quick access
+  // Comprehensive report categories based on system data
   const reportCategories = [
     {
       id: 'employee-reports',
-      name: 'Employee Reports',
-      description: 'Comprehensive employee analytics and management reports',
+      name: 'Employee Management',
+      description: 'Employee analytics, demographics, and workforce insights',
       icon: Users,
       color: 'bg-blue-50 text-blue-700 border-blue-200',
       iconBg: 'bg-blue-100',
       action: () => setShowEmployeeReports(true),
-      reportCount: 10
+      reportCount: 12,
+      reports: [
+        'Employee Summary Report',
+        'Demographics Analysis',
+        'Department-wise Employee Report',
+        'Service Tenure Analysis',
+        'Employee Directory',
+        'New Joiners Report',
+        'Employee Birthday List',
+        'Promotion Analysis',
+        'Employment Type Analysis',
+        'Branch-wise Distribution',
+        'Education & Qualifications',
+        'Emergency Contacts Report'
+      ]
     },
     {
-      id: 'department-reports',
-      name: 'Department Reports',
-      description: 'Department-wise analysis and performance metrics',
-      icon: BarChart3,
+      id: 'medical-reports',
+      name: 'Medical Claims',
+      description: 'Medical claims analysis, utilization, and financial reports',
+      icon: Heart,
+      color: 'bg-red-50 text-red-700 border-red-200',
+      iconBg: 'bg-red-100',
+      action: () => console.log('Medical reports coming soon'),
+      reportCount: 8,
+      reports: [
+        'Medical Claims Summary',
+        'Claims by Department',
+        'Medical Utilization Report',
+        'Pending Claims Report',
+        'Medical Expense Analysis',
+        'Claims Approval Trends',
+        'Medical Balance Report',
+        'Hospital-wise Claims'
+      ]
+    },
+    {
+      id: 'salary-reports',
+      name: 'Salary & Payroll',
+      description: 'Salary analysis, payroll summaries, and compensation reports',
+      icon: DollarSign,
       color: 'bg-green-50 text-green-700 border-green-200',
       iconBg: 'bg-green-100',
-      action: () => console.log('Department reports coming soon'),
-      reportCount: 5
+      action: () => console.log('Salary reports coming soon'),
+      reportCount: 10,
+      reports: [
+        'Salary Summary Report',
+        'Payroll Analysis',
+        'Salary Grade Distribution',
+        'Increment History Report',
+        'Overtime Analysis',
+        'Bonus Distribution',
+        'Salary Comparison Report',
+        'Cost Center Analysis',
+        'Compensation Trends',
+        'Deduction Summary'
+      ]
     },
     {
-      id: 'attendance-reports',
-      name: 'Attendance Reports',
-      description: 'Attendance tracking and time management reports',
+      id: 'leave-reports',
+      name: 'Leave & Attendance',
+      description: 'Leave utilization, attendance patterns, and absence analysis',
       icon: Calendar,
       color: 'bg-purple-50 text-purple-700 border-purple-200',
       iconBg: 'bg-purple-100',
-      action: () => console.log('Attendance reports coming soon'),
-      reportCount: 7
+      action: () => console.log('Leave reports coming soon'),
+      reportCount: 9,
+      reports: [
+        'Leave Utilization Report',
+        'Attendance Summary',
+        'Leave Balance Report',
+        'Absenteeism Analysis',
+        'Leave Trends by Department',
+        'Holiday Calendar Report',
+        'Sick Leave Patterns',
+        'Annual Leave Planning',
+        'Leave Approval Report'
+      ]
+    },
+    {
+      id: 'retirement-reports',
+      name: 'Retirement Management',
+      description: 'Retirement planning, pension analysis, and benefit reports',
+      icon: UserMinus,
+      color: 'bg-orange-50 text-orange-700 border-orange-200',
+      iconBg: 'bg-orange-100',
+      action: () => console.log('Retirement reports coming soon'),
+      reportCount: 7,
+      reports: [
+        'Upcoming Retirements',
+        'Retirement Benefits Summary',
+        'Pension Calculations',
+        'Service Award Report',
+        'Retirement Notifications',
+        'Gratuity Analysis',
+        'Exit Interview Summary'
+      ]
+    },
+    {
+      id: 'training-reports',
+      name: 'Training & Development',
+      description: 'Training analytics, completion rates, and skill development',
+      icon: GraduationCap,
+      color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      iconBg: 'bg-indigo-100',
+      action: () => console.log('Training reports coming soon'),
+      reportCount: 8,
+      reports: [
+        'Training Completion Report',
+        'Skill Gap Analysis',
+        'Training ROI Analysis',
+        'Certification Tracking',
+        'Training Calendar Report',
+        'Employee Development Plans',
+        'Training Budget Analysis',
+        'Training Feedback Summary'
+      ]
+    },
+    {
+      id: 'transfer-reports',
+      name: 'Transfer & Mobility',
+      description: 'Transfer analysis, mobility patterns, and relocation reports',
+      icon: Plane,
+      color: 'bg-teal-50 text-teal-700 border-teal-200',
+      iconBg: 'bg-teal-100',
+      action: () => console.log('Transfer reports coming soon'),
+      reportCount: 5,
+      reports: [
+        'Transfer Request Report',
+        'Inter-branch Mobility',
+        'Transfer Approval Trends',
+        'Relocation Cost Analysis',
+        'Department Transfer Patterns'
+      ]
     },
     {
       id: 'performance-reports',
-      name: 'Performance Reports',
-      description: 'Performance metrics and evaluation reports',
+      name: 'Performance & Analytics',
+      description: 'Performance metrics, KPI analysis, and productivity reports',
       icon: TrendingUp,
-      color: 'bg-orange-50 text-orange-700 border-orange-200',
-      iconBg: 'bg-orange-100',
+      color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+      iconBg: 'bg-yellow-100',
       action: () => console.log('Performance reports coming soon'),
-      reportCount: 8
+      reportCount: 9,
+      reports: [
+        'Performance Review Summary',
+        'KPI Dashboard Report',
+        'Goal Achievement Analysis',
+        'Productivity Metrics',
+        'Performance Trends',
+        'Top Performers Report',
+        'Performance Improvement Plans',
+        'Competency Analysis',
+        'Performance Distribution'
+      ]
+    },
+    {
+      id: 'compliance-reports',
+      name: 'Compliance & Audit',
+      description: 'Regulatory compliance, audit trails, and governance reports',
+      icon: Shield,
+      color: 'bg-gray-50 text-gray-700 border-gray-200',
+      iconBg: 'bg-gray-100',
+      action: () => console.log('Compliance reports coming soon'),
+      reportCount: 6,
+      reports: [
+        'Audit Trail Report',
+        'Compliance Dashboard',
+        'Policy Adherence Report',
+        'Risk Assessment Summary',
+        'Document Compliance',
+        'Regulatory Filing Report'
+      ]
     }
   ];
 
@@ -130,6 +379,21 @@ const Reports = () => {
         </div>
       </div>
 
+      {/* Quick Insights Charts */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
+          Quick Insights
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+          {quickInsightCharts.map((chart) => (
+            <div key={chart.id} className="bg-gray-50 rounded-lg p-4">
+              <SimpleChart chart={chart} />
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -139,7 +403,7 @@ const Reports = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Total Reports</p>
-              <p className="text-2xl font-bold text-gray-900">127</p>
+              <p className="text-2xl font-bold text-gray-900">248</p>
             </div>
           </div>
         </div>
@@ -151,7 +415,7 @@ const Reports = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">This Month</p>
-              <p className="text-2xl font-bold text-gray-900">23</p>
+              <p className="text-2xl font-bold text-gray-900">42</p>
             </div>
           </div>
         </div>
@@ -163,7 +427,7 @@ const Reports = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Downloads</p>
-              <p className="text-2xl font-bold text-gray-900">341</p>
+              <p className="text-2xl font-bold text-gray-900">1,247</p>
             </div>
           </div>
         </div>
@@ -175,7 +439,7 @@ const Reports = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-2xl font-bold text-gray-900">18</p>
             </div>
           </div>
         </div>
@@ -183,27 +447,53 @@ const Reports = () => {
 
       {/* Report Categories */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Available Reports by Category</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reportCategories.map((category) => {
             const IconComponent = category.icon;
             return (
-              <button
+              <div
                 key={category.id}
-                onClick={category.action}
-                className={`p-6 rounded-lg border-2 border-dashed transition-all hover:shadow-md ${category.color}`}
+                className={`rounded-lg border-2 ${category.color} transition-all hover:shadow-md`}
               >
-                <div className={`w-12 h-12 ${category.iconBg} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
-                  <IconComponent className="w-6 h-6" />
+                <div className="p-4 border-b border-current border-opacity-20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-10 h-10 ${category.iconBg} rounded-lg flex items-center justify-center mr-3`}>
+                        <IconComponent className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{category.name}</h3>
+                        <p className="text-xs opacity-75">{category.reportCount} reports</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={category.action}
+                      className="px-3 py-1 text-xs font-medium bg-white bg-opacity-50 rounded hover:bg-opacity-75 transition-colors"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                  <p className="text-sm mt-2 opacity-75">
+                    {category.description}
+                  </p>
                 </div>
-                <h3 className="font-semibold text-center mb-2">{category.name}</h3>
-                <p className="text-sm text-center mb-3 opacity-75">
-                  {category.description}
-                </p>
-                <div className="text-xs text-center font-medium">
-                  {category.reportCount} available reports
+                <div className="p-3">
+                  <div className="space-y-1">
+                    {category.reports.slice(0, 4).map((report, idx) => (
+                      <div key={idx} className="text-xs flex items-center">
+                        <div className="w-1.5 h-1.5 bg-current opacity-60 rounded-full mr-2"></div>
+                        {report}
+                      </div>
+                    ))}
+                    {category.reports.length > 4 && (
+                      <div className="text-xs opacity-60 mt-2">
+                        +{category.reports.length - 4} more reports...
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -305,8 +595,8 @@ const Reports = () => {
         <div className="px-6 py-4 border-t bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">1</span> to <span className="font-medium">3</span> of{' '}
-              <span className="font-medium">127</span> reports
+              Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of{' '}
+              <span className="font-medium">248</span> reports
             </div>
             <div className="flex space-x-2">
               <button className="px-3 py-1 text-sm border rounded hover:bg-gray-100 disabled:opacity-50" disabled>
