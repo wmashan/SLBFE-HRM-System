@@ -29,7 +29,8 @@ import {
   Activity,
   Calculator,
   CreditCard,
-  PiggyBank
+  PiggyBank,
+  Bell
 } from 'lucide-react';
 import SimpleChart from '../../components/SimpleChart';
 
@@ -37,6 +38,7 @@ const Reports = () => {
   const [showEmployeeReports, setShowEmployeeReports] = useState(false);
   const [showMedicalReports, setShowMedicalReports] = useState(false);
   const [showSalaryReports, setShowSalaryReports] = useState(false);
+  const [showRetirementReports, setShowRetirementReports] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [previewReport, setPreviewReport] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -637,6 +639,136 @@ const Reports = () => {
     }
   ];
 
+  // Detailed Retirement Management reports with sample data
+  const retirementReports = [
+    {
+      id: 'upcoming-retirements',
+      name: 'Upcoming Retirements Report',
+      description: 'Employees approaching retirement age with detailed timeline',
+      icon: Clock,
+      estimatedTime: '1-2 minutes',
+      recordCount: 23,
+      sampleData: {
+        headers: ['Employee ID', 'Full Name', 'Current Age', 'Retirement Date', 'Months Until Retirement', 'Years of Service', 'Department'],
+        rows: [
+          ['EMP087', 'Wimal Perera', '59.2', '2025-08-15', '10', '34.5', 'Finance'],
+          ['EMP023', 'Kamala Wickramasinghe', '58.8', '2025-12-20', '14', '31.2', 'Administration'],
+          ['EMP156', 'Sunil Rathnayake', '59.5', '2025-06-10', '8', '37.8', 'Operations'],
+          ['EMP034', 'Indrani Fernando', '58.3', '2026-03-25', '17', '29.1', 'HR'],
+          ['EMP098', 'Chandana Silva', '59.1', '2025-09-30', '11', '33.6', 'IT Services']
+        ]
+      }
+    },
+    {
+      id: 'retirement-benefits-summary',
+      name: 'Retirement Benefits Summary',
+      description: 'Comprehensive overview of retirement benefits and entitlements',
+      icon: PiggyBank,
+      estimatedTime: '2-3 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee', 'Years of Service', 'Final Salary (LKR)', 'Gratuity (LKR)', 'EPF Balance (LKR)', 'Pension (LKR/Month)', 'Total Benefits'],
+        rows: [
+          ['Wimal Perera', '34.5', '285,000', '4,927,500', '12,450,000', '142,500', '17,520,000'],
+          ['Kamala Wickramasinghe', '31.2', '245,000', '3,822,000', '9,280,000', '122,500', '13,224,500'],
+          ['Sunil Rathnayake', '37.8', '320,000', '6,048,000', '15,680,000', '160,000', '21,888,000'],
+          ['Indrani Fernando', '29.1', '225,000', '3,271,250', '8,520,000', '112,500', '11,903,750'],
+          ['Chandana Silva', '33.6', '265,000', '4,452,000', '11,950,000', '132,500', '16,534,500']
+        ]
+      }
+    },
+    {
+      id: 'pension-calculations',
+      name: 'Pension Calculations Report',
+      description: 'Detailed pension calculations based on service years and final salary',
+      icon: Calculator,
+      estimatedTime: '2 minutes',
+      recordCount: 89,
+      sampleData: {
+        headers: ['Employee', 'Service Years', 'Pensionable Salary', 'Pension Rate %', 'Monthly Pension (LKR)', 'Annual Pension (LKR)', 'Status'],
+        rows: [
+          ['Wimal Perera', '34.5', '285,000', '50%', '142,500', '1,710,000', 'Calculated'],
+          ['Kamala Wickramasinghe', '31.2', '245,000', '50%', '122,500', '1,470,000', 'Calculated'],
+          ['Sunil Rathnayake', '37.8', '320,000', '50%', '160,000', '1,920,000', 'Calculated'],
+          ['Indrani Fernando', '29.1', '225,000', '50%', '112,500', '1,350,000', 'Pending Review'],
+          ['Chandana Silva', '33.6', '265,000', '50%', '132,500', '1,590,000', 'Calculated']
+        ]
+      }
+    },
+    {
+      id: 'service-award-report',
+      name: 'Service Award Report',
+      description: 'Long service awards and recognition for retiring employees',
+      icon: Award,
+      estimatedTime: '1 minute',
+      recordCount: 67,
+      sampleData: {
+        headers: ['Employee', 'Years of Service', 'Award Category', 'Award Value (LKR)', 'Presentation Date', 'Status', 'Special Recognition'],
+        rows: [
+          ['Wimal Perera', '34.5', 'Long Service Gold', '150,000', '2025-07-15', 'Scheduled', 'Excellence in Finance'],
+          ['Sunil Rathnayake', '37.8', 'Distinguished Service', '200,000', '2025-05-10', 'Scheduled', 'Outstanding Leadership'],
+          ['Kamala Wickramasinghe', '31.2', 'Long Service Silver', '100,000', '2025-11-20', 'Pending', 'Dedicated Service'],
+          ['Chandana Silva', '33.6', 'Long Service Gold', '150,000', '2025-08-30', 'Scheduled', 'Innovation in IT'],
+          ['Indrani Fernando', '29.1', 'Long Service Silver', '100,000', '2026-02-25', 'Pending', 'HR Excellence']
+        ]
+      }
+    },
+    {
+      id: 'retirement-notifications',
+      name: 'Retirement Notifications Report',
+      description: 'Communication timeline and notification status for retiring employees',
+      icon: Bell,
+      estimatedTime: '1-2 minutes',
+      recordCount: 45,
+      sampleData: {
+        headers: ['Employee', 'Retirement Date', '12-Month Notice', '6-Month Notice', '3-Month Notice', '1-Month Notice', 'Documentation Status'],
+        rows: [
+          ['Wimal Perera', '2025-08-15', 'Sent (Aug 2024)', 'Sent (Feb 2025)', 'Pending (May 2025)', 'Pending', 'In Progress'],
+          ['Kamala Wickramasinghe', '2025-12-20', 'Sent (Dec 2024)', 'Pending (Jun 2025)', 'Pending', 'Pending', 'Not Started'],
+          ['Sunil Rathnayake', '2025-06-10', 'Sent (Jun 2024)', 'Sent (Dec 2024)', 'Sent (Mar 2025)', 'Pending', 'Complete'],
+          ['Chandana Silva', '2025-09-30', 'Sent (Sep 2024)', 'Pending (Mar 2025)', 'Pending', 'Pending', 'In Progress'],
+          ['Indrani Fernando', '2026-03-25', 'Pending (Mar 2025)', 'Pending', 'Pending', 'Pending', 'Not Started']
+        ]
+      }
+    },
+    {
+      id: 'gratuity-analysis',
+      name: 'Gratuity Analysis Report',
+      description: 'Gratuity calculations and payment analysis for retiring employees',
+      icon: CreditCard,
+      estimatedTime: '2-3 minutes',
+      recordCount: 78,
+      sampleData: {
+        headers: ['Employee', 'Service Years', 'Last Drawn Salary', 'Gratuity Formula', 'Calculated Gratuity (LKR)', 'Tax Deduction (10%)', 'Net Gratuity'],
+        rows: [
+          ['Wimal Perera', '34.5', '285,000', '14.5 x Last Salary', '4,132,500', '413,250', '3,719,250'],
+          ['Kamala Wickramasinghe', '31.2', '245,000', '14.5 x Last Salary', '3,552,500', '355,250', '3,197,250'],
+          ['Sunil Rathnayake', '37.8', '320,000', '14.5 x Last Salary', '4,640,000', '464,000', '4,176,000'],
+          ['Indrani Fernando', '29.1', '225,000', '14.5 x Last Salary', '3,262,500', '326,250', '2,936,250'],
+          ['Chandana Silva', '33.6', '265,000', '14.5 x Last Salary', '3,842,500', '384,250', '3,458,250']
+        ]
+      }
+    },
+    {
+      id: 'exit-interview-summary',
+      name: 'Exit Interview Summary Report',
+      description: 'Summary of exit interviews and feedback from retiring employees',
+      icon: FileText,
+      estimatedTime: '2 minutes',
+      recordCount: 34,
+      sampleData: {
+        headers: ['Employee', 'Interview Date', 'Overall Satisfaction', 'Key Feedback Areas', 'Recommendations', 'Interviewer', 'Follow-up Required'],
+        rows: [
+          ['Rohan Gunawardena', '2024-09-15', 'Very Satisfied', 'Work-Life Balance, Benefits', 'Improve IT Infrastructure', 'HR Manager', 'No'],
+          ['Sujatha Mendis', '2024-08-20', 'Satisfied', 'Career Development', 'More Training Programs', 'Department Head', 'Yes'],
+          ['Arjuna Wickrama', '2024-10-05', 'Very Satisfied', 'Team Collaboration', 'Continue Team Building', 'HR Assistant', 'No'],
+          ['Kumari Bandara', '2024-07-30', 'Satisfied', 'Communication, Processes', 'Digital Transformation', 'HR Manager', 'Yes'],
+          ['Nimal Jayasuriya', '2024-09-25', 'Very Satisfied', 'Leadership, Culture', 'Maintain Company Values', 'Department Head', 'No']
+        ]
+      }
+    }
+  ];
+
   // Sample data generators for realistic previews
   const generateEmployeeId = (index: number) => `EMP${(index + 1).toString().padStart(3, '0')}`;
   
@@ -711,17 +843,9 @@ const Reports = () => {
       icon: UserMinus,
       color: 'bg-orange-50 text-orange-700 border-orange-200',
       iconBg: 'bg-orange-100',
-      action: () => console.log('Retirement reports coming soon'),
-      reportCount: 7,
-      reports: [
-        'Upcoming Retirements',
-        'Retirement Benefits Summary',
-        'Pension Calculations',
-        'Service Award Report',
-        'Retirement Notifications',
-        'Gratuity Analysis',
-        'Exit Interview Summary'
-      ]
+      action: () => setShowRetirementReports(true),
+      reportCount: retirementReports.length,
+      reports: retirementReports.map(report => report.name)
     },
     {
       id: 'training-reports',
@@ -1396,6 +1520,89 @@ const Reports = () => {
                   </button>
                   <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
                     Send to Tax Consultant
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Retirement Management Reports Modal */}
+      {showRetirementReports && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b bg-orange-50">
+              <div className="flex items-center">
+                <UserMinus className="w-6 h-6 text-orange-600 mr-3" />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Retirement Management Reports</h3>
+                  <p className="text-sm text-gray-600">Generate comprehensive retirement planning and benefit reports</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRetirementReports(false)}
+                className="p-2 hover:bg-orange-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {retirementReports.map((report) => (
+                  <div key={report.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <report.icon className="w-5 h-5 text-orange-600 mr-2" />
+                        <h4 className="font-medium text-gray-900">{report.name}</h4>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{report.description}</p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>{report.estimatedTime}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="w-3 h-3 mr-1" />
+                        <span>{report.recordCount} records</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handlePreviewReport(report)}
+                        className="flex-1 px-3 py-2 text-xs bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Preview
+                      </button>
+                      <button className="flex-1 px-3 py-2 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors flex items-center justify-center">
+                        <Download className="w-3 h-3 mr-1" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors">
+                    Generate Retirement Calendar
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors">
+                    Schedule Retirement Interviews
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                    Export to Pension Fund
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                    Send Benefit Statements
                   </button>
                 </div>
               </div>
