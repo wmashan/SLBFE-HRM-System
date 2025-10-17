@@ -1433,26 +1433,143 @@ class EmployeeReportService {
     }
   }
 
-  // Generate PDF report content
+  // Generate PDF report content (as HTML for better readability)
   private async generatePDFReport(report: EmployeeReportResult): Promise<Response> {
-    const pdfContent = this.generatePDFContent(report);
-    const blob = new Blob([pdfContent], { type: 'application/pdf' });
+    const htmlContent = this.generateHTMLContent(report);
+    const blob = new Blob([htmlContent], { 
+      type: 'text/html;charset=utf-8'
+    });
+    
+    // Clean filename - remove special characters and extra spaces
+    const cleanName = report.config.name.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+    const dateStr = new Date().toISOString().split('T')[0];
+    const filename = `${cleanName}_${dateStr}.html`;
+    
     return new Response(blob, {
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${report.config.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf"`
+        'Content-Type': 'text/html',
+        'Content-Disposition': `attachment; filename="${filename}"`
       }
     });
+  }
+
+  // Generate HTML content for better readability
+  private generateHTMLContent(report: EmployeeReportResult): string {
+    const date = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
+    
+    let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${report.config.name} - SLBFE HRM System</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+        .header { background: #2563eb; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .summary-card { background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb; }
+        .summary-label { font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .summary-value { font-size: 24px; font-weight: bold; color: #1e293b; }
+        .section { margin: 30px 0; padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .section-title { color: #1e293b; font-size: 18px; font-weight: bold; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+        .employee-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .employee-table th, .employee-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .employee-table th { background: #f1f5f9; font-weight: bold; color: #475569; }
+        .employee-table tr:hover { background: #f8fafc; }
+        .breakdown-list { list-style: none; padding: 0; }
+        .breakdown-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin: 5px 0; background: #f8fafc; border-radius: 4px; }
+        .breakdown-name { font-weight: 500; }
+        .breakdown-count { background: #2563eb; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SLBFE HRM SYSTEM</h1>
+        <h2>${report.config.name}</h2>
+        <p>${report.config.description}</p>
+        <p>Generated: ${date} at ${time} | Total Records: ${report.totalRecords}</p>
+    </div>
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-label">Total Employees</div>
+            <div class="summary-value">${report.summary.totalEmployees}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Average Age</div>
+            <div class="summary-value">${report.summary.demographics.averageAge} years</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Average Service</div>
+            <div class="summary-value">${report.summary.demographics.averageServiceYears} years</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Promotion Rate</div>
+            <div class="summary-value">${report.summary.promotions.promotionRate}%</div>
+        </div>
+    </div>
+    <div class="section">
+        <h3 class="section-title">Department Analysis</h3>
+        <ul class="breakdown-list">`;
+
+    Object.entries(report.summary.departments).forEach(([dept, count]) => {
+      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+      html += `
+            <li class="breakdown-item">
+                <span class="breakdown-name">${dept}</span>
+                <div>
+                    <span class="breakdown-count">${count}</span>
+                    <span style="margin-left: 8px; color: #64748b;">(${percentage}%)</span>
+                </div>
+            </li>`;
+    });
+
+    html += `
+        </ul>
+    </div>
+    <div class="section">
+        <h3 class="section-title">Employee Details</h3>
+        <table class="employee-table">
+            <thead>
+                <tr><th>Employee No</th><th>Full Name</th><th>Position</th><th>Department</th><th>Age</th><th>Gender</th></tr>
+            </thead>
+            <tbody>`;
+
+    const employees = report.data.filter((item: any) => !item.isGroupHeader);
+    employees.forEach((emp: any) => {
+      html += `<tr><td>${emp.employeeNo}</td><td>${emp.fullName}</td><td>${emp.designation}</td><td>${emp.division}</td><td>${emp.age}</td><td>${emp.gender}</td></tr>`;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    </div>
+    <div class="footer">
+        <p>Generated by SLBFE HRM System | Report ID: ${report.id} | ${date} at ${time}</p>
+    </div>
+</body>
+</html>`;
+
+    return html;
   }
 
   // Generate Excel report content
   private async generateExcelReport(report: EmployeeReportResult): Promise<Response> {
     const csvContent = this.generateCSVContent(report);
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { 
+      type: 'text/csv;charset=utf-8;'
+    });
+    
+    // Clean filename - remove special characters and extra spaces
+    const cleanName = report.config.name.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+    const dateStr = new Date().toISOString().split('T')[0];
+    const filename = `${cleanName}_${dateStr}.csv`;
+    
     return new Response(blob, {
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="${report.config.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv"`
+        'Content-Disposition': `attachment; filename="${filename}"`
       }
     });
   }

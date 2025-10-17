@@ -379,17 +379,21 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
                                 
                                 // Get filename from response headers or create one
                                 const contentDisposition = response.headers.get('Content-Disposition');
-                                let filename = `${selectedReport.name.replace(/\s+/g, '_')}_Sample_${new Date().toISOString().split('T')[0]}`;
+                                let filename = '';
                                 
                                 if (contentDisposition) {
-                                  const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                                  const filenameMatch = contentDisposition.match(/filename="(.+)"/);
                                   if (filenameMatch) {
                                     filename = filenameMatch[1];
                                   }
-                                } else {
-                                  // Determine extension based on report config
-                                  const extension = selectedReport.outputFormat === 'pdf' ? 'pdf' : 'csv';
-                                  filename += `.${extension}`;
+                                } 
+                                
+                                if (!filename) {
+                                  // Create proper filename with correct extension
+                                  const reportName = selectedReport.name.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+                                  const dateStr = new Date().toISOString().split('T')[0];
+                                  const extension = selectedReport.outputFormat === 'pdf' ? 'html' : 'csv';
+                                  filename = `${reportName}_Sample_${dateStr}.${extension}`;
                                 }
                                 
                                 link.download = filename;
