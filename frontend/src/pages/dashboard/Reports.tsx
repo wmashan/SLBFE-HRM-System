@@ -23,12 +23,16 @@ import {
   GraduationCap,
   Plane,
   RefreshCw,
-  Award
+  Award,
+  Stethoscope,
+  Pill,
+  Activity
 } from 'lucide-react';
 import SimpleChart from '../../components/SimpleChart';
 
 const Reports = () => {
   const [showEmployeeReports, setShowEmployeeReports] = useState(false);
+  const [showMedicalReports, setShowMedicalReports] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [previewReport, setPreviewReport] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -293,6 +297,158 @@ const Reports = () => {
     }
   ];
 
+  // Detailed Medical Claims reports with sample data
+  const medicalReports = [
+    {
+      id: 'medical-claims-summary',
+      name: 'Medical Claims Summary',
+      description: 'Comprehensive overview of all medical claims with key statistics',
+      icon: FileText,
+      estimatedTime: '2-3 minutes',
+      recordCount: 342,
+      sampleData: {
+        headers: ['Claim ID', 'Employee Name', 'Claim Type', 'Amount (LKR)', 'Status', 'Date Submitted', 'Hospital/Clinic'],
+        rows: [
+          ['MC001', 'Amara Jayasuriya', 'Specialist Consultation', '15,000', 'Approved', '2024-10-10', 'Asiri Hospital Colombo'],
+          ['MC002', 'Buddhika Silva', 'Emergency Care', '125,000', 'Processing', '2024-10-08', 'Nawaloka Hospital Nugegoda'],
+          ['MC003', 'Chathurika Fernando', 'Dental Treatment', '8,500', 'Approved', '2024-10-05', 'Dental Hospital Maharagama'],
+          ['MC004', 'Dilani Wickramasinghe', 'Eye Surgery', '45,000', 'Pending', '2024-10-12', 'Lanka Hospitals Eye Centre'],
+          ['MC005', 'Eshan Perera', 'Pharmacy Bills', '3,200', 'Approved', '2024-10-15', 'OSUSALA - State Pharmaceuticals']
+        ]
+      }
+    },
+    {
+      id: 'claims-by-department',
+      name: 'Claims by Department',
+      description: 'Medical claims analysis grouped by employee departments',
+      icon: Building,
+      estimatedTime: '1-2 minutes',
+      recordCount: 6,
+      sampleData: {
+        headers: ['Department', 'Total Claims', 'Total Amount (LKR)', 'Avg Claim (LKR)', 'Approved Claims', 'Approval Rate'],
+        rows: [
+          ['IT Services', '89', '2,450,000', '27,528', '82', '92.1%'],
+          ['Human Resources', '34', '845,000', '24,853', '31', '91.2%'],
+          ['Finance', '45', '1,125,000', '25,000', '42', '93.3%'],
+          ['Marketing', '67', '1,678,000', '25,045', '61', '91.0%'],
+          ['Operations', '78', '1,890,000', '24,231', '71', '91.0%'],
+          ['Administration', '29', '687,500', '23,707', '26', '89.7%']
+        ]
+      }
+    },
+    {
+      id: 'medical-utilization',
+      name: 'Medical Utilization Report',
+      description: 'Analysis of medical service utilization patterns and trends',
+      icon: Activity,
+      estimatedTime: '2 minutes',
+      recordCount: 12,
+      sampleData: {
+        headers: ['Service Type', 'Total Visits', 'Total Cost (LKR)', 'Avg Cost per Visit', 'Most Used Month', 'Growth Rate'],
+        rows: [
+          ['General Physician', '156', '1,245,000', '7,981', 'September', '+12%'],
+          ['Cardiologist', '89', '1,780,000', '20,000', 'October', '+8%'],
+          ['Dental Treatment', '67', '536,000', '8,000', 'August', '+15%'],
+          ['Ophthalmologist', '34', '408,000', '12,000', 'September', '+5%'],
+          ['Laboratory & Radiology', '234', '702,000', '3,000', 'October', '+18%'],
+          ['Prescription Medicines', '445', '890,000', '2,000', 'September', '+22%'],
+          ['Physiotherapy', '23', '345,000', '15,000', 'August', '+25%']
+        ]
+      }
+    },
+    {
+      id: 'pending-claims',
+      name: 'Pending Claims Report',
+      description: 'Claims awaiting approval with aging analysis',
+      icon: Clock,
+      estimatedTime: '1 minute',
+      recordCount: 47,
+      sampleData: {
+        headers: ['Claim ID', 'Employee', 'Department', 'Amount (LKR)', 'Days Pending', 'Priority', 'Assigned To'],
+        rows: [
+          ['MC156', 'Amara Jayasuriya', 'IT Services', '45,000', '12', 'High', 'Dr. Perera'],
+          ['MC142', 'Rukshan Fernando', 'Marketing', '8,500', '8', 'Medium', 'Dr. Silva'],
+          ['MC139', 'Nishadi Perera', 'Finance', '15,000', '6', 'Medium', 'Dr. Fernando'],
+          ['MC167', 'Chathurika Silva', 'HR', '25,000', '15', 'High', 'Dr. Bandara'],
+          ['MC178', 'Danuka Wijesinghe', 'Operations', '12,500', '4', 'Low', 'Dr. Rathnayake']
+        ]
+      }
+    },
+    {
+      id: 'medical-expense-analysis',
+      name: 'Medical Expense Analysis',
+      description: 'Cost analysis and budget utilization for medical benefits',
+      icon: DollarSign,
+      estimatedTime: '2-3 minutes',
+      recordCount: 24,
+      sampleData: {
+        headers: ['Month', 'Budget (LKR)', 'Actual Spend (LKR)', 'Utilization %', 'Savings (LKR)', 'Top Expense Category'],
+        rows: [
+          ['January 2024', '500,000', '425,000', '85%', '75,000', 'Specialist Consultations'],
+          ['February 2024', '500,000', '478,000', '95.6%', '22,000', 'Inpatient Care'],
+          ['March 2024', '500,000', '445,000', '89%', '55,000', 'Laboratory Tests'],
+          ['April 2024', '500,000', '512,000', '102.4%', '-12,000', 'Emergency Care'],
+          ['May 2024', '500,000', '467,000', '93.4%', '33,000', 'Pharmacy']
+        ]
+      }
+    },
+    {
+      id: 'claims-approval-trends',
+      name: 'Claims Approval Trends',
+      description: 'Analysis of claim approval patterns and processing efficiency',
+      icon: Shield,
+      estimatedTime: '1-2 minutes',
+      recordCount: 18,
+      sampleData: {
+        headers: ['Period', 'Total Claims', 'Approved', 'Rejected', 'Approval Rate', 'Avg Processing Days', 'Auto-Approved'],
+        rows: [
+          ['Oct 2024 W1', '45', '41', '4', '91.1%', '3.2', '28'],
+          ['Oct 2024 W2', '52', '48', '4', '92.3%', '2.8', '32'],
+          ['Sep 2024 W4', '38', '35', '3', '92.1%', '3.5', '24'],
+          ['Sep 2024 W3', '41', '37', '4', '90.2%', '4.1', '22'],
+          ['Sep 2024 W2', '49', '46', '3', '93.9%', '2.9', '31']
+        ]
+      }
+    },
+    {
+      id: 'medical-balance-report',
+      name: 'Medical Balance Report',
+      description: 'Employee medical allowance balances and usage tracking',
+      icon: Pill,
+      estimatedTime: '2 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee ID', 'Name', 'Annual Allowance', 'Used Amount', 'Balance', 'Usage %', 'Last Claim Date'],
+        rows: [
+          ['EMP001', 'John Silva', '100,000', '67,500', '32,500', '67.5%', '2024-10-10'],
+          ['EMP002', 'Maria Fernando', '100,000', '45,000', '55,000', '45%', '2024-09-22'],
+          ['EMP003', 'Kasun Perera', '80,000', '23,500', '56,500', '29.4%', '2024-10-05'],
+          ['EMP004', 'Dilani Wickramasinghe', '100,000', '78,200', '21,800', '78.2%', '2024-10-12'],
+          ['EMP005', 'Thilak Rathnayake', '120,000', '89,300', '30,700', '74.4%', '2024-10-15']
+        ]
+      }
+    },
+    {
+      id: 'hospital-wise-claims',
+      name: 'Hospital-wise Claims Analysis',
+      description: 'Claims distribution and cost analysis by healthcare providers',
+      icon: Stethoscope,
+      estimatedTime: '1-2 minutes',
+      recordCount: 28,
+      sampleData: {
+        headers: ['Healthcare Provider', 'Total Claims', 'Total Amount (LKR)', 'Avg Claim (LKR)', 'Most Common Service', 'Rating'],
+        rows: [
+          ['Asiri Hospital Colombo', '67', '1,675,000', '25,000', 'Specialist Consultations', '4.2/5'],
+          ['Nawaloka Hospital Nugegoda', '54', '1,890,000', '35,000', 'Inpatient Care', '4.5/5'],
+          ['Lanka Hospitals Colombo', '43', '860,000', '20,000', 'Laboratory Tests', '4.1/5'],
+          ['Durdans Hospital', '38', '1,140,000', '30,000', 'Surgical Procedures', '4.3/5'],
+          ['National Hospital Colombo', '52', '780,000', '15,000', 'General Medicine', '4.0/5'],
+          ['Apollo Hospital Colombo', '29', '1,160,000', '40,000', 'Emergency Care', '4.4/5']
+        ]
+      }
+    }
+  ];
+
   // Sample data generators for realistic previews
   const generateEmployeeId = (index: number) => `EMP${(index + 1).toString().padStart(3, '0')}`;
   
@@ -324,18 +480,9 @@ const Reports = () => {
       icon: Heart,
       color: 'bg-red-50 text-red-700 border-red-200',
       iconBg: 'bg-red-100',
-      action: () => console.log('Medical reports coming soon'),
-      reportCount: 8,
-      reports: [
-        'Medical Claims Summary',
-        'Claims by Department',
-        'Medical Utilization Report',
-        'Pending Claims Report',
-        'Medical Expense Analysis',
-        'Claims Approval Trends',
-        'Medical Balance Report',
-        'Hospital-wise Claims'
-      ]
+      action: () => setShowMedicalReports(true),
+      reportCount: medicalReports.length,
+      reports: medicalReports.map(report => report.name)
     },
     {
       id: 'salary-reports',
@@ -906,6 +1053,89 @@ const Reports = () => {
                   </button>
                   <button className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
                     Export to Dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Medical Reports Modal */}
+      {showMedicalReports && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b bg-red-50">
+              <div className="flex items-center">
+                <Heart className="w-6 h-6 text-red-600 mr-3" />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Medical Claims Reports</h3>
+                  <p className="text-sm text-gray-600">Generate comprehensive medical claims analytics and reports</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMedicalReports(false)}
+                className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {medicalReports.map((report) => (
+                  <div key={report.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <report.icon className="w-5 h-5 text-red-600 mr-2" />
+                        <h4 className="font-medium text-gray-900">{report.name}</h4>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{report.description}</p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>{report.estimatedTime}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="w-3 h-3 mr-1" />
+                        <span>{report.recordCount} records</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handlePreviewReport(report)}
+                        className="flex-1 px-3 py-2 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Preview
+                      </button>
+                      <button className="flex-1 px-3 py-2 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center justify-center">
+                        <Download className="w-3 h-3 mr-1" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
+                    Generate All Medical Reports
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors">
+                    Schedule Monthly Claims Report
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                    Export to Finance Dashboard
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                    Send to Insurance Provider
                   </button>
                 </div>
               </div>
