@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
-  UserPlus, 
   FileText, 
-  Calendar, 
   Settings, 
   LogOut,
   Bell,
@@ -22,8 +20,6 @@ import Applications from './Applications';
 import MedicalManagement from './dashboard/MedicalManagement';
 import Employees from './dashboard/Employees';
 import Transfer from './Transfer';
-import Recruitment from './dashboard/Recruitment';
-import Schedule from './dashboard/Schedule';
 import SettingsPage from './dashboard/Settings';
 import SalaryManagement from './SalaryManagement';
 import RetirementManagement from './RetirementManagement';
@@ -223,30 +219,6 @@ const HRManagerDashboard = () => {
               </button>
               
               <button
-                onClick={() => setActiveTab('recruitment')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'recruitment' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <UserPlus className="w-5 h-5 mr-3" />
-                Recruitment
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('schedule')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'schedule' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Calendar className="w-5 h-5 mr-3" />
-                Schedule
-              </button>
-              
-              <button
                 onClick={() => setActiveTab('settings')}
                 className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
                   activeTab === 'settings' 
@@ -272,8 +244,6 @@ const HRManagerDashboard = () => {
           {activeTab === 'salary' && <SalaryManagement />}
           {activeTab === 'retirement' && <RetirementManagement />}
           {activeTab === 'training' && <TrainingManagement />}
-          {activeTab === 'recruitment' && <Recruitment />}
-          {activeTab === 'schedule' && <Schedule />}
           {activeTab === 'settings' && <SettingsPage />}
         </div>
       </div>
