@@ -13,10 +13,7 @@ import {
   Globe,
   Calendar,
   UserCheck,
-  Shield,
-  Database,
-  Activity,
-  Lock
+  Database
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { NavigationItem } from '../../types';
@@ -55,38 +52,10 @@ const Sidebar: React.FC = () => {
           roles: ['admin'],
         },
         {
-          id: 'system-config',
-          label: 'System Config',
-          path: '/admin/system',
-          icon: Settings,
-          roles: ['admin'],
-        },
-        {
-          id: 'security-audit',
-          label: 'Security & Audit',
-          path: '/admin/security',
-          icon: Shield,
-          roles: ['admin'],
-        },
-        {
-          id: 'system-monitoring',
-          label: 'System Monitoring',
-          path: '/admin/monitoring',
-          icon: Activity,
-          roles: ['admin'],
-        },
-        {
           id: 'backup-restore',
           label: 'Backup & Restore',
           path: '/admin/backup',
           icon: Database,
-          roles: ['admin'],
-        },
-        {
-          id: 'access-control',
-          label: 'Access Control',
-          path: '/admin/access',
-          icon: Lock,
           roles: ['admin'],
         }
       );

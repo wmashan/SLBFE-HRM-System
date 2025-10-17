@@ -962,12 +962,12 @@ export type BackupStorageType = 'local' | 'cloud' | 'network';
 export type BackupStatus = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface AdminDashboardStats {
-  systemHealth: SystemHealth;
+  systemHealth?: SystemHealth;
   userActivity: UserActivitySummary;
-  securityOverview: SecurityOverview;
+  securityOverview?: SecurityOverview;
   recentActions: AdminActivity[];
   systemAlerts: SystemAlert[];
-  performanceMetrics: PerformanceMetrics;
+  performanceMetrics?: PerformanceMetrics;
 }
 
 export interface SystemHealth {
