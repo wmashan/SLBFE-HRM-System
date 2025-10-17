@@ -16,15 +16,18 @@ import {
   FileText,
   Award,
   UserCheck,
-  Clock
+  Clock,
+  BarChart3
 } from 'lucide-react';
 
 import { useState } from 'react';
+import EmployeeReports from '../../components/EmployeeReports';
 
 const Employees = () => {
   // Filter state management
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showReports, setShowReports] = useState(false);
   const [filters, setFilters] = useState({
     promotion: 'all',
     gender: 'all',
@@ -434,6 +437,10 @@ const Employees = () => {
             <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${
               showFilters ? 'rotate-180' : ''
             }`} />
+          </button>
+          <button className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors" onClick={() => setShowReports(true)}>
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Reports
           </button>
           <button className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
             <Plus className="w-4 h-4 mr-2" />
@@ -998,6 +1005,13 @@ const Employees = () => {
           </button>
         </div>
       </div>
+
+      {/* Employee Reports Modal */}
+      <EmployeeReports
+        isOpen={showReports}
+        onClose={() => setShowReports(false)}
+        currentFilters={filters}
+      />
     </div>
   );
 };
