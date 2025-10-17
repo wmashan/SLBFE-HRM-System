@@ -13,6 +13,7 @@ import {
   Globe,
   Calendar,
   UserCheck,
+  Shield,
   Database
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -49,6 +50,13 @@ const Sidebar: React.FC = () => {
           label: 'Role Management',
           path: '/admin/roles',
           icon: UserCheck,
+          roles: ['admin'],
+        },
+        {
+          id: 'task-assignment',
+          label: 'Task Assignment',
+          path: '/admin/task-assignment',
+          icon: Shield,
           roles: ['admin'],
         },
         {

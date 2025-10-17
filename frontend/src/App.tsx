@@ -9,6 +9,7 @@ import AdminUserManagement from './pages/AdminUserManagement';
 import RoleManagement from './pages/admin/RoleManagement';
 import BackupRestore from './pages/admin/BackupRestore';
 import SystemDocumentManagement from './pages/admin/SystemDocumentManagement';
+import TaskAssignment from './pages/admin/TaskAssignment';
 import TrainingFeedbackForm from './pages/TrainingFeedbackForm';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -61,6 +62,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <RoleManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/task-assignment" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <TaskAssignment />
               </ProtectedRoute>
             } 
           />

@@ -1439,3 +1439,73 @@ export interface DocumentUploadData {
   isSystemForm: boolean;
   formCode?: string;
 }
+
+// Task Assignment and Permission Management Types
+export type HRFeature = 
+  | 'overview'
+  | 'employees'
+  | 'medical_claims'
+  | 'retirement'
+  | 'transfer'
+  | 'leave_management'
+  | 'attendance'
+  | 'recruitment'
+  | 'training'
+  | 'performance'
+  | 'payroll'
+  | 'reports'
+  | 'documents'
+  | 'settings';
+
+export type TaskAssignmentType = 
+  | 'medical_officer'
+  | 'transfer_officer'
+  | 'retirement_officer'
+  | 'recruitment_officer'
+  | 'training_coordinator'
+  | 'payroll_officer'
+  | 'general_hr'
+  | 'custom';
+
+export interface HRTaskAssignment {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  taskType: TaskAssignmentType;
+  taskDescription: string;
+  assignedFeatures: HRFeature[];
+  isActive: boolean;
+  assignedBy: string;
+  assignedDate: Date;
+  lastModified: Date;
+  notes?: string;
+}
+
+export interface FeaturePermission {
+  feature: HRFeature;
+  label: string;
+  description: string;
+  icon: string;
+  defaultForRoles: TaskAssignmentType[];
+  dependencies?: HRFeature[];
+}
+
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  type: TaskAssignmentType;
+  description: string;
+  defaultFeatures: HRFeature[];
+  isSystemTemplate: boolean;
+}
+
+export interface UserPermissionSummary {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  taskAssignments: HRTaskAssignment[];
+  effectiveFeatures: HRFeature[];
+  lastLogin?: Date;
+  isActive: boolean;
+}

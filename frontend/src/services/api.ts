@@ -887,6 +887,71 @@ class ApiService {
   async getDocumentStats(): Promise<ApiResponse<any>> {
     return this.request<any>('/admin/documents/stats');
   }
+
+  // Task Assignment Methods
+  async getTaskAssignments(params?: {
+    page?: number;
+    limit?: number;
+    taskType?: string;
+    userId?: string;
+    isActive?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/task-assignments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getTaskAssignment(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}`);
+  }
+
+  async createTaskAssignment(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/task-assignments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateTaskAssignment(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTaskAssignment(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/admin/task-assignments/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getHRUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/hr-users${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getUserPermissions(userId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/users/${userId}/permissions`);
+  }
+
+  async getTaskTemplates(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/task-templates');
+  }
+
+  async getFeaturePermissions(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/feature-permissions');
+  }
+
+  async toggleTaskAssignmentStatus(id: string, isActive: boolean): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}/toggle`, {
+      method: 'POST',
+      body: JSON.stringify({ isActive }),
+    });
+  }
 }
 
 // Create and export API service instance
@@ -1023,6 +1088,19 @@ export const documentService = {
   deleteSystemDocument: (id: string) => apiService.deleteSystemDocument(id),
   downloadSystemDocument: (id: string) => apiService.downloadSystemDocument(id),
   getDocumentStats: () => apiService.getDocumentStats(),
+};
+
+export const taskAssignmentService = {
+  getTaskAssignments: (params?: any) => apiService.getTaskAssignments(params),
+  getTaskAssignment: (id: string) => apiService.getTaskAssignment(id),
+  createTaskAssignment: (data: any) => apiService.createTaskAssignment(data),
+  updateTaskAssignment: (id: string, data: any) => apiService.updateTaskAssignment(id, data),
+  deleteTaskAssignment: (id: string) => apiService.deleteTaskAssignment(id),
+  getHRUsers: (params?: any) => apiService.getHRUsers(params),
+  getUserPermissions: (userId: string) => apiService.getUserPermissions(userId),
+  getTaskTemplates: () => apiService.getTaskTemplates(),
+  getFeaturePermissions: () => apiService.getFeaturePermissions(),
+  toggleTaskAssignmentStatus: (id: string, isActive: boolean) => apiService.toggleTaskAssignmentStatus(id, isActive),
 };
 
 export default apiService;

@@ -255,7 +255,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <button 
               onClick={() => navigate('/admin/users')}
               className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -270,6 +270,14 @@ const AdminDashboard: React.FC = () => {
             >
               <UserCheck className="w-8 h-8 text-indigo-600 mb-2" />
               <span className="text-sm font-medium text-gray-700">Role Management</span>
+            </button>
+            
+            <button 
+              onClick={() => navigate('/admin/task-assignment')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Shield className="w-8 h-8 text-purple-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Task Assignment</span>
             </button>
             
             <button 
