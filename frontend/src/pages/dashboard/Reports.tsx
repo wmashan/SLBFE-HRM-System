@@ -26,13 +26,17 @@ import {
   Award,
   Stethoscope,
   Pill,
-  Activity
+  Activity,
+  Calculator,
+  CreditCard,
+  PiggyBank
 } from 'lucide-react';
 import SimpleChart from '../../components/SimpleChart';
 
 const Reports = () => {
   const [showEmployeeReports, setShowEmployeeReports] = useState(false);
   const [showMedicalReports, setShowMedicalReports] = useState(false);
+  const [showSalaryReports, setShowSalaryReports] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [previewReport, setPreviewReport] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -449,6 +453,190 @@ const Reports = () => {
     }
   ];
 
+  // Detailed Salary & Payroll reports with sample data
+  const salaryReports = [
+    {
+      id: 'salary-summary',
+      name: 'Salary Summary Report',
+      description: 'Comprehensive overview of salary distribution across the organization',
+      icon: FileText,
+      estimatedTime: '2-3 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee ID', 'Full Name', 'Department', 'Position', 'Basic Salary (LKR)', 'Allowances (LKR)', 'Total Salary (LKR)'],
+        rows: [
+          ['EMP001', 'Amara Jayasuriya', 'IT Services', 'Senior Developer', '120,000', '35,000', '155,000'],
+          ['EMP002', 'Buddhika Silva', 'Finance', 'Finance Manager', '150,000', '45,000', '195,000'],
+          ['EMP003', 'Chathurika Fernando', 'HR', 'HR Manager', '140,000', '42,000', '182,000'],
+          ['EMP004', 'Dilani Wickramasinghe', 'Marketing', 'Marketing Executive', '85,000', '25,000', '110,000'],
+          ['EMP005', 'Eshan Perera', 'Operations', 'Operations Coordinator', '75,000', '22,500', '97,500']
+        ]
+      }
+    },
+    {
+      id: 'payroll-analysis',
+      name: 'Payroll Analysis Report',
+      description: 'Monthly payroll breakdown with deductions and net pay calculations',
+      icon: Calculator,
+      estimatedTime: '3-4 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee', 'Gross Pay (LKR)', 'EPF (8%)', 'Income Tax', 'Other Deductions', 'Net Pay (LKR)'],
+        rows: [
+          ['Amara Jayasuriya', '155,000', '12,400', '15,500', '2,500', '124,600'],
+          ['Buddhika Silva', '195,000', '15,600', '25,350', '3,000', '151,050'],
+          ['Chathurika Fernando', '182,000', '14,560', '22,100', '2,800', '142,540'],
+          ['Dilani Wickramasinghe', '110,000', '8,800', '8,250', '1,500', '91,450'],
+          ['Eshan Perera', '97,500', '7,800', '5,850', '1,200', '82,650']
+        ]
+      }
+    },
+    {
+      id: 'salary-grade-distribution',
+      name: 'Salary Grade Distribution',
+      description: 'Analysis of salary grades and bands across departments',
+      icon: TrendingUp,
+      estimatedTime: '1-2 minutes',
+      recordCount: 12,
+      sampleData: {
+        headers: ['Salary Grade', 'Range (LKR)', 'Employee Count', 'Percentage', 'Avg Salary (LKR)', 'Department Distribution'],
+        rows: [
+          ['Executive Level', '300K - 600K', '8', '5.1%', '425,000', 'Management: 8'],
+          ['Senior Level', '200K - 300K', '23', '14.7%', '250,000', 'IT: 8, Finance: 6, HR: 5, Others: 4'],
+          ['Mid Level', '150K - 200K', '45', '28.8%', '175,000', 'IT: 15, Marketing: 12, Operations: 10, Others: 8'],
+          ['Junior Level', '100K - 150K', '52', '33.3%', '125,000', 'Operations: 18, Marketing: 15, IT: 12, Others: 7'],
+          ['Entry Level', '75K - 100K', '28', '17.9%', '87,500', 'Admin: 12, Operations: 8, Others: 8']
+        ]
+      }
+    },
+    {
+      id: 'increment-history',
+      name: 'Increment History Report',
+      description: 'Historical salary increments and promotion-based increases',
+      icon: TrendingUp,
+      estimatedTime: '2 minutes',
+      recordCount: 89,
+      sampleData: {
+        headers: ['Employee', 'Previous Salary', 'New Salary', 'Increment %', 'Increment Type', 'Effective Date'],
+        rows: [
+          ['Amara Jayasuriya', '140,000', '155,000', '10.7%', 'Annual Increment', '2024-01-01'],
+          ['Buddhika Silva', '175,000', '195,000', '11.4%', 'Promotion', '2024-07-01'],
+          ['Chathurika Fernando', '165,000', '182,000', '10.3%', 'Annual Increment', '2024-01-01'],
+          ['Gayan Rathnayake', '95,000', '110,000', '15.8%', 'Promotion', '2024-06-01'],
+          ['Hasini Mendis', '85,000', '97,500', '14.7%', 'Performance Increment', '2024-04-01']
+        ]
+      }
+    },
+    {
+      id: 'overtime-analysis',
+      name: 'Overtime Analysis Report',
+      description: 'Overtime hours and payments analysis across departments',
+      icon: Clock,
+      estimatedTime: '1-2 minutes',
+      recordCount: 67,
+      sampleData: {
+        headers: ['Employee', 'Department', 'Regular Hours', 'OT Hours', 'OT Rate (LKR)', 'OT Payment (LKR)'],
+        rows: [
+          ['Ishara Bandara', 'IT Services', '160', '25', '1,250', '31,250'],
+          ['Janith Kumara', 'Operations', '160', '18', '950', '17,100'],
+          ['Kasun Wijesinghe', 'Finance', '160', '12', '1,100', '13,200'],
+          ['Lahiru Jayawardena', 'IT Services', '160', '22', '1,200', '26,400'],
+          ['Maria Fernando', 'HR', '160', '8', '1,150', '9,200']
+        ]
+      }
+    },
+    {
+      id: 'bonus-distribution',
+      name: 'Bonus Distribution Report',
+      description: 'Performance bonuses and incentive payments analysis',
+      icon: PiggyBank,
+      estimatedTime: '1-2 minutes',
+      recordCount: 134,
+      sampleData: {
+        headers: ['Employee', 'Department', 'Performance Rating', 'Bonus Type', 'Bonus Amount (LKR)', 'Payment Date'],
+        rows: [
+          ['Nimal Silva', 'Finance', 'Excellent', 'Annual Bonus', '45,000', '2024-03-15'],
+          ['Oshadha Rajapaksa', 'IT Services', 'Outstanding', 'Project Bonus', '25,000', '2024-08-10'],
+          ['Priya Senanayake', 'Marketing', 'Very Good', 'Sales Target Bonus', '35,000', '2024-09-20'],
+          ['Qasim Hassan', 'Operations', 'Excellent', 'Annual Bonus', '30,000', '2024-03-15'],
+          ['Rashini de Silva', 'HR', 'Very Good', 'Retention Bonus', '20,000', '2024-06-01']
+        ]
+      }
+    },
+    {
+      id: 'salary-comparison',
+      name: 'Salary Comparison Report',
+      description: 'Market comparison and internal equity analysis',
+      icon: BarChart3,
+      estimatedTime: '2-3 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Position', 'Internal Avg (LKR)', 'Market Rate (LKR)', 'Variance %', 'Min Salary', 'Max Salary'],
+        rows: [
+          ['Senior Software Engineer', '185,000', '195,000', '-5.1%', '160,000', '220,000'],
+          ['Finance Manager', '245,000', '235,000', '+4.3%', '220,000', '280,000'],
+          ['HR Manager', '225,000', '215,000', '+4.7%', '200,000', '250,000'],
+          ['Marketing Executive', '135,000', '140,000', '-3.6%', '120,000', '160,000'],
+          ['Operations Manager', '210,000', '205,000', '+2.4%', '190,000', '230,000']
+        ]
+      }
+    },
+    {
+      id: 'cost-center-analysis',
+      name: 'Cost Center Analysis',
+      description: 'Department-wise salary costs and budget utilization',
+      icon: Building,
+      estimatedTime: '2 minutes',
+      recordCount: 8,
+      sampleData: {
+        headers: ['Department', 'Budget (LKR)', 'Actual Cost (LKR)', 'Utilization %', 'Headcount', 'Avg Cost per Employee'],
+        rows: [
+          ['IT Services', '9,500,000', '8,925,000', '94.0%', '45', '198,333'],
+          ['Finance', '4,200,000', '4,150,000', '98.8%', '25', '166,000'],
+          ['Human Resources', '3,600,000', '3,510,000', '97.5%', '18', '195,000'],
+          ['Marketing', '5,100,000', '4,845,000', '95.0%', '32', '151,406'],
+          ['Operations', '5,800,000', '5,510,000', '95.0%', '36', '153,056']
+        ]
+      }
+    },
+    {
+      id: 'compensation-trends',
+      name: 'Compensation Trends Report',
+      description: 'Historical compensation trends and forecasting',
+      icon: TrendingUp,
+      estimatedTime: '2-3 minutes',
+      recordCount: 24,
+      sampleData: {
+        headers: ['Period', 'Avg Salary (LKR)', 'Growth %', 'New Hires Avg', 'Promotion Impact', 'Market Adjustment'],
+        rows: [
+          ['Q4 2024', '128,500', '+8.2%', '95,000', '+12%', '+3%'],
+          ['Q3 2024', '118,750', '+6.5%', '90,000', '+8%', '+2%'],
+          ['Q2 2024', '111,500', '+5.8%', '85,000', '+6%', '+2%'],
+          ['Q1 2024', '105,400', '+7.2%', '82,000', '+10%', '+4%'],
+          ['Q4 2023', '98,300', '+6.8%', '78,000', '+8%', '+3%']
+        ]
+      }
+    },
+    {
+      id: 'tax-deduction-summary',
+      name: 'Tax & Deduction Summary',
+      description: 'Comprehensive tax calculations and statutory deductions',
+      icon: CreditCard,
+      estimatedTime: '2-3 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee', 'Gross Salary', 'Income Tax', 'EPF Employee', 'ETF', 'Total Deductions', 'Net Salary'],
+        rows: [
+          ['Sunil Bandara', '185,000', '22,200', '14,800', '555', '37,555', '147,445'],
+          ['Thilak Rathnayake', '165,000', '18,150', '13,200', '495', '31,845', '133,155'],
+          ['Upul Chandana', '145,000', '14,500', '11,600', '435', '26,535', '118,465'],
+          ['Vindya Perera', '125,000', '10,625', '10,000', '375', '21,000', '104,000'],
+          ['Wasantha Kumara', '105,000', '7,350', '8,400', '315', '16,065', '88,935']
+        ]
+      }
+    }
+  ];
+
   // Sample data generators for realistic previews
   const generateEmployeeId = (index: number) => `EMP${(index + 1).toString().padStart(3, '0')}`;
   
@@ -491,20 +679,9 @@ const Reports = () => {
       icon: DollarSign,
       color: 'bg-green-50 text-green-700 border-green-200',
       iconBg: 'bg-green-100',
-      action: () => console.log('Salary reports coming soon'),
-      reportCount: 10,
-      reports: [
-        'Salary Summary Report',
-        'Payroll Analysis',
-        'Salary Grade Distribution',
-        'Increment History Report',
-        'Overtime Analysis',
-        'Bonus Distribution',
-        'Salary Comparison Report',
-        'Cost Center Analysis',
-        'Compensation Trends',
-        'Deduction Summary'
-      ]
+      action: () => setShowSalaryReports(true),
+      reportCount: salaryReports.length,
+      reports: salaryReports.map(report => report.name)
     },
     {
       id: 'leave-reports',
@@ -1136,6 +1313,89 @@ const Reports = () => {
                   </button>
                   <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
                     Send to Insurance Provider
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Salary & Payroll Reports Modal */}
+      {showSalaryReports && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b bg-green-50">
+              <div className="flex items-center">
+                <DollarSign className="w-6 h-6 text-green-600 mr-3" />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Salary & Payroll Reports</h3>
+                  <p className="text-sm text-gray-600">Generate comprehensive salary analysis and payroll reports</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSalaryReports(false)}
+                className="p-2 hover:bg-green-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {salaryReports.map((report) => (
+                  <div key={report.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <report.icon className="w-5 h-5 text-green-600 mr-2" />
+                        <h4 className="font-medium text-gray-900">{report.name}</h4>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{report.description}</p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>{report.estimatedTime}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="w-3 h-3 mr-1" />
+                        <span>{report.recordCount} records</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handlePreviewReport(report)}
+                        className="flex-1 px-3 py-2 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Preview
+                      </button>
+                      <button className="flex-1 px-3 py-2 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center justify-center">
+                        <Download className="w-3 h-3 mr-1" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
+                    Generate Monthly Payroll
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors">
+                    Schedule Annual Salary Review
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                    Export to Finance System
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                    Send to Tax Consultant
                   </button>
                 </div>
               </div>
