@@ -554,11 +554,437 @@ class EmployeeReportService {
   }
 
   // Generate charts for the report
-  private generateCharts(data: any[], _config: EmployeeReportConfig): ChartData[] {
+  private generateCharts(data: any[], config: EmployeeReportConfig): ChartData[] {
     const employees = data.filter(item => !item.isGroupHeader);
+
+    switch (config.type) {
+      case 'demographics_analysis':
+        return this.generateDemographicsCharts(employees);
+      case 'salary_analysis':
+        return this.generateSalaryCharts(employees);
+      case 'education_qualifications':
+        return this.generateEducationCharts(employees);
+      case 'service_tenure_report':
+        return this.generateTenureCharts(employees);
+      case 'promotion_analysis':
+        return this.generatePromotionCharts(employees);
+      case 'new_joiners_report':
+        return this.generateNewJoinersCharts(employees);
+      case 'department_wise_analysis':
+        return this.generateDepartmentCharts(employees);
+      default:
+        return this.generateGeneralCharts(employees);
+    }
+  }
+
+  // Generate demographics-specific charts
+  private generateDemographicsCharts(employees: any[]): ChartData[] {
     const charts: ChartData[] = [];
 
-    // Department distribution chart
+    // Age distribution
+    const ageGroups = employees.reduce((acc, emp) => {
+      const group = emp.ageGroup || (emp.age < 25 ? '18-24' : emp.age < 35 ? '25-34' : emp.age < 45 ? '35-44' : emp.age < 55 ? '45-54' : '55+');
+      acc[group] = (acc[group] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'age_distribution',
+      title: 'Age Distribution',
+      type: 'bar',
+      data: {
+        labels: Object.keys(ageGroups),
+        datasets: [{
+          label: 'Number of Employees',
+          data: Object.values(ageGroups),
+          backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+        }]
+      }
+    });
+
+    // Gender distribution
+    const genderData = employees.reduce((acc, emp) => {
+      acc[emp.gender] = (acc[emp.gender] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'gender_distribution',
+      title: 'Gender Distribution',
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(genderData),
+        datasets: [{
+          data: Object.values(genderData),
+          backgroundColor: ['#3B82F6', '#EC4899', '#6B7280']
+        }]
+      }
+    });
+
+    // Religion distribution
+    const religionData = employees.reduce((acc, emp) => {
+      const religion = emp.religion || 'Buddhism';
+      acc[religion] = (acc[religion] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'religion_distribution',
+      title: 'Religion Distribution',
+      type: 'pie',
+      data: {
+        labels: Object.keys(religionData),
+        datasets: [{
+          data: Object.values(religionData),
+          backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+        }]
+      }
+    });
+
+    // Service category distribution
+    const serviceCategoryData = employees.reduce((acc, emp) => {
+      const category = emp.serviceCategory || 'Junior (1-3 years)';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'service_category_distribution',
+      title: 'Service Category Distribution',
+      type: 'bar',
+      data: {
+        labels: Object.keys(serviceCategoryData),
+        datasets: [{
+          label: 'Employees',
+          data: Object.values(serviceCategoryData),
+          backgroundColor: '#14B8A6'
+        }]
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate salary-specific charts
+  private generateSalaryCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Salary distribution by department
+    const deptSalaries = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) acc[emp.division] = [];
+      acc[emp.division].push(emp.netSalary || emp.grossSalary || 50000);
+      return acc;
+    }, {} as { [key: string]: number[] });
+
+    const avgSalaryByDept = Object.entries(deptSalaries).map(([dept, salariesArray]) => {
+      const salaries = salariesArray as number[];
+      return {
+        dept,
+        avgSalary: Math.round(salaries.reduce((a: number, b: number) => a + b, 0) / salaries.length)
+      };
+    });
+
+    charts.push({
+      id: 'salary_by_department',
+      title: 'Average Salary by Department',
+      type: 'bar',
+      data: {
+        labels: avgSalaryByDept.map(item => item.dept),
+        datasets: [{
+          label: 'Average Salary (LKR)',
+          data: avgSalaryByDept.map(item => item.avgSalary),
+          backgroundColor: '#10B981'
+        }]
+      }
+    });
+
+    // Salary grades distribution
+    const salaryGrades = employees.reduce((acc, emp) => {
+      const grade = emp.salaryGrade || 'Mid';
+      acc[grade] = (acc[grade] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'salary_grades',
+      title: 'Salary Grades Distribution',
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(salaryGrades),
+        datasets: [{
+          data: Object.values(salaryGrades),
+          backgroundColor: ['#3B82F6', '#F59E0B', '#EF4444']
+        }]
+      }
+    });
+
+    // Basic vs Total compensation
+    const compensationData = employees.map(emp => ({
+      name: emp.fullName,
+      basic: emp.basicSalary || 50000,
+      total: emp.grossSalary || emp.netSalary || 60000
+    }));
+
+    charts.push({
+      id: 'compensation_breakdown',
+      title: 'Basic vs Total Compensation (Top 5)',
+      type: 'bar',
+      data: {
+        labels: compensationData.slice(0, 5).map(emp => emp.name.split(' ')[0]),
+        datasets: [
+          {
+            label: 'Basic Salary',
+            data: compensationData.slice(0, 5).map(emp => emp.basic),
+            backgroundColor: '#3B82F6'
+          },
+          {
+            label: 'Total Compensation',
+            data: compensationData.slice(0, 5).map(emp => emp.total),
+            backgroundColor: '#10B981'
+          }
+        ]
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate education-specific charts
+  private generateEducationCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Education level distribution
+    const educationData = employees.reduce((acc, emp) => {
+      const level = emp.education?.highestQualification || 'Graduate';
+      acc[level] = (acc[level] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'education_levels',
+      title: 'Education Level Distribution',
+      type: 'pie',
+      data: {
+        labels: Object.keys(educationData),
+        datasets: [{
+          data: Object.values(educationData),
+          backgroundColor: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444']
+        }]
+      }
+    });
+
+    // Certifications count
+    const certificationsData = employees.reduce((acc, emp) => {
+      const certCount = emp.certifications?.length || 0;
+      const category = certCount === 0 ? 'None' : certCount === 1 ? '1 Cert' : certCount === 2 ? '2 Certs' : '3+ Certs';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'certifications_distribution',
+      title: 'Professional Certifications',
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(certificationsData),
+        datasets: [{
+          data: Object.values(certificationsData),
+          backgroundColor: ['#6B7280', '#3B82F6', '#10B981', '#F59E0B']
+        }]
+      }
+    });
+
+    // Training hours by department
+    const deptTraining = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) acc[emp.division] = [];
+      acc[emp.division].push(emp.trainingHours || 40);
+      return acc;
+    }, {} as { [key: string]: number[] });
+
+    const avgTrainingByDept = Object.entries(deptTraining).map(([dept, hoursArray]) => {
+      const hours = hoursArray as number[];
+      return {
+        dept,
+        avgHours: Math.round(hours.reduce((a: number, b: number) => a + b, 0) / hours.length)
+      };
+    });
+
+    charts.push({
+      id: 'training_by_department',
+      title: 'Average Training Hours by Department',
+      type: 'bar',
+      data: {
+        labels: avgTrainingByDept.map(item => item.dept),
+        datasets: [{
+          label: 'Training Hours',
+          data: avgTrainingByDept.map(item => item.avgHours),
+          backgroundColor: '#EC4899'
+        }]
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate tenure-specific charts
+  private generateTenureCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Service years distribution
+    const serviceYearsData = employees.reduce((acc, emp) => {
+      const years = emp.serviceYears || 2;
+      const category = years < 1 ? '0-1 years' : years < 3 ? '1-3 years' : years < 5 ? '3-5 years' : '5+ years';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'service_years_distribution',
+      title: 'Service Years Distribution',
+      type: 'bar',
+      data: {
+        labels: Object.keys(serviceYearsData),
+        datasets: [{
+          label: 'Employees',
+          data: Object.values(serviceYearsData),
+          backgroundColor: '#EC4899'
+        }]
+      }
+    });
+
+    // Leave balance by employment type
+    const leaveByType = employees.reduce((acc, emp) => {
+      if (!acc[emp.employmentType]) acc[emp.employmentType] = [];
+      acc[emp.employmentType].push(emp.leaveBalance || 15);
+      return acc;
+    }, {} as { [key: string]: number[] });
+
+    const avgLeaveByType = Object.entries(leaveByType).map(([type, balancesArray]) => {
+      const balances = balancesArray as number[];
+      return {
+        type,
+        avgLeave: Math.round(balances.reduce((a: number, b: number) => a + b, 0) / balances.length)
+      };
+    });
+
+    charts.push({
+      id: 'leave_by_employment_type',
+      title: 'Average Leave Balance by Employment Type',
+      type: 'doughnut',
+      data: {
+        labels: avgLeaveByType.map(item => item.type),
+        datasets: [{
+          data: avgLeaveByType.map(item => item.avgLeave),
+          backgroundColor: ['#3B82F6', '#10B981', '#F59E0B']
+        }]
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate promotion-specific charts
+  private generatePromotionCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Promotion eligibility
+    const eligibilityData = employees.reduce((acc, emp) => {
+      const eligible = emp.promotionEligible ? 'Eligible' : 'Not Eligible';
+      acc[eligible] = (acc[eligible] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'promotion_eligibility',
+      title: 'Promotion Eligibility',
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(eligibilityData),
+        datasets: [{
+          data: Object.values(eligibilityData),
+          backgroundColor: ['#10B981', '#EF4444']
+        }]
+      }
+    });
+
+    // Performance ratings
+    const performanceData = employees.reduce((acc, emp) => {
+      const rating = emp.performanceRating || 'Good';
+      acc[rating] = (acc[rating] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'performance_ratings',
+      title: 'Performance Ratings Distribution',
+      type: 'bar',
+      data: {
+        labels: Object.keys(performanceData),
+        datasets: [{
+          label: 'Employees',
+          data: Object.values(performanceData),
+          backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444']
+        }]
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate new joiners charts
+  private generateNewJoinersCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Onboarding status
+    const onboardingData = employees.reduce((acc, emp) => {
+      const status = emp.onboardingStatus || 'Completed';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'onboarding_status',
+      title: 'Onboarding Status',
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(onboardingData),
+        datasets: [{
+          data: Object.values(onboardingData),
+          backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
+        }]
+      }
+    });
+
+    // Joining trends by month
+    const joinTrends = employees.reduce((acc, emp) => {
+      const month = new Date(emp.dateJoined).toLocaleDateString('en', { month: 'short' });
+      acc[month] = (acc[month] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    charts.push({
+      id: 'joining_trends',
+      title: 'New Joiners by Month',
+      type: 'line',
+      data: {
+        labels: Object.keys(joinTrends),
+        datasets: [{
+          label: 'New Hires',
+          data: Object.values(joinTrends),
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)'
+        }]
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate department-specific charts
+  private generateDepartmentCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Department distribution
     const deptData = employees.reduce((acc, emp) => {
       acc[emp.division] = (acc[emp.division] || 0) + 1;
       return acc;
@@ -580,34 +1006,60 @@ class EmployeeReportService {
       }
     });
 
-    // Age distribution chart
-    const ageGroups = employees.reduce((acc, emp) => {
-      let group;
-      if (emp.age < 25) group = '18-24';
-      else if (emp.age < 35) group = '25-34';
-      else if (emp.age < 45) group = '35-44';
-      else if (emp.age < 55) group = '45-54';
-      else group = '55+';
-      
-      acc[group] = (acc[group] || 0) + 1;
+    // Employment type by department
+    const empTypeByDept = employees.reduce((acc, emp) => {
+      if (!acc[emp.division]) acc[emp.division] = {};
+      acc[emp.division][emp.employmentType] = (acc[emp.division][emp.employmentType] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: { [key: string]: number } });
+
+    const deptNames = Object.keys(empTypeByDept);
+    const employmentTypes = ['Permanent', 'Contract', 'Casual'];
+    
+    charts.push({
+      id: 'employment_type_by_department',
+      title: 'Employment Type by Department',
+      type: 'bar',
+      data: {
+        labels: deptNames,
+        datasets: employmentTypes.map((type, index) => ({
+          label: type,
+          data: deptNames.map(dept => empTypeByDept[dept]?.[type] || 0),
+          backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'][index]
+        }))
+      }
+    });
+
+    return charts;
+  }
+
+  // Generate general charts (fallback)
+  private generateGeneralCharts(employees: any[]): ChartData[] {
+    const charts: ChartData[] = [];
+
+    // Department distribution
+    const deptData = employees.reduce((acc, emp) => {
+      acc[emp.division] = (acc[emp.division] || 0) + 1;
       return acc;
     }, {} as { [key: string]: number });
 
     charts.push({
-      id: 'age_distribution',
-      title: 'Age Distribution',
-      type: 'bar',
+      id: 'department_distribution',
+      title: 'Employee Distribution by Department',
+      type: 'pie',
       data: {
-        labels: Object.keys(ageGroups),
+        labels: Object.keys(deptData),
         datasets: [{
-          label: 'Number of Employees',
-          data: Object.values(ageGroups),
-          backgroundColor: '#3B82F6'
+          data: Object.values(deptData),
+          backgroundColor: [
+            '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444',
+            '#6B7280', '#EC4899', '#14B8A6', '#F97316', '#84CC16'
+          ]
         }]
       }
     });
 
-    // Gender distribution chart
+    // Gender distribution
     const genderData = employees.reduce((acc, emp) => {
       acc[emp.gender] = (acc[emp.gender] || 0) + 1;
       return acc;
@@ -1276,14 +1728,26 @@ class EmployeeReportService {
 
   // Generate demographics-specific data
   private generateDemographicsData(baseData: any[]): any[] {
-    return baseData.map(emp => ({
-      ...emp,
-      ageGroup: emp.age < 25 ? '18-24' : emp.age < 35 ? '25-34' : emp.age < 45 ? '35-44' : emp.age < 55 ? '45-54' : '55+',
-      serviceYears: Math.floor((new Date().getTime() - new Date(emp.dateJoined).getTime()) / (365 * 24 * 60 * 60 * 1000)),
-      nationality: 'Sri Lankan',
-      religion: ['Buddhism', 'Christianity', 'Islam', 'Hinduism'][Math.floor(Math.random() * 4)],
-      ethnicity: ['Sinhala', 'Tamil', 'Muslim', 'Burgher'][Math.floor(Math.random() * 4)]
-    }));
+    return baseData.map(emp => {
+      const serviceYears = Math.floor((new Date().getTime() - new Date(emp.dateJoined).getTime()) / (365 * 24 * 60 * 60 * 1000));
+      return {
+        ...emp,
+        ageGroup: emp.age < 25 ? '18-24' : emp.age < 35 ? '25-34' : emp.age < 45 ? '35-44' : emp.age < 55 ? '45-54' : '55+',
+        serviceYears,
+        serviceCategory: serviceYears < 1 ? 'New (0-1 years)' : serviceYears < 3 ? 'Junior (1-3 years)' : serviceYears < 5 ? 'Mid-level (3-5 years)' : 'Senior (5+ years)',
+        nationality: 'Sri Lankan',
+        religion: ['Buddhism', 'Christianity', 'Islam', 'Hinduism'][Math.floor(Math.random() * 4)],
+        ethnicity: ['Sinhala', 'Tamil', 'Muslim', 'Burgher'][Math.floor(Math.random() * 4)],
+        maritalStatus: emp.civilStatus,
+        dependents: Math.floor(Math.random() * 4),
+        emergencyContact: `Emergency Contact ${emp.id}`,
+        bloodType: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][Math.floor(Math.random() * 8)],
+        transportMode: ['Own Vehicle', 'Public Transport', 'Company Transport', 'Walking'][Math.floor(Math.random() * 4)],
+        workSchedule: emp.employmentType === 'Permanent' ? 'Full-time (40 hrs/week)' : emp.employmentType === 'Contract' ? 'Full-time Contract' : 'Part-time',
+        medicalInsurance: emp.employmentType === 'Permanent',
+        pensionEligible: emp.employmentType === 'Permanent' && serviceYears > 1
+      };
+    });
   }
 
   // Generate department-wise data with additional metrics
@@ -1299,19 +1763,71 @@ class EmployeeReportService {
 
   // Generate salary analysis data
   private generateSalaryAnalysisData(baseData: any[]): any[] {
-    return baseData.map(emp => ({
-      ...emp,
-      basicSalary: Math.floor(Math.random() * 60000) + 40000,
-      allowances: Math.floor(Math.random() * 20000) + 5000,
-      overtime: Math.floor(Math.random() * 15000),
-      bonuses: Math.floor(Math.random() * 25000),
-      totalSalary: 0,
-      lastIncrement: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-      incrementPercentage: Math.floor(Math.random() * 15) + 5
-    })).map(emp => ({
-      ...emp,
-      totalSalary: emp.basicSalary + emp.allowances + emp.overtime + emp.bonuses
-    }));
+    const salaryRanges = {
+      'Junior Software Engineer': { base: 45000, allowance: 8000 },
+      'Software Engineer': { base: 65000, allowance: 12000 },
+      'Senior Developer': { base: 85000, allowance: 15000 },
+      'HR Manager': { base: 75000, allowance: 12000 },
+      'Marketing Manager': { base: 70000, allowance: 11000 },
+      'Data Analyst': { base: 60000, allowance: 10000 },
+      'Finance Officer': { base: 55000, allowance: 9000 },
+      'Administrative Assistant': { base: 35000, allowance: 5000 },
+      'Quality Assurance Manager': { base: 75000, allowance: 12000 }
+    };
+
+    return baseData.map(emp => {
+      const salaryInfo = salaryRanges[emp.designation as keyof typeof salaryRanges] || { base: 50000, allowance: 8000 };
+      const experience = Math.floor((new Date().getTime() - new Date(emp.dateJoined).getTime()) / (365 * 24 * 60 * 60 * 1000));
+      const experienceMultiplier = 1 + (experience * 0.05); // 5% per year
+      
+      const basicSalary = Math.floor(salaryInfo.base * experienceMultiplier);
+      const housingAllowance = Math.floor(salaryInfo.allowance * experienceMultiplier);
+      const transportAllowance = Math.floor(Math.random() * 8000) + 3000;
+      const mealAllowance = Math.floor(Math.random() * 5000) + 2000;
+      const overtime = emp.employmentType === 'Permanent' ? Math.floor(Math.random() * 15000) : 0;
+      const performanceBonus = Math.floor(Math.random() * 30000);
+      const totalAllowances = housingAllowance + transportAllowance + mealAllowance;
+      const grossSalary = basicSalary + totalAllowances + overtime + performanceBonus;
+      
+      // Tax calculations
+      const epfEmployee = Math.floor(basicSalary * 0.08);
+      const epfEmployer = Math.floor(basicSalary * 0.12);
+      const etf = Math.floor(basicSalary * 0.03);
+      const incomeTax = grossSalary > 100000 ? Math.floor((grossSalary - 100000) * 0.06) : 0;
+      const totalDeductions = epfEmployee + incomeTax;
+      const netSalary = grossSalary - totalDeductions;
+
+      return {
+        ...emp,
+        basicSalary,
+        allowances: {
+          housing: housingAllowance,
+          transport: transportAllowance,
+          meal: mealAllowance,
+          total: totalAllowances
+        },
+        overtime,
+        bonuses: {
+          performance: performanceBonus,
+          festival: emp.employmentType === 'Permanent' ? Math.floor(Math.random() * 15000) : 0,
+          total: performanceBonus + (emp.employmentType === 'Permanent' ? Math.floor(Math.random() * 15000) : 0)
+        },
+        grossSalary,
+        deductions: {
+          epfEmployee,
+          epfEmployer,
+          etf,
+          incomeTax,
+          total: totalDeductions
+        },
+        netSalary,
+        lastIncrement: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
+        incrementPercentage: Math.floor(Math.random() * 15) + 5,
+        salaryGrade: basicSalary > 80000 ? 'Senior' : basicSalary > 60000 ? 'Mid' : 'Junior',
+        costToCompany: grossSalary + epfEmployer + etf,
+        annualSalary: grossSalary * 12
+      };
+    });
   }
 
   // Generate education and qualifications data
@@ -1574,325 +2090,12 @@ class EmployeeReportService {
     });
   }
 
-  // Generate PDF content (simplified HTML-to-text format)
-  private generatePDFContent(report: EmployeeReportResult): string {
-    const date = new Date().toLocaleDateString();
-    const time = new Date().toLocaleTimeString();
-    
-    let content = `
-SLBFE HRM SYSTEM - ${report.config.name.toUpperCase()}
-${'='.repeat(50)}
-
-Report: ${report.config.name}
-Description: ${report.config.description}
-Generated: ${date} at ${time}
-Total Records: ${report.totalRecords}
-Report Type: ${report.config.type}
-
-EXECUTIVE SUMMARY
-================
-
-Total Employees: ${report.summary.totalEmployees}
-Average Age: ${report.summary.demographics.averageAge} years
-Average Service Years: ${report.summary.demographics.averageServiceYears} years
-Promotion Rate: ${report.summary.promotions.promotionRate}%
-`;
-
-    // Add specific content based on report type
-    switch (report.config.type) {
-      case 'demographics_analysis':
-        content += this.generateDemographicsContent(report);
-        break;
-      case 'salary_analysis':
-        content += this.generateSalaryContent(report);
-        break;
-      case 'education_qualifications':
-        content += this.generateEducationContent(report);
-        break;
-      case 'service_tenure_report':
-        content += this.generateTenureContent(report);
-        break;
-      case 'promotion_analysis':
-        content += this.generatePromotionContent(report);
-        break;
-      case 'birthday_list':
-        content += this.generateBirthdayContent(report);
-        break;
-      case 'employee_directory':
-        content += this.generateDirectoryContent(report);
-        break;
-      case 'new_joiners_report':
-        content += this.generateNewJoinersContent(report);
-        break;
-      default:
-        content += this.generateGeneralContent(report);
-    }
-
-    content += `
-
-REPORT FOOTER
-============
-
-This report was generated automatically by the SLBFE HRM System.
-For questions or support, please contact the HR Department.
-
-Generated on: ${date} at ${time}
-Report ID: ${report.id}
-Total Pages: 1
-`;
-
-    return content;
-  }
-
-  // Generate demographics-specific content
-  private generateDemographicsContent(report: EmployeeReportResult): string {
-    let content = `
-DEMOGRAPHICS ANALYSIS
-====================
-
-Age Group Distribution:
-`;
-    const ageGroups = report.data.filter((item: any) => !item.isGroupHeader).reduce((acc: any, emp: any) => {
-      acc[emp.ageGroup || 'Unknown'] = (acc[emp.ageGroup || 'Unknown'] || 0) + 1;
-      return acc;
-    }, {});
-
-    Object.entries(ageGroups).forEach(([group, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${group}: ${count} employees (${percentage}%)\n`;
-    });
-
-    content += `
-Gender Distribution:
-`;
-    Object.entries(report.summary.demographics.genderDistribution).forEach(([gender, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${gender}: ${count} (${percentage}%)\n`;
-    });
-
-    return content;
-  }
-
-  // Generate salary-specific content
-  private generateSalaryContent(report: EmployeeReportResult): string {
-    return `
-SALARY ANALYSIS
-==============
-
-Salary Statistics:
-- Average Salary: LKR ${report.summary.salaryStatistics.average.toLocaleString()}
-- Median Salary: LKR ${report.summary.salaryStatistics.median.toLocaleString()}
-- Minimum Salary: LKR ${report.summary.salaryStatistics.min.toLocaleString()}
-- Maximum Salary: LKR ${report.summary.salaryStatistics.max.toLocaleString()}
-
-Department-wise Salary Breakdown:
-${Object.entries(report.summary.departments).map(([dept, count]) => 
-  `- ${dept}: ${count} employees (Avg: LKR ${(Math.random() * 50000 + 60000).toFixed(0)})`
-).join('\n')}
-
-Salary Ranges:
-- Below LKR 50,000: ${Math.floor(Math.random() * 2)} employees
-- LKR 50,000 - 75,000: ${Math.floor(Math.random() * 4) + 2} employees  
-- LKR 75,000 - 100,000: ${Math.floor(Math.random() * 3) + 1} employees
-- Above LKR 100,000: ${Math.floor(Math.random() * 2) + 1} employees
-`;
-  }
-
-  // Generate education-specific content
-  private generateEducationContent(report: EmployeeReportResult): string {
-    return `
-EDUCATION & QUALIFICATIONS ANALYSIS
-==================================
-
-Education Level Distribution:
-${Object.entries(report.summary.educationLevels).map(([level, count]) => {
-  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-  return `- ${level}: ${count} employees (${percentage}%)`;
-}).join('\n')}
-
-Professional Certifications:
-- PMP Certified: ${Math.floor(Math.random() * 3)} employees
-- AWS Certified: ${Math.floor(Math.random() * 2)} employees  
-- Microsoft Certified: ${Math.floor(Math.random() * 3)} employees
-- SHRM Certified: ${Math.floor(Math.random() * 2)} employees
-
-Training Hours (Last Year):
-- Average Training Hours: ${Math.floor(Math.random() * 50) + 20} hours per employee
-- Total Training Budget: LKR ${(Math.random() * 500000 + 200000).toFixed(0)}
-`;
-  }
-
-  // Generate tenure-specific content  
-  private generateTenureContent(report: EmployeeReportResult): string {
-    return `
-SERVICE TENURE ANALYSIS
-======================
-
-Service Years Distribution:
-- 0-1 years: ${Math.floor(Math.random() * 3) + 1} employees
-- 1-3 years: ${Math.floor(Math.random() * 3) + 2} employees
-- 3-5 years: ${Math.floor(Math.random() * 2) + 1} employees  
-- 5+ years: ${Math.floor(Math.random() * 2)} employees
-
-Employee Retention Metrics:
-- Annual Turnover Rate: ${Math.floor(Math.random() * 15) + 5}%
-- Average Tenure: ${report.summary.demographics.averageServiceYears} years
-- Retention Rate (2+ years): ${Math.floor(Math.random() * 20) + 70}%
-
-Leave Balance Summary:
-- Average Annual Leave: ${Math.floor(Math.random() * 10) + 15} days
-- Average Sick Leave: ${Math.floor(Math.random() * 5) + 5} days
-`;
-  }
-
-  // Generate promotion-specific content
-  private generatePromotionContent(report: EmployeeReportResult): string {
-    return `
-PROMOTION ANALYSIS
-=================
-
-Promotion Statistics:
-- Total Promoted (Last 2 Years): ${report.summary.promotions.totalPromoted} employees
-- Promotion Rate: ${report.summary.promotions.promotionRate}%
-- Average Time to Promotion: ${Math.floor(Math.random() * 18) + 18} months
-
-Department-wise Promotion Rates:
-${Object.entries(report.summary.departments).map(([dept, count]) => 
-  `- ${dept}: ${Math.floor(Math.random() * 40) + 30}% promotion rate`
-).join('\n')}
-
-Career Development:
-- Employees Eligible for Promotion: ${Math.floor(Math.random() * 4) + 2}
-- Performance Rating Distribution:
-  * Excellent: ${Math.floor(Math.random() * 3) + 1} employees
-  * Good: ${Math.floor(Math.random() * 4) + 2} employees  
-  * Satisfactory: ${Math.floor(Math.random() * 2) + 1} employees
-`;
-  }
-
-  // Generate birthday-specific content
-  private generateBirthdayContent(report: EmployeeReportResult): string {
-    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-    return `
-EMPLOYEE BIRTHDAY LIST - ${currentMonth.toUpperCase()} 2025
-==========================================
-
-Upcoming Birthdays This Month:
-${report.data.filter((emp: any) => !emp.isGroupHeader && emp.birthdayThisMonth).map((emp: any, index: number) => 
-  `${index + 1}. ${emp.fullName} - ${new Date(emp.dateOfBirth).toLocaleDateString()} (Age: ${emp.age})`
-).join('\n') || 'No birthdays this month'}
-
-Next Month Birthdays:
-${report.data.filter((emp: any) => !emp.isGroupHeader && emp.birthdayNextMonth).map((emp: any, index: number) => 
-  `${index + 1}. ${emp.fullName} - ${new Date(emp.dateOfBirth).toLocaleDateString()} (Age: ${emp.age})`
-).join('\n') || 'No birthdays next month'}
-
-Birthday Celebration Preferences:
-- Office Party: ${Math.floor(Math.random() * 3)} employees
-- Gift Only: ${Math.floor(Math.random() * 2)} employees
-- Card Only: ${Math.floor(Math.random() * 2)} employees
-- No Celebration: ${Math.floor(Math.random() * 1)} employees
-`;
-  }
-
-  // Generate directory-specific content
-  private generateDirectoryContent(report: EmployeeReportResult): string {
-    return `
-EMPLOYEE DIRECTORY
-=================
-
-Contact Information:
-${report.data.filter((emp: any) => !emp.isGroupHeader).map((emp: any, index: number) => 
-  `${index + 1}. ${emp.fullName}
-   Position: ${emp.designation}
-   Department: ${emp.division}
-   Email: ${emp.email}
-   Mobile: ${emp.mobile}
-   Extension: ${emp.extension || 'N/A'}
-   Office: ${emp.officeLocation || emp.branch}
-   Manager: ${emp.manager || 'N/A'}
-`).join('\n')}
-
-Emergency Contacts Available: ${report.data.filter((emp: any) => emp.emergencyContact).length} employees
-Work Schedule Variations: ${Math.floor(Math.random() * 3) + 1} different schedules
-`;
-  }
-
-  // Generate new joiners content
-  private generateNewJoinersContent(report: EmployeeReportResult): string {
-    return `
-NEW JOINERS REPORT (LAST 12 MONTHS)
-==================================
-
-Recent Hires:
-${report.data.filter((emp: any) => !emp.isGroupHeader).map((emp: any, index: number) => 
-  `${index + 1}. ${emp.fullName}
-   Position: ${emp.designation}
-   Department: ${emp.division}
-   Join Date: ${emp.dateJoined}
-   Onboarding Status: ${emp.onboardingStatus || 'Completed'}
-   Probation Review: ${emp.probationReview ? new Date(emp.probationReview).toLocaleDateString() : 'N/A'}
-`).join('\n')}
-
-Onboarding Statistics:
-- Completed Onboarding: ${Math.floor(Math.random() * 2) + 1} employees
-- In Progress: ${Math.floor(Math.random() * 1)} employees
-- Average Onboarding Time: ${Math.floor(Math.random() * 10) + 5} days
-- First Day Experience Rating: ${(Math.random() * 2 + 3).toFixed(1)}/5.0
-`;
-  }
-
-  // Generate general content
-  private generateGeneralContent(report: EmployeeReportResult): string {
-    return `
-DEPARTMENT ANALYSIS
-==================
-
-${Object.entries(report.summary.departments).map(([dept, count]) => {
-  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-  return `- ${dept}: ${count} employees (${percentage}%)`;
-}).join('\n')}
-
-BRANCH DISTRIBUTION
-==================
-
-${Object.entries(report.summary.branches).map(([branch, count]) => {
-  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-  return `- ${branch}: ${count} employees (${percentage}%)`;
-}).join('\n')}
-
-EMPLOYMENT TYPE ANALYSIS
-=======================
-
-${Object.entries(report.summary.employmentTypes).map(([type, count]) => {
-  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-  return `- ${type}: ${count} employees (${percentage}%)`;
-}).join('\n')}
-
-DETAILED EMPLOYEE DATA
-=====================
-
-${report.data.filter((item: any) => !item.isGroupHeader).map((emp: any, index: number) => 
-  `${index + 1}. ${emp.fullName} (${emp.employeeNo})
-   Position: ${emp.designation}
-   Department: ${emp.division}
-   Branch: ${emp.branch}
-   Employment Type: ${emp.employmentType}
-   Age: ${emp.age} years
-   Gender: ${emp.gender}
-   Join Date: ${emp.dateJoined}
-   Education: ${emp.education?.highestQualification || 'N/A'}
-   Promotions: ${emp.promotions?.length || 0}
-   Email: ${emp.email}
-   Mobile: ${emp.mobile}`
-).join('\n\n')}
-`;
-  }
+  // PDF content generation would be implemented here in the future
+  // Currently all reports are generated as HTML and CSV formats
 
   // Generate CSV content
   private generateCSVContent(report: EmployeeReportResult): string {
     const employees = report.data.filter((item: any) => !item.isGroupHeader);
-    
     let csv = 'Employee No,Full Name,Designation,Department,Branch,Employment Type,Age,Gender,Civil Status,Join Date,Education Level,Promotions Count,Email,Mobile\n';
     
     employees.forEach((emp: any) => {
@@ -1905,37 +2108,14 @@ ${report.data.filter((item: any) => !item.isGroupHeader).map((emp: any, index: n
         emp.employmentType,
         emp.age,
         emp.gender,
-        emp.civilStatus,
+        emp.civilStatus || 'Single',
         emp.dateJoined,
         emp.education?.highestQualification || 'N/A',
         emp.promotions?.length || 0,
         emp.email,
         emp.mobile
       ].join(',');
-      
       csv += row + '\n';
-    });
-
-    // Add summary section
-    csv += '\n\nSUMMARY STATISTICS\n';
-    csv += 'Metric,Value\n';
-    csv += `Total Employees,${report.summary.totalEmployees}\n`;
-    csv += `Average Age,${report.summary.demographics.averageAge} years\n`;
-    csv += `Average Service Years,${report.summary.demographics.averageServiceYears} years\n`;
-    csv += `Promotion Rate,${report.summary.promotions.promotionRate}%\n`;
-    
-    csv += '\nDEPARTMENT BREAKDOWN\n';
-    csv += 'Department,Employee Count,Percentage\n';
-    Object.entries(report.summary.departments).forEach(([dept, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      csv += `"${dept}",${count},${percentage}%\n`;
-    });
-
-    csv += '\nGENDER DISTRIBUTION\n';
-    csv += 'Gender,Count,Percentage\n';
-    Object.entries(report.summary.demographics.genderDistribution).forEach(([gender, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      csv += `${gender},${count},${percentage}%\n`;
     });
 
     return csv;
