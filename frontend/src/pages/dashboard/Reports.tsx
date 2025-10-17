@@ -2,28 +2,36 @@ import { useState } from 'react';
 import { 
   BarChart3, 
   FileText, 
-  Download, 
-  Calendar,
-  Users,
+  Users, 
+  Heart, 
+  DollarSign, 
+  Calendar, 
   TrendingUp,
-  Filter,
+  Download,
   Search,
-  RefreshCw,
+  Filter,
   Eye,
   Trash2,
-  Heart,
-  DollarSign,
-  GraduationCap,
-  UserMinus,
+  Building,
+  BookOpen,
   Shield,
-  Plane
+  UserCheck,
+  X,
+  FileBarChart,
+  Clock,
+  UserMinus,
+  GraduationCap,
+  Plane,
+  RefreshCw,
+  Award
 } from 'lucide-react';
-import EmployeeReports from '../../components/EmployeeReports';
 import SimpleChart from '../../components/SimpleChart';
 
 const Reports = () => {
   const [showEmployeeReports, setShowEmployeeReports] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [previewReport, setPreviewReport] = useState<any>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Mock data for quick insights charts
   const quickInsightsData = {
@@ -156,6 +164,146 @@ const Reports = () => {
     }
   ];
 
+  // Detailed Employee Management reports with sample data
+  const employeeReports = [
+    {
+      id: 'emp-summary',
+      name: 'Employee Summary Report',
+      description: 'Comprehensive overview of all employees with key metrics',
+      icon: FileBarChart,
+      estimatedTime: '2-3 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee ID', 'Full Name', 'Department', 'Position', 'Join Date', 'Status'],
+        rows: [
+          ['EMP001', 'John Silva', 'IT Services', 'Senior Developer', '2022-01-15', 'Active'],
+          ['EMP002', 'Maria Fernando', 'Human Resources', 'HR Manager', '2021-03-10', 'Active'],
+          ['EMP003', 'Kasun Perera', 'Finance', 'Accountant', '2023-06-20', 'Active'],
+          ['EMP004', 'Dilani Wickramasinghe', 'Marketing', 'Marketing Executive', '2022-09-05', 'Active'],
+          ['EMP005', 'Thilak Rathnayake', 'Operations', 'Operations Manager', '2020-11-12', 'Active']
+        ]
+      }
+    },
+    {
+      id: 'emp-demographics',
+      name: 'Demographics Analysis',
+      description: 'Age distribution, gender analysis, and demographic insights',
+      icon: Users,
+      estimatedTime: '1-2 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Age Group', 'Male', 'Female', 'Total', 'Percentage'],
+        rows: [
+          ['20-25', '12', '8', '20', '12.8%'],
+          ['26-30', '25', '18', '43', '27.6%'],
+          ['31-35', '22', '15', '37', '23.7%'],
+          ['36-40', '18', '12', '30', '19.2%'],
+          ['40+', '16', '10', '26', '16.7%']
+        ]
+      }
+    },
+    {
+      id: 'dept-wise',
+      name: 'Department-wise Employee Report',
+      description: 'Employee distribution across departments with headcount analysis',
+      icon: Building,
+      estimatedTime: '2 minutes',
+      recordCount: 6,
+      sampleData: {
+        headers: ['Department', 'Total Employees', 'Full-time', 'Contract', 'Manager', 'Avg Tenure'],
+        rows: [
+          ['IT Services', '45', '40', '5', 'Sunil Bandara', '2.3 years'],
+          ['Human Resources', '18', '16', '2', 'Maria Fernando', '3.1 years'],
+          ['Finance', '25', '23', '2', 'Nimal Silva', '2.8 years'],
+          ['Marketing', '32', '28', '4', 'Priya Jayawardena', '1.9 years'],
+          ['Operations', '36', '34', '2', 'Thilak Rathnayake', '3.5 years']
+        ]
+      }
+    },
+    {
+      id: 'service-tenure',
+      name: 'Service Tenure Analysis',
+      description: 'Employee service length analysis and retention insights',
+      icon: Clock,
+      estimatedTime: '1-2 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Tenure Range', 'Count', 'Percentage', 'Department Distribution', 'Retention Rate'],
+        rows: [
+          ['0-1 year', '42', '26.9%', 'IT: 15, Marketing: 12, Others: 15', '85%'],
+          ['1-2 years', '48', '30.8%', 'Operations: 18, Finance: 12, Others: 18', '92%'],
+          ['2-3 years', '35', '22.4%', 'HR: 10, IT: 12, Others: 13', '88%'],
+          ['3-5 years', '23', '14.7%', 'Finance: 8, Operations: 7, Others: 8', '95%'],
+          ['5+ years', '8', '5.1%', 'Mixed across all departments', '98%']
+        ]
+      }
+    },
+    {
+      id: 'new-joiners',
+      name: 'New Joiners Report',
+      description: 'Recent hires and onboarding status tracking',
+      icon: UserCheck,
+      estimatedTime: '1 minute',
+      recordCount: 23,
+      sampleData: {
+        headers: ['Employee Name', 'Join Date', 'Department', 'Position', 'Onboarding Status', 'Mentor'],
+        rows: [
+          ['Amara Jayasuriya', '2024-10-01', 'IT Services', 'Software Engineer', 'In Progress', 'John Silva'],
+          ['Rukshan Fernando', '2024-10-05', 'Marketing', 'Digital Marketer', 'Completed', 'Priya Jayawardena'],
+          ['Nishadi Perera', '2024-10-10', 'Finance', 'Junior Accountant', 'In Progress', 'Nimal Silva'],
+          ['Chathurika Silva', '2024-10-12', 'HR', 'HR Assistant', 'Pending', 'Maria Fernando'],
+          ['Danuka Wijesinghe', '2024-10-15', 'Operations', 'Operations Executive', 'In Progress', 'Thilak Rathnayake']
+        ]
+      }
+    },
+    {
+      id: 'employee-directory',
+      name: 'Employee Directory',
+      description: 'Complete employee contact information and organizational structure',
+      icon: BookOpen,
+      estimatedTime: '3-4 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee ID', 'Name', 'Position', 'Department', 'Email', 'Phone', 'Location'],
+        rows: [
+          ['EMP001', 'John Silva', 'Senior Developer', 'IT Services', 'john.silva@slbfe.lk', '+94 77 123 4567', 'Colombo'],
+          ['EMP002', 'Maria Fernando', 'HR Manager', 'Human Resources', 'maria.fernando@slbfe.lk', '+94 71 234 5678', 'Colombo'],
+          ['EMP003', 'Kasun Perera', 'Accountant', 'Finance', 'kasun.perera@slbfe.lk', '+94 76 345 6789', 'Colombo'],
+          ['EMP004', 'Dilani Wickramasinghe', 'Marketing Executive', 'Marketing', 'dilani.w@slbfe.lk', '+94 75 456 7890', 'Gampaha'],
+          ['EMP005', 'Thilak Rathnayake', 'Operations Manager', 'Operations', 'thilak.r@slbfe.lk', '+94 78 567 8901', 'Kandy']
+        ]
+      }
+    },
+    {
+      id: 'employment-types',
+      name: 'Employment Type Analysis',
+      description: 'Analysis of full-time, contract, and temporary employees',
+      icon: Award,
+      estimatedTime: '1 minute',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employment Type', 'Count', 'Percentage', 'Avg Salary Range', 'Benefits Eligible'],
+        rows: [
+          ['Full-time Permanent', '132', '84.6%', 'LKR 50K - 200K', 'Yes'],
+          ['Contract', '19', '12.2%', 'LKR 40K - 150K', 'Partial'],
+          ['Part-time', '3', '1.9%', 'LKR 25K - 60K', 'Limited'],
+          ['Internship', '2', '1.3%', 'LKR 15K - 25K', 'No']
+        ]
+      }
+    }
+  ];
+
+  // Sample data generators for realistic previews
+  const generateEmployeeId = (index: number) => `EMP${(index + 1).toString().padStart(3, '0')}`;
+  
+  const sriLankanNames = [
+    'Amara Jayasuriya', 'Buddhika Silva', 'Chathurika Fernando', 'Dilani Wickramasinghe', 
+    'Eshan Perera', 'Fathima Nazir', 'Gayan Rathnayake', 'Hasini Mendis', 'Ishara Bandara',
+    'Janith Kumara', 'Kasun Wijesinghe', 'Lahiru Jayawardena', 'Maria Fernando', 'Nimal Silva',
+    'Oshadha Rajapaksa', 'Priya Senanayake', 'Qasim Hassan', 'Rashini de Silva', 'Sunil Bandara',
+    'Thilak Rathnayake', 'Upul Chandana', 'Vindya Perera', 'Wasantha Kumara', 'Ximena Rodrigo'
+  ];
+
   // Comprehensive report categories based on system data
   const reportCategories = [
     {
@@ -166,21 +314,8 @@ const Reports = () => {
       color: 'bg-blue-50 text-blue-700 border-blue-200',
       iconBg: 'bg-blue-100',
       action: () => setShowEmployeeReports(true),
-      reportCount: 12,
-      reports: [
-        'Employee Summary Report',
-        'Demographics Analysis',
-        'Department-wise Employee Report',
-        'Service Tenure Analysis',
-        'Employee Directory',
-        'New Joiners Report',
-        'Employee Birthday List',
-        'Promotion Analysis',
-        'Employment Type Analysis',
-        'Branch-wise Distribution',
-        'Education & Qualifications',
-        'Emergency Contacts Report'
-      ]
+      reportCount: employeeReports.length,
+      reports: employeeReports.map(report => report.name)
     },
     {
       id: 'medical-reports',
@@ -341,6 +476,95 @@ const Reports = () => {
       ]
     }
   ];
+
+  const handlePreviewReport = (report: any) => {
+    setPreviewReport(report);
+    setShowPreview(true);
+  };
+
+  const PreviewModal = () => {
+    if (!previewReport || !showPreview) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+          <div className="flex items-center justify-between p-6 border-b bg-gray-50">
+            <div className="flex items-center">
+              <previewReport.icon className="w-5 h-5 text-blue-600 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{previewReport.name}</h3>
+                <p className="text-sm text-gray-600">{previewReport.description}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPreview(false)}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Clock className="w-4 h-4 mr-1" />
+                  <span>Est. time: {previewReport.estimatedTime}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <FileText className="w-4 h-4 mr-1" />
+                  <span>{previewReport.recordCount} records</span>
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                <button className="px-4 py-2 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                  <Eye className="w-4 h-4 mr-2 inline" />
+                  Preview Full Report
+                </button>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <Download className="w-4 h-4 mr-2 inline" />
+                  Download Report
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Sample Data Preview</h4>
+              <div className="bg-white rounded border overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {previewReport.sampleData.headers.map((header: string, index: number) => (
+                          <th key={index} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            {header}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {previewReport.sampleData.rows.map((row: string[], rowIndex: number) => (
+                        <tr key={rowIndex} className="hover:bg-gray-50">
+                          {row.map((cell: string, cellIndex: number) => (
+                            <td key={cellIndex} className="px-4 py-3 whitespace-nowrap text-gray-900 border-b">
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Showing sample data (first 5 rows). Full report contains {previewReport.recordCount} records.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
@@ -611,11 +835,87 @@ const Reports = () => {
       </div>
 
       {/* Employee Reports Modal */}
-      <EmployeeReports
-        isOpen={showEmployeeReports}
-        onClose={() => setShowEmployeeReports(false)}
-        currentFilters={{}}
-      />
+      {showEmployeeReports && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b bg-blue-50">
+              <div className="flex items-center">
+                <Users className="w-6 h-6 text-blue-600 mr-3" />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Employee Management Reports</h3>
+                  <p className="text-sm text-gray-600">Generate comprehensive employee analytics and reports</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEmployeeReports(false)}
+                className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {employeeReports.map((report) => (
+                  <div key={report.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <report.icon className="w-5 h-5 text-blue-600 mr-2" />
+                        <h4 className="font-medium text-gray-900">{report.name}</h4>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{report.description}</p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>{report.estimatedTime}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="w-3 h-3 mr-1" />
+                        <span>{report.recordCount} records</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handlePreviewReport(report)}
+                        className="flex-1 px-3 py-2 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Preview
+                      </button>
+                      <button className="flex-1 px-3 py-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center">
+                        <Download className="w-3 h-3 mr-1" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
+                    Generate All Reports
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors">
+                    Schedule Monthly Reports
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                    Export to Dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Report Preview Modal */}
+      <PreviewModal />
     </div>
   );
 };
