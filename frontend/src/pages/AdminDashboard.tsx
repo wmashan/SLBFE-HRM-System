@@ -14,7 +14,8 @@ import {
   BarChart3,
   Bell,
   RefreshCw,
-  Download
+  Download,
+  FileText
 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { AdminDashboardStats } from '../types';
@@ -462,6 +463,14 @@ const AdminDashboard: React.FC = () => {
             <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <Shield className="w-8 h-8 text-red-600 mb-2" />
               <span className="text-sm font-medium text-gray-700">Security Audit</span>
+            </button>
+            
+            <button 
+              onClick={() => navigate('/documents')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <FileText className="w-8 h-8 text-teal-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Documents</span>
             </button>
             
             <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">

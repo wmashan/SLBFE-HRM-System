@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
 import RoleManagement from './pages/admin/RoleManagement';
 import BackupRestore from './pages/admin/BackupRestore';
+import SystemDocumentManagement from './pages/admin/SystemDocumentManagement';
 import TrainingFeedbackForm from './pages/TrainingFeedbackForm';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -68,6 +69,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <BackupRestore />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/documents" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <SystemDocumentManagement />
               </ProtectedRoute>
             } 
           />

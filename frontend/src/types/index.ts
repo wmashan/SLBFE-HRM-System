@@ -1286,3 +1286,156 @@ export interface VerificationIssue {
   filePath?: string;
   recommendation: string;
 }
+
+// Document Template Types for Admin Management
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: DocumentTemplateCategory;
+  fileType: 'docx' | 'pdf' | 'html' | 'txt';
+  template: string; // Template content or file path
+  placeholders: TemplatePlaceholder[];
+  isActive: boolean;
+  isDefault: boolean;
+  version: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  lastModifiedBy: string;
+  usage: {
+    totalUsed: number;
+    lastUsed?: Date;
+  };
+  approvalRequired: boolean;
+  tags: string[];
+}
+
+export type DocumentTemplateCategory = 
+  | 'employment_letters'
+  | 'leave_letters'
+  | 'transfer_letters'
+  | 'medical_letters'
+  | 'salary_letters'
+  | 'retirement_letters'
+  | 'disciplinary_letters'
+  | 'training_certificates'
+  | 'general_correspondence'
+  | 'forms'
+  | 'reports'
+  | 'policies'
+  | 'other';
+
+export interface TemplatePlaceholder {
+  id: string;
+  key: string;
+  label: string;
+  description: string;
+  type: 'text' | 'number' | 'date' | 'email' | 'phone' | 'address' | 'boolean' | 'dropdown';
+  required: boolean;
+  defaultValue?: string;
+  validation?: {
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+  };
+  options?: string[]; // For dropdown type
+}
+
+export interface GeneratedDocument {
+  id: string;
+  templateId: string;
+  templateName: string;
+  generatedFor: string; // Employee ID or name
+  generatedBy: string;
+  generatedAt: Date;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  placeholderValues: Record<string, any>;
+  status: 'draft' | 'final' | 'sent' | 'archived';
+  downloadCount: number;
+  lastDownloaded?: Date;
+}
+
+export interface DocumentTemplateStats {
+  totalTemplates: number;
+  activeTemplates: number;
+  categoryBreakdown: Record<DocumentTemplateCategory, number>;
+  recentlyUsed: DocumentTemplate[];
+  mostUsed: DocumentTemplate[];
+  totalDocumentsGenerated: number;
+  documentsGeneratedThisMonth: number;
+}
+
+// System Document Types for Admin Document Management
+export interface SystemDocument {
+  id: string;
+  name: string;
+  description: string;
+  category: SystemDocumentCategory;
+  fileType: 'pdf' | 'docx' | 'xlsx' | 'doc' | 'xls' | 'jpg' | 'jpeg' | 'png' | 'txt';
+  fileName: string;
+  filePath: string;
+  fileSize: number; // in bytes
+  isActive: boolean;
+  accessLevel: DocumentAccessLevel;
+  createdAt: Date;
+  updatedAt: Date;
+  uploadedBy: string;
+  lastModifiedBy: string;
+  downloadCount: number;
+  lastDownloaded?: Date;
+  tags: string[];
+  version: string;
+  isSystemForm: boolean; // true for forms like HR/F/07, HR/F/08
+  formCode?: string; // e.g., "HR/F/07", "HR/F/08"
+}
+
+export type SystemDocumentCategory = 
+  | 'hr_forms'
+  | 'policies_procedures'
+  | 'employee_handbook'
+  | 'forms_applications'
+  | 'training_materials'
+  | 'compliance_documents'
+  | 'hr_guidelines'
+  | 'safety_documents'
+  | 'benefits_information'
+  | 'organizational_charts'
+  | 'announcements'
+  | 'reference_materials'
+  | 'templates'
+  | 'other';
+
+export type DocumentAccessLevel = 
+  | 'all_employees'
+  | 'hr_only'
+  | 'admin_only'
+  | 'managers_only'
+  | 'restricted';
+
+export interface DocumentStats {
+  totalDocuments: number;
+  activeDocuments: number;
+  categoryBreakdown: Record<SystemDocumentCategory, number>;
+  recentlyUploaded: SystemDocument[];
+  mostDownloaded: SystemDocument[];
+  totalDownloads: number;
+  documentsUploadedThisMonth: number;
+  storageUsed: number; // in bytes
+  accessLevelBreakdown: Record<DocumentAccessLevel, number>;
+}
+
+export interface DocumentUploadData {
+  name: string;
+  description: string;
+  category: SystemDocumentCategory;
+  accessLevel: DocumentAccessLevel;
+  file: File;
+  tags: string[];
+  isSystemForm: boolean;
+  formCode?: string;
+}

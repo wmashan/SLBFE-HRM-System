@@ -833,6 +833,60 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  // Document Management Methods
+  async getSystemDocuments(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    accessLevel?: string;
+    isSystemForm?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/documents${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getSystemDocument(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/documents/${id}`);
+  }
+
+  async uploadSystemDocument(formData: FormData): Promise<ApiResponse<any>> {
+    const response = await fetch(`${this.baseURL}/admin/documents/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: formData,
+    });
+
+    return response.json();
+  }
+
+  async updateSystemDocument(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/documents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSystemDocument(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/admin/documents/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async downloadSystemDocument(id: string): Promise<Response> {
+    return fetch(`${this.baseURL}/admin/documents/${id}/download`, {
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
+  }
+
+  async getDocumentStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/documents/stats');
+  }
 }
 
 // Create and export API service instance
@@ -959,6 +1013,16 @@ export const backupService = {
   // System Health
   getBackupSystemHealth: () => apiService.getBackupSystemHealth(),
   testBackupConnectivity: () => apiService.testBackupConnectivity(),
+};
+
+export const documentService = {
+  getSystemDocuments: (params?: any) => apiService.getSystemDocuments(params),
+  getSystemDocument: (id: string) => apiService.getSystemDocument(id),
+  uploadSystemDocument: (formData: FormData) => apiService.uploadSystemDocument(formData),
+  updateSystemDocument: (id: string, data: any) => apiService.updateSystemDocument(id, data),
+  deleteSystemDocument: (id: string) => apiService.deleteSystemDocument(id),
+  downloadSystemDocument: (id: string) => apiService.downloadSystemDocument(id),
+  getDocumentStats: () => apiService.getDocumentStats(),
 };
 
 export default apiService;
