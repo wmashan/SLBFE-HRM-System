@@ -859,57 +859,63 @@ class EmployeeReportService {
   // Generate mock report history data
   private getMockReportHistory(): EmployeeReportResult[] {
     const now = new Date();
+    const baseData = this.getMockEmployeeData();
+    
+    const generateBaseSummary = (data: any[], customData?: any) => ({
+      totalEmployees: data.length,
+      demographics: {
+        averageAge: 31.5,
+        genderDistribution: { "Male": 4, "Female": 4 },
+        averageServiceYears: 2.8
+      },
+      departments: {
+        "IT Services": 2,
+        "Human Resources": 1,
+        "Analytics": 1,
+        "Marketing": 1,
+        "Finance": 1,
+        "Administration": 1,
+        "Quality Assurance": 1
+      },
+      branches: {
+        "Colombo Main": 4,
+        "Kandy Branch": 2,
+        "Galle Branch": 1,
+        "Matara Branch": 1
+      },
+      employmentTypes: {
+        "Permanent": 5,
+        "Contract": 2,
+        "Casual": 1
+      },
+      educationLevels: {
+        "Graduate": 5,
+        "Diploma": 1,
+        "Certificate": 1,
+        "A/L": 1
+      },
+      salaryStatistics: {
+        average: 75000,
+        median: 72000,
+        min: 45000,
+        max: 120000
+      },
+      promotions: {
+        totalPromoted: 4,
+        promotionRate: 50
+      },
+      ...customData
+    });
+
     const mockReports: EmployeeReportResult[] = [
+      // Employee Summary Report - Most Recent
       {
-        id: 'report_' + (Date.now() - 1000000),
+        id: 'report_employee_summary_' + (Date.now() - 1000000),
         config: PREDEFINED_REPORTS.find(r => r.id === 'employee_summary')!,
-        generatedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
+        generatedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
         totalRecords: 8,
-        data: this.getMockEmployeeData(),
-        summary: {
-          totalEmployees: 8,
-          demographics: {
-            averageAge: 31.5,
-            genderDistribution: { "Male": 4, "Female": 4 },
-            averageServiceYears: 2.8
-          },
-          departments: {
-            "IT Services": 2,
-            "Human Resources": 1,
-            "Analytics": 1,
-            "Marketing": 1,
-            "Finance": 1,
-            "Administration": 1,
-            "Quality Assurance": 1
-          },
-          branches: {
-            "Colombo Main": 4,
-            "Kandy Branch": 2,
-            "Galle Branch": 1,
-            "Matara Branch": 1
-          },
-          employmentTypes: {
-            "Permanent": 5,
-            "Contract": 2,
-            "Casual": 1
-          },
-          educationLevels: {
-            "Graduate": 5,
-            "Diploma": 1,
-            "Certificate": 1,
-            "A/L": 1
-          },
-          salaryStatistics: {
-            average: 75000,
-            median: 72000,
-            min: 45000,
-            max: 120000
-          },
-          promotions: {
-            totalPromoted: 4,
-            promotionRate: 50
-          }
-        },
+        data: baseData,
+        summary: generateBaseSummary(baseData),
         charts: [
           {
             id: 'department_distribution',
@@ -925,58 +931,17 @@ class EmployeeReportService {
           }
         ],
         downloadUrl: '/api/reports/download/employee_summary_latest.xlsx',
-        expiresAt: new Date(now.getTime() + 22 * 60 * 60 * 1000) // Expires in 22 hours
+        expiresAt: new Date(now.getTime() + 22 * 60 * 60 * 1000)
       },
+
+      // Demographics Analysis - 1 day ago
       {
-        id: 'report_' + (Date.now() - 2000000),
+        id: 'report_demographics_' + (Date.now() - 2000000),
         config: PREDEFINED_REPORTS.find(r => r.id === 'demographics_analysis')!,
-        generatedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        generatedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
         totalRecords: 8,
-        data: this.getMockEmployeeData(),
-        summary: {
-          totalEmployees: 8,
-          demographics: {
-            averageAge: 31.5,
-            genderDistribution: { "Male": 4, "Female": 4 },
-            averageServiceYears: 2.8
-          },
-          departments: {
-            "IT Services": 2,
-            "Human Resources": 1,
-            "Analytics": 1,
-            "Marketing": 1,
-            "Finance": 1,
-            "Administration": 1,
-            "Quality Assurance": 1
-          },
-          branches: {
-            "Colombo Main": 4,
-            "Kandy Branch": 2,
-            "Galle Branch": 1,
-            "Matara Branch": 1
-          },
-          employmentTypes: {
-            "Permanent": 5,
-            "Contract": 2,
-            "Casual": 1
-          },
-          educationLevels: {
-            "Graduate": 5,
-            "Diploma": 1,
-            "Certificate": 1,
-            "A/L": 1
-          },
-          salaryStatistics: {
-            average: 75000,
-            median: 72000,
-            min: 45000,
-            max: 120000
-          },
-          promotions: {
-            totalPromoted: 4,
-            promotionRate: 50
-          }
-        },
+        data: this.generateDemographicsData(baseData),
+        summary: generateBaseSummary(baseData),
         charts: [
           {
             id: 'age_distribution',
@@ -992,135 +957,222 @@ class EmployeeReportService {
             }
           }
         ],
-        downloadUrl: '/api/reports/download/demographics_analysis_yesterday.pdf',
+        downloadUrl: '/api/reports/download/demographics_analysis_2025-10-16.pdf',
         expiresAt: new Date(now.getTime() + 23 * 60 * 60 * 1000)
       },
+
+      // Salary Analysis - 2 days ago  
       {
-        id: 'report_' + (Date.now() - 3000000),
-        config: PREDEFINED_REPORTS.find(r => r.id === 'department_wise')!,
-        generatedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        id: 'report_salary_' + (Date.now() - 3000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'salary_analysis')!,
+        generatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
         totalRecords: 8,
-        data: this.getMockEmployeeData(),
-        summary: {
-          totalEmployees: 8,
-          demographics: {
-            averageAge: 31.5,
-            genderDistribution: { "Male": 4, "Female": 4 },
-            averageServiceYears: 2.8
-          },
-          departments: {
-            "IT Services": 2,
-            "Human Resources": 1,
-            "Analytics": 1,
-            "Marketing": 1,
-            "Finance": 1,
-            "Administration": 1,
-            "Quality Assurance": 1
-          },
-          branches: {
-            "Colombo Main": 4,
-            "Kandy Branch": 2,
-            "Galle Branch": 1,
-            "Matara Branch": 1
-          },
-          employmentTypes: {
-            "Permanent": 5,
-            "Contract": 2,
-            "Casual": 1
-          },
-          educationLevels: {
-            "Graduate": 5,
-            "Diploma": 1,
-            "Certificate": 1,
-            "A/L": 1
-          },
+        data: this.generateSalaryAnalysisData(baseData),
+        summary: generateBaseSummary(baseData, {
           salaryStatistics: {
-            average: 75000,
-            median: 72000,
+            average: 82500,
+            median: 78000,
             min: 45000,
-            max: 120000
-          },
-          promotions: {
-            totalPromoted: 4,
-            promotionRate: 50
+            max: 150000
           }
-        },
+        }),
+        charts: [
+          {
+            id: 'salary_distribution',
+            title: 'Salary Distribution by Department',
+            type: 'bar',
+            data: {
+              labels: ["IT Services", "HR", "Marketing", "Finance", "QA"],
+              datasets: [{
+                label: 'Average Salary',
+                data: [95000, 75000, 85000, 80000, 70000],
+                backgroundColor: '#10B981'
+              }]
+            }
+          }
+        ],
+        downloadUrl: '/api/reports/download/salary_analysis_2025-10-15.xlsx',
+        expiresAt: new Date(now.getTime() + 22 * 60 * 60 * 1000)
+      },
+
+      // Department-wise Report - 3 days ago
+      {
+        id: 'report_department_' + (Date.now() - 4000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'department_wise')!,
+        generatedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
+        totalRecords: 8,
+        data: this.generateDepartmentWiseData(baseData),
+        summary: generateBaseSummary(baseData),
         charts: [
           {
             id: 'department_breakdown',
             title: 'Department-wise Employee Count',
-            type: 'bar',
+            type: 'doughnut',
             data: {
               labels: ["IT Services", "HR", "Analytics", "Marketing", "Finance", "Admin", "QA"],
               datasets: [{
-                label: 'Employees',
                 data: [2, 1, 1, 1, 1, 1, 1],
                 backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#6B7280', '#EC4899']
               }]
             }
           }
         ],
-        downloadUrl: '/api/reports/download/department_wise_3days_ago.xlsx',
+        downloadUrl: '/api/reports/download/department_wise_2025-10-14.xlsx',
         expiresAt: new Date(now.getTime() + 21 * 60 * 60 * 1000)
       },
+
+      // Education & Qualifications - 5 days ago
       {
-        id: 'report_' + (Date.now() - 5000000),
-        config: PREDEFINED_REPORTS.find(r => r.id === 'new_joiners')!,
-        generatedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-        totalRecords: 2,
-        data: this.getMockEmployeeData().filter(emp => 
-          new Date(emp.dateJoined).getTime() > (Date.now() - 365 * 24 * 60 * 60 * 1000)
-        ),
-        summary: {
-          totalEmployees: 2,
-          demographics: {
-            averageAge: 24.5,
-            genderDistribution: { "Male": 2 },
-            averageServiceYears: 0.5
-          },
-          departments: {
-            "IT Services": 1,
-            "Administration": 1
-          },
-          branches: {
-            "Colombo Main": 2
-          },
-          employmentTypes: {
-            "Permanent": 1,
-            "Contract": 1
-          },
-          educationLevels: {
-            "Graduate": 1,
-            "A/L": 1
-          },
-          salaryStatistics: {
-            average: 52500,
-            median: 52500,
-            min: 45000,
-            max: 60000
-          },
-          promotions: {
-            totalPromoted: 1,
-            promotionRate: 50
-          }
-        },
+        id: 'report_education_' + (Date.now() - 5000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'education_qualifications')!,
+        generatedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
+        totalRecords: 8,
+        data: this.generateEducationData(baseData),
+        summary: generateBaseSummary(baseData),
         charts: [
           {
-            id: 'new_joiners_timeline',
-            title: 'New Joiners This Year',
-            type: 'bar',
+            id: 'education_levels',
+            title: 'Education Level Distribution',
+            type: 'pie',
             data: {
-              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+              labels: ['Graduate', 'Diploma', 'Certificate', 'A/L'],
               datasets: [{
-                label: 'New Hires',
-                data: [0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-                backgroundColor: '#10B981'
+                data: [5, 1, 1, 1],
+                backgroundColor: ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444']
               }]
             }
           }
         ],
-        downloadUrl: '/api/reports/download/new_joiners_weekly.xlsx',
+        downloadUrl: '/api/reports/download/education_qualifications_2025-10-12.pdf',
+        expiresAt: new Date(now.getTime() + 19 * 60 * 60 * 1000)
+      },
+
+      // Service Tenure Report - 6 days ago
+      {
+        id: 'report_tenure_' + (Date.now() - 6000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'service_tenure')!,
+        generatedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000),
+        totalRecords: 8,
+        data: this.generateServiceTenureData(baseData),
+        summary: generateBaseSummary(baseData, {
+          demographics: {
+            averageAge: 31.5,
+            genderDistribution: { "Male": 4, "Female": 4 },
+            averageServiceYears: 3.2
+          }
+        }),
+        charts: [
+          {
+            id: 'service_years',
+            title: 'Service Years Distribution',
+            type: 'bar',
+            data: {
+              labels: ['0-1 years', '1-3 years', '3-5 years', '5+ years'],
+              datasets: [{
+                label: 'Employees',
+                data: [2, 3, 2, 1],
+                backgroundColor: '#EC4899'
+              }]
+            }
+          }
+        ],
+        downloadUrl: '/api/reports/download/service_tenure_2025-10-11.xlsx',
+        expiresAt: new Date(now.getTime() + 18 * 60 * 60 * 1000)
+      },
+
+      // Promotion Analysis - 1 week ago
+      {
+        id: 'report_promotion_' + (Date.now() - 7000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'promotion_analysis')!,
+        generatedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        totalRecords: 8,
+        data: this.generatePromotionAnalysisData(baseData),
+        summary: generateBaseSummary(baseData, {
+          promotions: {
+            totalPromoted: 4,
+            promotionRate: 50
+          }
+        }),
+        charts: [
+          {
+            id: 'promotion_trends',
+            title: 'Promotion Rate by Department',
+            type: 'bar',
+            data: {
+              labels: ['IT Services', 'HR', 'Marketing', 'Finance'],
+              datasets: [{
+                label: 'Promotion Rate (%)',
+                data: [75, 60, 40, 50],
+                backgroundColor: '#F59E0B'
+              }]
+            }
+          }
+        ],
+        downloadUrl: '/api/reports/download/promotion_analysis_2025-10-10.pdf',
         expiresAt: new Date(now.getTime() + 17 * 60 * 60 * 1000)
+      },
+
+      // New Joiners - 10 days ago
+      {
+        id: 'report_newjoiners_' + (Date.now() - 8000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'new_joiners')!,
+        generatedAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000),
+        totalRecords: 3,
+        data: this.generateNewJoinersData(baseData),
+        summary: generateBaseSummary(baseData.slice(0, 3), {
+          totalEmployees: 3,
+          demographics: {
+            averageAge: 26.3,
+            genderDistribution: { "Male": 2, "Female": 1 },
+            averageServiceYears: 0.8
+          }
+        }),
+        charts: [
+          {
+            id: 'new_joiners_timeline',
+            title: 'New Joiners Timeline (2025)',
+            type: 'line',
+            data: {
+              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+              datasets: [{
+                label: 'New Hires',
+                data: [1, 0, 1, 0, 0, 0, 0, 1, 0, 2],
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)'
+              }]
+            }
+          }
+        ],
+        downloadUrl: '/api/reports/download/new_joiners_2025-10-07.xlsx',
+        expiresAt: new Date(now.getTime() + 14 * 60 * 60 * 1000)
+      },
+
+      // Birthday List - 12 days ago  
+      {
+        id: 'report_birthday_' + (Date.now() - 9000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'birthday_list')!,
+        generatedAt: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000),
+        totalRecords: 2,
+        data: this.generateBirthdayListData(baseData),
+        summary: generateBaseSummary(baseData.slice(0, 2), {
+          totalEmployees: 2
+        }),
+        charts: [],
+        downloadUrl: '/api/reports/download/birthday_list_october_2025.pdf',
+        expiresAt: new Date(now.getTime() + 12 * 60 * 60 * 1000)
+      },
+
+      // Employee Directory - 2 weeks ago
+      {
+        id: 'report_directory_' + (Date.now() - 10000000),
+        config: PREDEFINED_REPORTS.find(r => r.id === 'employee_directory')!,
+        generatedAt: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000),
+        totalRecords: 8,
+        data: this.generateEmployeeDirectoryData(baseData),
+        summary: generateBaseSummary(baseData),
+        charts: [],
+        downloadUrl: '/api/reports/download/employee_directory_2025-10-03.pdf',
+        expiresAt: new Date(now.getTime() + 10 * 60 * 60 * 1000)
       }
     ];
 
@@ -1155,6 +1207,218 @@ class EmployeeReportService {
       // Generate and download a mock report file
       return this.generateMockReportFile(reportId);
     }
+  }
+
+  // Generate sample report for specific report type
+  async generateSampleReport(reportType: string): Promise<Response> {
+    const report = PREDEFINED_REPORTS.find((r: EmployeeReportConfig) => r.id === reportType);
+    if (!report) {
+      throw new Error('Report type not found');
+    }
+
+    const mockData = this.generateSpecificMockData(reportType);
+    const mockReport: EmployeeReportResult = {
+      id: `${reportType}_sample_${Date.now()}`,
+      config: report,
+      generatedAt: new Date(),
+      totalRecords: mockData.length,
+      data: mockData,
+      summary: this.generateSummary(mockData),
+      charts: report.includeCharts ? this.generateCharts(mockData, report) : [],
+      downloadUrl: '',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    };
+
+    if (report.outputFormat === 'pdf') {
+      return this.generatePDFReport(mockReport);
+    } else {
+      return this.generateExcelReport(mockReport);
+    }
+  }
+
+  // Generate specific mock data based on report type
+  private generateSpecificMockData(reportType: string): any[] {
+    const baseData = this.getMockEmployeeData();
+    
+    switch (reportType) {
+      case 'demographics_analysis':
+        return this.generateDemographicsData(baseData);
+      
+      case 'department_wise':
+        return this.generateDepartmentWiseData(baseData);
+      
+      case 'salary_analysis':
+        return this.generateSalaryAnalysisData(baseData);
+      
+      case 'education_qualifications':
+        return this.generateEducationData(baseData);
+      
+      case 'service_tenure':
+        return this.generateServiceTenureData(baseData);
+      
+      case 'promotion_analysis':
+        return this.generatePromotionAnalysisData(baseData);
+      
+      case 'new_joiners':
+        return this.generateNewJoinersData(baseData);
+      
+      case 'birthday_list':
+        return this.generateBirthdayListData(baseData);
+      
+      case 'employee_directory':
+        return this.generateEmployeeDirectoryData(baseData);
+      
+      case 'employee_summary':
+      default:
+        return baseData;
+    }
+  }
+
+  // Generate demographics-specific data
+  private generateDemographicsData(baseData: any[]): any[] {
+    return baseData.map(emp => ({
+      ...emp,
+      ageGroup: emp.age < 25 ? '18-24' : emp.age < 35 ? '25-34' : emp.age < 45 ? '35-44' : emp.age < 55 ? '45-54' : '55+',
+      serviceYears: Math.floor((new Date().getTime() - new Date(emp.dateJoined).getTime()) / (365 * 24 * 60 * 60 * 1000)),
+      nationality: 'Sri Lankan',
+      religion: ['Buddhism', 'Christianity', 'Islam', 'Hinduism'][Math.floor(Math.random() * 4)],
+      ethnicity: ['Sinhala', 'Tamil', 'Muslim', 'Burgher'][Math.floor(Math.random() * 4)]
+    }));
+  }
+
+  // Generate department-wise data with additional metrics
+  private generateDepartmentWiseData(baseData: any[]): any[] {
+    return baseData.map(emp => ({
+      ...emp,
+      departmentBudget: Math.floor(Math.random() * 2000000) + 500000,
+      departmentHead: emp.division === 'IT Services' ? 'Jane Tech' : 'John Manager',
+      teamSize: Math.floor(Math.random() * 15) + 5,
+      avgSalary: Math.floor(Math.random() * 50000) + 60000
+    }));
+  }
+
+  // Generate salary analysis data
+  private generateSalaryAnalysisData(baseData: any[]): any[] {
+    return baseData.map(emp => ({
+      ...emp,
+      basicSalary: Math.floor(Math.random() * 60000) + 40000,
+      allowances: Math.floor(Math.random() * 20000) + 5000,
+      overtime: Math.floor(Math.random() * 15000),
+      bonuses: Math.floor(Math.random() * 25000),
+      totalSalary: 0,
+      lastIncrement: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
+      incrementPercentage: Math.floor(Math.random() * 15) + 5
+    })).map(emp => ({
+      ...emp,
+      totalSalary: emp.basicSalary + emp.allowances + emp.overtime + emp.bonuses
+    }));
+  }
+
+  // Generate education and qualifications data
+  private generateEducationData(baseData: any[]): any[] {
+    const universities = ['University of Colombo', 'University of Peradeniya', 'University of Moratuwa', 'SLIIT', 'NSBM'];
+    const degrees = ['Computer Science', 'Business Administration', 'Engineering', 'Human Resources', 'Finance'];
+    const certifications = ['PMP', 'CISSP', 'CPA', 'SHRM-CP', 'AWS Certified'];
+
+    return baseData.map(emp => ({
+      ...emp,
+      university: universities[Math.floor(Math.random() * universities.length)],
+      degree: degrees[Math.floor(Math.random() * degrees.length)],
+      graduationYear: 2015 + Math.floor(Math.random() * 10),
+      gpa: (3.0 + Math.random() * 1.0).toFixed(2),
+      certifications: Array.from({length: Math.floor(Math.random() * 3)}, () => 
+        certifications[Math.floor(Math.random() * certifications.length)]
+      ),
+      trainingHours: Math.floor(Math.random() * 100) + 20,
+      lastTraining: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1)
+    }));
+  }
+
+  // Generate service tenure data
+  private generateServiceTenureData(baseData: any[]): any[] {
+    return baseData.map(emp => {
+      const joinDate = new Date(emp.dateJoined);
+      const now = new Date();
+      const serviceYears = now.getFullYear() - joinDate.getFullYear();
+      const serviceMonths = ((now.getTime() - joinDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+
+      return {
+        ...emp,
+        serviceYears,
+        serviceMonths: Math.floor(serviceMonths),
+        serviceDays: Math.floor((now.getTime() - joinDate.getTime()) / (1000 * 60 * 60 * 24)),
+        probationEndDate: new Date(joinDate.getTime() + (6 * 30 * 24 * 60 * 60 * 1000)),
+        contractEndDate: emp.employmentType === 'Contract' ? new Date(joinDate.getTime() + (2 * 365 * 24 * 60 * 60 * 1000)) : null,
+        leaveBalance: Math.floor(Math.random() * 20) + 5,
+        sickLeaveBalance: Math.floor(Math.random() * 10) + 2
+      };
+    });
+  }
+
+  // Generate promotion analysis data
+  private generatePromotionAnalysisData(baseData: any[]): any[] {
+    return baseData.map(emp => ({
+      ...emp,
+      promotionEligible: Math.random() > 0.4,
+      lastPromotionDate: emp.promotions?.length > 0 ? emp.promotions[emp.promotions.length - 1].date : null,
+      nextPromotionDue: new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
+      performanceRating: ['Excellent', 'Good', 'Satisfactory', 'Needs Improvement'][Math.floor(Math.random() * 4)],
+      promotionScore: Math.floor(Math.random() * 40) + 60,
+      careerPath: ['Technical Track', 'Management Track', 'Specialist Track'][Math.floor(Math.random() * 3)]
+    }));
+  }
+
+  // Generate new joiners data (last 12 months)
+  private generateNewJoinersData(baseData: any[]): any[] {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    
+    return baseData.filter(emp => new Date(emp.dateJoined) >= oneYearAgo).map(emp => ({
+      ...emp,
+      onboardingStatus: ['Completed', 'In Progress', 'Pending'][Math.floor(Math.random() * 3)],
+      mentor: 'Senior ' + emp.designation,
+      probationReview: new Date(new Date(emp.dateJoined).getTime() + (3 * 30 * 24 * 60 * 60 * 1000)),
+      initialTrainingCompleted: Math.random() > 0.3,
+      documentationStatus: 'Complete',
+      firstDayExperience: ['Excellent', 'Good', 'Average'][Math.floor(Math.random() * 3)]
+    }));
+  }
+
+  // Generate birthday list data (current month and upcoming)
+  private generateBirthdayListData(baseData: any[]): any[] {
+    const currentMonth = new Date().getMonth();
+    const nextMonth = (currentMonth + 1) % 12;
+    
+    return baseData.map(emp => {
+      const birthDate = new Date(emp.dateOfBirth);
+      const isCurrentMonth = birthDate.getMonth() === currentMonth;
+      const isNextMonth = birthDate.getMonth() === nextMonth;
+      
+      return {
+        ...emp,
+        birthdayThisMonth: isCurrentMonth,
+        birthdayNextMonth: isNextMonth,
+        age: emp.age,
+        zodiacSign: ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'][Math.floor(Math.random() * 12)],
+        daysUntilBirthday: Math.floor(Math.random() * 31) + 1,
+        celebrationPreference: ['Office Party', 'Gift', 'Card Only', 'No Celebration'][Math.floor(Math.random() * 4)]
+      };
+    }).filter(emp => emp.birthdayThisMonth || emp.birthdayNextMonth);
+  }
+
+  // Generate employee directory data
+  private generateEmployeeDirectoryData(baseData: any[]): any[] {
+    return baseData.map(emp => ({
+      ...emp,
+      extension: '100' + emp.id,
+      officeLocation: emp.branch + ' - Floor ' + (Math.floor(Math.random() * 5) + 1),
+      manager: emp.designation.includes('Manager') ? 'CEO' : 'Department Manager',
+      emergencyContact: 'Emergency Contact ' + emp.id,
+      emergencyPhone: '071-' + Math.floor(Math.random() * 9000000 + 1000000),
+      workSchedule: ['9:00 AM - 5:00 PM', '8:30 AM - 4:30 PM', '10:00 AM - 6:00 PM'][Math.floor(Math.random() * 3)],
+      skills: ['Communication', 'Leadership', 'Technical', 'Analytical'][Math.floor(Math.random() * 4)],
+      languages: ['English', 'Sinhala', 'Tamil'].filter(() => Math.random() > 0.3)
+    }));
   }
 
   // Generate mock report file for download
@@ -1199,13 +1463,14 @@ class EmployeeReportService {
     const time = new Date().toLocaleTimeString();
     
     let content = `
-SLBFE HRM SYSTEM - EMPLOYEE REPORT
-==================================
+SLBFE HRM SYSTEM - ${report.config.name.toUpperCase()}
+${'='.repeat(50)}
 
 Report: ${report.config.name}
 Description: ${report.config.description}
 Generated: ${date} at ${time}
 Total Records: ${report.totalRecords}
+Report Type: ${report.config.type}
 
 EXECUTIVE SUMMARY
 ================
@@ -1214,86 +1479,37 @@ Total Employees: ${report.summary.totalEmployees}
 Average Age: ${report.summary.demographics.averageAge} years
 Average Service Years: ${report.summary.demographics.averageServiceYears} years
 Promotion Rate: ${report.summary.promotions.promotionRate}%
-
-DEMOGRAPHICS BREAKDOWN
-=====================
-
-Gender Distribution:
 `;
 
-    Object.entries(report.summary.demographics.genderDistribution).forEach(([gender, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${gender}: ${count} (${percentage}%)\n`;
-    });
-
-    content += `
-DEPARTMENT ANALYSIS
-==================
-
-`;
-
-    Object.entries(report.summary.departments).forEach(([dept, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${dept}: ${count} employees (${percentage}%)\n`;
-    });
-
-    content += `
-BRANCH DISTRIBUTION
-==================
-
-`;
-
-    Object.entries(report.summary.branches).forEach(([branch, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${branch}: ${count} employees (${percentage}%)\n`;
-    });
-
-    content += `
-EMPLOYMENT TYPE ANALYSIS
-=======================
-
-`;
-
-    Object.entries(report.summary.employmentTypes).forEach(([type, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${type}: ${count} employees (${percentage}%)\n`;
-    });
-
-    content += `
-EDUCATION LEVELS
-===============
-
-`;
-
-    Object.entries(report.summary.educationLevels).forEach(([level, count]) => {
-      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
-      content += `- ${level}: ${count} employees (${percentage}%)\n`;
-    });
-
-    content += `
-
-DETAILED EMPLOYEE DATA
-=====================
-
-`;
-
-    const employees = report.data.filter((item: any) => !item.isGroupHeader);
-    employees.forEach((emp: any, index: number) => {
-      content += `
-${index + 1}. ${emp.fullName} (${emp.employeeNo})
-   Position: ${emp.designation}
-   Department: ${emp.division}
-   Branch: ${emp.branch}
-   Employment Type: ${emp.employmentType}
-   Age: ${emp.age} years
-   Gender: ${emp.gender}
-   Join Date: ${emp.dateJoined}
-   Education: ${emp.education?.highestQualification || 'N/A'}
-   Promotions: ${emp.promotions?.length || 0}
-   Email: ${emp.email}
-   Mobile: ${emp.mobile}
-`;
-    });
+    // Add specific content based on report type
+    switch (report.config.type) {
+      case 'demographics_analysis':
+        content += this.generateDemographicsContent(report);
+        break;
+      case 'salary_analysis':
+        content += this.generateSalaryContent(report);
+        break;
+      case 'education_qualifications':
+        content += this.generateEducationContent(report);
+        break;
+      case 'service_tenure_report':
+        content += this.generateTenureContent(report);
+        break;
+      case 'promotion_analysis':
+        content += this.generatePromotionContent(report);
+        break;
+      case 'birthday_list':
+        content += this.generateBirthdayContent(report);
+        break;
+      case 'employee_directory':
+        content += this.generateDirectoryContent(report);
+        break;
+      case 'new_joiners_report':
+        content += this.generateNewJoinersContent(report);
+        break;
+      default:
+        content += this.generateGeneralContent(report);
+    }
 
     content += `
 
@@ -1309,6 +1525,251 @@ Total Pages: 1
 `;
 
     return content;
+  }
+
+  // Generate demographics-specific content
+  private generateDemographicsContent(report: EmployeeReportResult): string {
+    let content = `
+DEMOGRAPHICS ANALYSIS
+====================
+
+Age Group Distribution:
+`;
+    const ageGroups = report.data.filter((item: any) => !item.isGroupHeader).reduce((acc: any, emp: any) => {
+      acc[emp.ageGroup || 'Unknown'] = (acc[emp.ageGroup || 'Unknown'] || 0) + 1;
+      return acc;
+    }, {});
+
+    Object.entries(ageGroups).forEach(([group, count]) => {
+      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+      content += `- ${group}: ${count} employees (${percentage}%)\n`;
+    });
+
+    content += `
+Gender Distribution:
+`;
+    Object.entries(report.summary.demographics.genderDistribution).forEach(([gender, count]) => {
+      const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+      content += `- ${gender}: ${count} (${percentage}%)\n`;
+    });
+
+    return content;
+  }
+
+  // Generate salary-specific content
+  private generateSalaryContent(report: EmployeeReportResult): string {
+    return `
+SALARY ANALYSIS
+==============
+
+Salary Statistics:
+- Average Salary: LKR ${report.summary.salaryStatistics.average.toLocaleString()}
+- Median Salary: LKR ${report.summary.salaryStatistics.median.toLocaleString()}
+- Minimum Salary: LKR ${report.summary.salaryStatistics.min.toLocaleString()}
+- Maximum Salary: LKR ${report.summary.salaryStatistics.max.toLocaleString()}
+
+Department-wise Salary Breakdown:
+${Object.entries(report.summary.departments).map(([dept, count]) => 
+  `- ${dept}: ${count} employees (Avg: LKR ${(Math.random() * 50000 + 60000).toFixed(0)})`
+).join('\n')}
+
+Salary Ranges:
+- Below LKR 50,000: ${Math.floor(Math.random() * 2)} employees
+- LKR 50,000 - 75,000: ${Math.floor(Math.random() * 4) + 2} employees  
+- LKR 75,000 - 100,000: ${Math.floor(Math.random() * 3) + 1} employees
+- Above LKR 100,000: ${Math.floor(Math.random() * 2) + 1} employees
+`;
+  }
+
+  // Generate education-specific content
+  private generateEducationContent(report: EmployeeReportResult): string {
+    return `
+EDUCATION & QUALIFICATIONS ANALYSIS
+==================================
+
+Education Level Distribution:
+${Object.entries(report.summary.educationLevels).map(([level, count]) => {
+  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+  return `- ${level}: ${count} employees (${percentage}%)`;
+}).join('\n')}
+
+Professional Certifications:
+- PMP Certified: ${Math.floor(Math.random() * 3)} employees
+- AWS Certified: ${Math.floor(Math.random() * 2)} employees  
+- Microsoft Certified: ${Math.floor(Math.random() * 3)} employees
+- SHRM Certified: ${Math.floor(Math.random() * 2)} employees
+
+Training Hours (Last Year):
+- Average Training Hours: ${Math.floor(Math.random() * 50) + 20} hours per employee
+- Total Training Budget: LKR ${(Math.random() * 500000 + 200000).toFixed(0)}
+`;
+  }
+
+  // Generate tenure-specific content  
+  private generateTenureContent(report: EmployeeReportResult): string {
+    return `
+SERVICE TENURE ANALYSIS
+======================
+
+Service Years Distribution:
+- 0-1 years: ${Math.floor(Math.random() * 3) + 1} employees
+- 1-3 years: ${Math.floor(Math.random() * 3) + 2} employees
+- 3-5 years: ${Math.floor(Math.random() * 2) + 1} employees  
+- 5+ years: ${Math.floor(Math.random() * 2)} employees
+
+Employee Retention Metrics:
+- Annual Turnover Rate: ${Math.floor(Math.random() * 15) + 5}%
+- Average Tenure: ${report.summary.demographics.averageServiceYears} years
+- Retention Rate (2+ years): ${Math.floor(Math.random() * 20) + 70}%
+
+Leave Balance Summary:
+- Average Annual Leave: ${Math.floor(Math.random() * 10) + 15} days
+- Average Sick Leave: ${Math.floor(Math.random() * 5) + 5} days
+`;
+  }
+
+  // Generate promotion-specific content
+  private generatePromotionContent(report: EmployeeReportResult): string {
+    return `
+PROMOTION ANALYSIS
+=================
+
+Promotion Statistics:
+- Total Promoted (Last 2 Years): ${report.summary.promotions.totalPromoted} employees
+- Promotion Rate: ${report.summary.promotions.promotionRate}%
+- Average Time to Promotion: ${Math.floor(Math.random() * 18) + 18} months
+
+Department-wise Promotion Rates:
+${Object.entries(report.summary.departments).map(([dept, count]) => 
+  `- ${dept}: ${Math.floor(Math.random() * 40) + 30}% promotion rate`
+).join('\n')}
+
+Career Development:
+- Employees Eligible for Promotion: ${Math.floor(Math.random() * 4) + 2}
+- Performance Rating Distribution:
+  * Excellent: ${Math.floor(Math.random() * 3) + 1} employees
+  * Good: ${Math.floor(Math.random() * 4) + 2} employees  
+  * Satisfactory: ${Math.floor(Math.random() * 2) + 1} employees
+`;
+  }
+
+  // Generate birthday-specific content
+  private generateBirthdayContent(report: EmployeeReportResult): string {
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    return `
+EMPLOYEE BIRTHDAY LIST - ${currentMonth.toUpperCase()} 2025
+==========================================
+
+Upcoming Birthdays This Month:
+${report.data.filter((emp: any) => !emp.isGroupHeader && emp.birthdayThisMonth).map((emp: any, index: number) => 
+  `${index + 1}. ${emp.fullName} - ${new Date(emp.dateOfBirth).toLocaleDateString()} (Age: ${emp.age})`
+).join('\n') || 'No birthdays this month'}
+
+Next Month Birthdays:
+${report.data.filter((emp: any) => !emp.isGroupHeader && emp.birthdayNextMonth).map((emp: any, index: number) => 
+  `${index + 1}. ${emp.fullName} - ${new Date(emp.dateOfBirth).toLocaleDateString()} (Age: ${emp.age})`
+).join('\n') || 'No birthdays next month'}
+
+Birthday Celebration Preferences:
+- Office Party: ${Math.floor(Math.random() * 3)} employees
+- Gift Only: ${Math.floor(Math.random() * 2)} employees
+- Card Only: ${Math.floor(Math.random() * 2)} employees
+- No Celebration: ${Math.floor(Math.random() * 1)} employees
+`;
+  }
+
+  // Generate directory-specific content
+  private generateDirectoryContent(report: EmployeeReportResult): string {
+    return `
+EMPLOYEE DIRECTORY
+=================
+
+Contact Information:
+${report.data.filter((emp: any) => !emp.isGroupHeader).map((emp: any, index: number) => 
+  `${index + 1}. ${emp.fullName}
+   Position: ${emp.designation}
+   Department: ${emp.division}
+   Email: ${emp.email}
+   Mobile: ${emp.mobile}
+   Extension: ${emp.extension || 'N/A'}
+   Office: ${emp.officeLocation || emp.branch}
+   Manager: ${emp.manager || 'N/A'}
+`).join('\n')}
+
+Emergency Contacts Available: ${report.data.filter((emp: any) => emp.emergencyContact).length} employees
+Work Schedule Variations: ${Math.floor(Math.random() * 3) + 1} different schedules
+`;
+  }
+
+  // Generate new joiners content
+  private generateNewJoinersContent(report: EmployeeReportResult): string {
+    return `
+NEW JOINERS REPORT (LAST 12 MONTHS)
+==================================
+
+Recent Hires:
+${report.data.filter((emp: any) => !emp.isGroupHeader).map((emp: any, index: number) => 
+  `${index + 1}. ${emp.fullName}
+   Position: ${emp.designation}
+   Department: ${emp.division}
+   Join Date: ${emp.dateJoined}
+   Onboarding Status: ${emp.onboardingStatus || 'Completed'}
+   Probation Review: ${emp.probationReview ? new Date(emp.probationReview).toLocaleDateString() : 'N/A'}
+`).join('\n')}
+
+Onboarding Statistics:
+- Completed Onboarding: ${Math.floor(Math.random() * 2) + 1} employees
+- In Progress: ${Math.floor(Math.random() * 1)} employees
+- Average Onboarding Time: ${Math.floor(Math.random() * 10) + 5} days
+- First Day Experience Rating: ${(Math.random() * 2 + 3).toFixed(1)}/5.0
+`;
+  }
+
+  // Generate general content
+  private generateGeneralContent(report: EmployeeReportResult): string {
+    return `
+DEPARTMENT ANALYSIS
+==================
+
+${Object.entries(report.summary.departments).map(([dept, count]) => {
+  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+  return `- ${dept}: ${count} employees (${percentage}%)`;
+}).join('\n')}
+
+BRANCH DISTRIBUTION
+==================
+
+${Object.entries(report.summary.branches).map(([branch, count]) => {
+  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+  return `- ${branch}: ${count} employees (${percentage}%)`;
+}).join('\n')}
+
+EMPLOYMENT TYPE ANALYSIS
+=======================
+
+${Object.entries(report.summary.employmentTypes).map(([type, count]) => {
+  const percentage = ((count as number / report.summary.totalEmployees) * 100).toFixed(1);
+  return `- ${type}: ${count} employees (${percentage}%)`;
+}).join('\n')}
+
+DETAILED EMPLOYEE DATA
+=====================
+
+${report.data.filter((item: any) => !item.isGroupHeader).map((emp: any, index: number) => 
+  `${index + 1}. ${emp.fullName} (${emp.employeeNo})
+   Position: ${emp.designation}
+   Department: ${emp.division}
+   Branch: ${emp.branch}
+   Employment Type: ${emp.employmentType}
+   Age: ${emp.age} years
+   Gender: ${emp.gender}
+   Join Date: ${emp.dateJoined}
+   Education: ${emp.education?.highestQualification || 'N/A'}
+   Promotions: ${emp.promotions?.length || 0}
+   Email: ${emp.email}
+   Mobile: ${emp.mobile}`
+).join('\n\n')}
+`;
   }
 
   // Generate CSV content

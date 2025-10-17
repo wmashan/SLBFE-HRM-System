@@ -45,6 +45,7 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<EmployeeReportResult | null>(null);
   const [activeTab, setActiveTab] = useState<'predefined' | 'history'>('predefined');
+  const [downloadingReports, setDownloadingReports] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -364,16 +365,64 @@ const EmployeeReports: React.FC<EmployeeReportsProps> = ({
                         
                         <button
                           onClick={async () => {
-                            // Generate a sample report and download directly
-                            const sampleReport = await employeeReportService.generateReport(selectedReport);
-                            if (sampleReport.success && sampleReport.data) {
-                              handleDownloadReport(sampleReport.data.id);
+                            try {
+                              setDownloadingReports(prev => ({ ...prev, [selectedReport.id]: true }));
+                              
+                              // Generate and download sample report directly
+                              const response = await employeeReportService.generateSampleReport(selectedReport.id);
+                              
+                              if (response.ok) {
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                
+                                // Get filename from response headers or create one
+                                const contentDisposition = response.headers.get('Content-Disposition');
+                                let filename = `${selectedReport.name.replace(/\s+/g, '_')}_Sample_${new Date().toISOString().split('T')[0]}`;
+                                
+                                if (contentDisposition) {
+                                  const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                                  if (filenameMatch) {
+                                    filename = filenameMatch[1];
+                                  }
+                                } else {
+                                  // Determine extension based on report config
+                                  const extension = selectedReport.outputFormat === 'pdf' ? 'pdf' : 'csv';
+                                  filename += `.${extension}`;
+                                }
+                                
+                                link.download = filename;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(url);
+                                
+                                console.log(`Sample ${selectedReport.name} downloaded successfully!`);
+                              } else {
+                                throw new Error('Failed to generate sample report');
+                              }
+                            } catch (error) {
+                              console.error('Error downloading sample:', error);
+                              console.error('Failed to download sample report');
+                            } finally {
+                              setDownloadingReports(prev => ({ ...prev, [selectedReport.id]: false }));
                             }
                           }}
-                          className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          disabled={downloadingReports[selectedReport.id]}
+                          className="w-full flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                          <Download className="w-5 h-5 mr-2" />
-                          Download Sample Report
+                          {downloadingReports[selectedReport.id] ? (
+                            <>
+                              <Loader className="w-5 h-5 mr-2 animate-spin" />
+                              Downloading Sample...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-5 h-5 mr-2" />
+                              Download Sample Report
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
