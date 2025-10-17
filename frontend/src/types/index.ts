@@ -1454,8 +1454,7 @@ export type HRFeature =
   | 'performance'
   | 'payroll'
   | 'reports'
-  | 'documents'
-  | 'settings';
+  | 'documents';
 
 export type TaskAssignmentType = 
   | 'medical_officer'

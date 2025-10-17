@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   FileText, 
-  Settings, 
   LogOut,
   Bell,
   TrendingUp,
@@ -22,7 +21,6 @@ import Applications from './Applications';
 import MedicalManagement from './dashboard/MedicalManagement';
 import Employees from './dashboard/Employees';
 import Transfer from './Transfer';
-import SettingsPage from './dashboard/Settings';
 import SalaryManagement from './SalaryManagement';
 import RetirementManagement from './RetirementManagement';
 import TrainingManagement from './TrainingManagement';
@@ -87,13 +85,6 @@ const HRManagerDashboard = () => {
       label: 'Training',
       icon: GraduationCap,
       feature: 'training' as HRFeature
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: Settings,
-      feature: 'settings' as HRFeature,
-      alwaysVisible: true // Settings is always visible
     }
   ];
 
@@ -129,7 +120,7 @@ const HRManagerDashboard = () => {
     } catch (error) {
       console.error('Failed to load user data:', error);
       // Default permissions if loading fails
-      setUserPermissions(['overview', 'settings']);
+      setUserPermissions(['overview']);
     }
   };
 
@@ -138,18 +129,18 @@ const HRManagerDashboard = () => {
   const getUserPermissions = (userId: string): HRFeature[] => {
     // Simulate different HR officers with different permissions
     const userPermissionMap: Record<string, HRFeature[]> = {
-      'medical@slbfe.com': ['overview', 'medical_claims', 'documents', 'settings'],
-      'transfer@slbfe.com': ['overview', 'transfer', 'settings'],
-      'retirement@slbfe.com': ['overview', 'retirement', 'settings'],
-      'recruitment@slbfe.com': ['overview', 'employees', 'recruitment', 'settings'],
-      'training@slbfe.com': ['overview', 'training', 'settings'],
-      'payroll@slbfe.com': ['overview', 'payroll', 'settings'],
+      'medical@slbfe.com': ['overview', 'medical_claims', 'documents'],
+      'transfer@slbfe.com': ['overview', 'transfer'],
+      'retirement@slbfe.com': ['overview', 'retirement'],
+      'recruitment@slbfe.com': ['overview', 'employees', 'recruitment'],
+      'training@slbfe.com': ['overview', 'training'],
+      'payroll@slbfe.com': ['overview', 'payroll'],
     };
 
     // Default to general HR permissions if user not found
     return userPermissionMap[userId] || [
       'overview', 'employees', 'medical_claims', 'transfer', 'retirement', 
-      'recruitment', 'training', 'payroll', 'documents', 'settings'
+      'recruitment', 'training', 'payroll', 'documents'
     ];
   };
 
@@ -281,7 +272,6 @@ const HRManagerDashboard = () => {
           {activeTab === 'salary' && hasPermission('payroll') && <SalaryManagement />}
           {activeTab === 'retirement' && hasPermission('retirement') && <RetirementManagement />}
           {activeTab === 'training' && hasPermission('training') && <TrainingManagement />}
-          {activeTab === 'settings' && <SettingsPage />}
           
           {/* Show access denied message if user tries to access unauthorized content */}
           {(

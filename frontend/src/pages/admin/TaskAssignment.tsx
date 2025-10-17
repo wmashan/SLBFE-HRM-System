@@ -14,7 +14,6 @@ import {
   FileText,
   Calendar,
   BarChart3,
-  Settings,
   Heart,
   Plane,
   GraduationCap,
@@ -269,7 +268,7 @@ const AssignmentModal: React.FC<{
               </label>
               <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4">
                 {featurePermissions.map((permission) => {
-                  const isRequired = ['overview', 'settings'].includes(permission.feature);
+                  const isRequired = ['overview'].includes(permission.feature);
                   const isChecked = formData.assignedFeatures.includes(permission.feature) || isRequired;
                   
                   return (
@@ -441,13 +440,6 @@ const TaskAssignment: React.FC = () => {
       description: 'Access and manage HR documents',
       icon: 'FileText',
       defaultForRoles: ['medical_officer', 'transfer_officer', 'retirement_officer', 'recruitment_officer', 'training_coordinator', 'payroll_officer', 'general_hr'],
-    },
-    {
-      feature: 'settings',
-      label: 'Settings',
-      description: 'Access to user settings and preferences',
-      icon: 'Settings',
-      defaultForRoles: ['medical_officer', 'transfer_officer', 'retirement_officer', 'recruitment_officer', 'training_coordinator', 'payroll_officer', 'general_hr'],
     }
   ];
 
@@ -503,7 +495,7 @@ const TaskAssignment: React.FC = () => {
           userEmail: 'john.medical@slbfe.com',
           taskType: 'medical_officer',
           taskDescription: 'Medical Claims Processing Officer',
-          assignedFeatures: ['overview', 'medical_claims', 'documents', 'settings'],
+          assignedFeatures: ['overview', 'medical_claims', 'documents'],
           isActive: true,
           assignedBy: 'admin',
           assignedDate: new Date('2024-01-15'),
@@ -517,7 +509,7 @@ const TaskAssignment: React.FC = () => {
           userEmail: 'sarah.transfer@slbfe.com',
           taskType: 'transfer_officer',
           taskDescription: 'Employee Transfer Coordinator',
-          assignedFeatures: ['overview', 'transfer', 'settings'],
+          assignedFeatures: ['overview', 'transfer'],
           isActive: true,
           assignedBy: 'admin',
           assignedDate: new Date('2024-01-20'),
@@ -531,7 +523,7 @@ const TaskAssignment: React.FC = () => {
           userEmail: 'robert.retirement@slbfe.com',
           taskType: 'retirement_officer',
           taskDescription: 'Retirement Benefits Officer',
-          assignedFeatures: ['overview', 'retirement', 'settings'],
+          assignedFeatures: ['overview', 'retirement'],
           isActive: true,
           assignedBy: 'admin',
           assignedDate: new Date('2024-01-25'),
@@ -564,7 +556,7 @@ const TaskAssignment: React.FC = () => {
       case 'GraduationCap': return GraduationCap;
       case 'CreditCard': return CreditCard;
       case 'FileText': return FileText;
-      case 'Settings': return Settings;
+
       default: return Shield;
     }
   };
