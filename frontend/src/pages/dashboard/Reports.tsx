@@ -21,7 +21,6 @@ import {
   Clock,
   UserMinus,
   GraduationCap,
-  Plane,
   RefreshCw,
   Award,
   Stethoscope,
@@ -954,27 +953,6 @@ const Reports = () => {
       reports: salaryReports.map(report => report.name)
     },
     {
-      id: 'leave-reports',
-      name: 'Leave & Attendance',
-      description: 'Leave utilization, attendance patterns, and absence analysis',
-      icon: Calendar,
-      color: 'bg-purple-50 text-purple-700 border-purple-200',
-      iconBg: 'bg-purple-100',
-      action: () => console.log('Leave reports coming soon'),
-      reportCount: 9,
-      reports: [
-        'Leave Utilization Report',
-        'Attendance Summary',
-        'Leave Balance Report',
-        'Absenteeism Analysis',
-        'Leave Trends by Department',
-        'Holiday Calendar Report',
-        'Sick Leave Patterns',
-        'Annual Leave Planning',
-        'Leave Approval Report'
-      ]
-    },
-    {
       id: 'retirement-reports',
       name: 'Retirement Management',
       description: 'Retirement planning, pension analysis, and benefit reports',
@@ -996,62 +974,6 @@ const Reports = () => {
       reportCount: trainingReports.length,
       reports: trainingReports.map(report => report.name)
     },
-    {
-      id: 'transfer-reports',
-      name: 'Transfer & Mobility',
-      description: 'Transfer analysis, mobility patterns, and relocation reports',
-      icon: Plane,
-      color: 'bg-teal-50 text-teal-700 border-teal-200',
-      iconBg: 'bg-teal-100',
-      action: () => console.log('Transfer reports coming soon'),
-      reportCount: 5,
-      reports: [
-        'Transfer Request Report',
-        'Inter-branch Mobility',
-        'Transfer Approval Trends',
-        'Relocation Cost Analysis',
-        'Department Transfer Patterns'
-      ]
-    },
-    {
-      id: 'performance-reports',
-      name: 'Performance & Analytics',
-      description: 'Performance metrics, KPI analysis, and productivity reports',
-      icon: TrendingUp,
-      color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-      iconBg: 'bg-yellow-100',
-      action: () => console.log('Performance reports coming soon'),
-      reportCount: 9,
-      reports: [
-        'Performance Review Summary',
-        'KPI Dashboard Report',
-        'Goal Achievement Analysis',
-        'Productivity Metrics',
-        'Performance Trends',
-        'Top Performers Report',
-        'Performance Improvement Plans',
-        'Competency Analysis',
-        'Performance Distribution'
-      ]
-    },
-    {
-      id: 'compliance-reports',
-      name: 'Compliance & Audit',
-      description: 'Regulatory compliance, audit trails, and governance reports',
-      icon: Shield,
-      color: 'bg-gray-50 text-gray-700 border-gray-200',
-      iconBg: 'bg-gray-100',
-      action: () => console.log('Compliance reports coming soon'),
-      reportCount: 6,
-      reports: [
-        'Audit Trail Report',
-        'Compliance Dashboard',
-        'Policy Adherence Report',
-        'Risk Assessment Summary',
-        'Document Compliance',
-        'Regulatory Filing Report'
-      ]
-    }
   ];
 
   const handlePreviewReport = (report: any) => {
