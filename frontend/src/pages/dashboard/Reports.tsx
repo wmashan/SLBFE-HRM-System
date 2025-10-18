@@ -39,6 +39,7 @@ const Reports = () => {
   const [showMedicalReports, setShowMedicalReports] = useState(false);
   const [showSalaryReports, setShowSalaryReports] = useState(false);
   const [showRetirementReports, setShowRetirementReports] = useState(false);
+  const [showTrainingReports, setShowTrainingReports] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [previewReport, setPreviewReport] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -769,15 +770,152 @@ const Reports = () => {
     }
   ];
 
-  // Sample data generators for realistic previews
-  const generateEmployeeId = (index: number) => `EMP${(index + 1).toString().padStart(3, '0')}`;
-  
-  const sriLankanNames = [
-    'Amara Jayasuriya', 'Buddhika Silva', 'Chathurika Fernando', 'Dilani Wickramasinghe', 
-    'Eshan Perera', 'Fathima Nazir', 'Gayan Rathnayake', 'Hasini Mendis', 'Ishara Bandara',
-    'Janith Kumara', 'Kasun Wijesinghe', 'Lahiru Jayawardena', 'Maria Fernando', 'Nimal Silva',
-    'Oshadha Rajapaksa', 'Priya Senanayake', 'Qasim Hassan', 'Rashini de Silva', 'Sunil Bandara',
-    'Thilak Rathnayake', 'Upul Chandana', 'Vindya Perera', 'Wasantha Kumara', 'Ximena Rodrigo'
+  // Detailed Training & Development reports with sample data
+  const trainingReports = [
+    {
+      id: 'training-completion-report',
+      name: 'Training Completion Report',
+      description: 'Comprehensive overview of training completion rates and progress',
+      icon: BookOpen,
+      estimatedTime: '2-3 minutes',
+      recordCount: 245,
+      sampleData: {
+        headers: ['Employee', 'Department', 'Training Program', 'Start Date', 'Completion Date', 'Status', 'Score (%)'],
+        rows: [
+          ['Amara Jayasuriya', 'IT Services', 'Advanced React Development', '2024-09-01', '2024-10-15', 'Completed', '92%'],
+          ['Buddhika Silva', 'Finance', 'Financial Management Certification', '2024-08-15', '2024-10-20', 'Completed', '87%'],
+          ['Chathurika Fernando', 'HR', 'Leadership Development Program', '2024-09-10', 'In Progress', 'Active', '78%'],
+          ['Dilani Wickramasinghe', 'Marketing', 'Digital Marketing Mastery', '2024-10-01', '2024-11-30', 'Active', '65%'],
+          ['Eshan Perera', 'Operations', 'Six Sigma Green Belt', '2024-07-20', '2024-09-30', 'Completed', '94%']
+        ]
+      }
+    },
+    {
+      id: 'skill-gap-analysis',
+      name: 'Skill Gap Analysis Report',
+      description: 'Analysis of current skills vs required skills across the organization',
+      icon: TrendingUp,
+      estimatedTime: '3-4 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Department', 'Required Skill', 'Current Level', 'Target Level', 'Gap Score', 'Employees Affected', 'Training Needed'],
+        rows: [
+          ['IT Services', 'Cloud Computing', '6.2/10', '8.5/10', '2.3', '35', 'AWS/Azure Certification'],
+          ['Finance', 'Data Analytics', '5.8/10', '8.0/10', '2.2', '18', 'Power BI Training'],
+          ['Marketing', 'Social Media Marketing', '7.1/10', '9.0/10', '1.9', '22', 'Advanced Social Media Course'],
+          ['HR', 'Performance Management', '6.8/10', '8.5/10', '1.7', '12', 'HR Analytics Training'],
+          ['Operations', 'Process Improvement', '6.5/10', '8.0/10', '1.5', '28', 'Lean Six Sigma Training']
+        ]
+      }
+    },
+    {
+      id: 'training-roi-analysis',
+      name: 'Training ROI Analysis Report',
+      description: 'Return on investment analysis for training programs and initiatives',
+      icon: Calculator,
+      estimatedTime: '2-3 minutes',
+      recordCount: 34,
+      sampleData: {
+        headers: ['Training Program', 'Investment (LKR)', 'Participants', 'Productivity Gain (%)', 'Cost Savings (LKR)', 'ROI (%)', 'Status'],
+        rows: [
+          ['Leadership Development Program', '850,000', '25', '18%', '1,200,000', '141%', 'Completed'],
+          ['Advanced Excel Training', '320,000', '45', '15%', '480,000', '150%', 'Completed'],
+          ['Customer Service Excellence', '560,000', '32', '22%', '890,000', '159%', 'Completed'],
+          ['Digital Marketing Certification', '720,000', '18', '25%', '1,100,000', '153%', 'Ongoing'],
+          ['Six Sigma Green Belt', '980,000', '15', '30%', '1,450,000', '148%', 'Completed']
+        ]
+      }
+    },
+    {
+      id: 'certification-tracking',
+      name: 'Certification Tracking Report',
+      description: 'Tracking of professional certifications and their expiry dates',
+      icon: Award,
+      estimatedTime: '1-2 minutes',
+      recordCount: 89,
+      sampleData: {
+        headers: ['Employee', 'Certification', 'Issuing Body', 'Issue Date', 'Expiry Date', 'Days Until Expiry', 'Status'],
+        rows: [
+          ['Amara Jayasuriya', 'AWS Solutions Architect', 'Amazon Web Services', '2023-05-15', '2026-05-15', '573', 'Valid'],
+          ['Buddhika Silva', 'CPA Sri Lanka', 'CA Sri Lanka', '2022-08-20', '2025-08-20', '307', 'Valid'],
+          ['Chathurika Fernando', 'SHRM-CP', 'SHRM', '2023-03-10', '2026-03-10', '507', 'Valid'],
+          ['Dilani Wickramasinghe', 'Google Ads Certified', 'Google', '2024-06-01', '2025-06-01', '227', 'Valid'],
+          ['Eshan Perera', 'Six Sigma Black Belt', 'ASQ', '2023-09-15', '2026-09-15', '696', 'Valid']
+        ]
+      }
+    },
+    {
+      id: 'training-calendar-report',
+      name: 'Training Calendar Report',
+      description: 'Scheduled training sessions and capacity planning overview',
+      icon: Calendar,
+      estimatedTime: '1-2 minutes',
+      recordCount: 67,
+      sampleData: {
+        headers: ['Training Program', 'Start Date', 'End Date', 'Duration (Days)', 'Capacity', 'Enrolled', 'Instructor', 'Venue'],
+        rows: [
+          ['Project Management Fundamentals', '2024-11-15', '2024-11-17', '3', '25', '23', 'Dr. Perera', 'Training Room A'],
+          ['Data Analytics with Python', '2024-11-20', '2024-12-05', '12', '20', '18', 'Prof. Silva', 'IT Lab'],
+          ['Effective Communication Skills', '2024-11-25', '2024-11-26', '2', '30', '28', 'Ms. Fernando', 'Conference Hall'],
+          ['Financial Planning & Analysis', '2024-12-02', '2024-12-06', '5', '15', '14', 'Mr. Bandara', 'Training Room B'],
+          ['Leadership Excellence Program', '2024-12-10', '2024-12-20', '8', '20', '19', 'Dr. Rathnayake', 'Executive Center']
+        ]
+      }
+    },
+    {
+      id: 'employee-development-plans',
+      name: 'Employee Development Plans Report',
+      description: 'Individual development plans and career progression tracking',
+      icon: Users,
+      estimatedTime: '2-3 minutes',
+      recordCount: 156,
+      sampleData: {
+        headers: ['Employee', 'Current Role', 'Target Role', 'Development Areas', 'Training Required', 'Timeline', 'Progress (%)'],
+        rows: [
+          ['Amara Jayasuriya', 'Senior Developer', 'Tech Lead', 'Leadership, Architecture', 'Leadership Program, System Design', '12 months', '65%'],
+          ['Buddhika Silva', 'Finance Officer', 'Finance Manager', 'Team Management, Strategy', 'MBA, Leadership Course', '18 months', '45%'],
+          ['Chathurika Fernando', 'HR Executive', 'HR Manager', 'Policy Development, Analytics', 'HR Analytics, Change Management', '15 months', '70%'],
+          ['Dilani Wickramasinghe', 'Marketing Executive', 'Marketing Manager', 'Digital Strategy, Team Lead', 'Digital Marketing, Leadership', '14 months', '55%'],
+          ['Eshan Perera', 'Operations Coordinator', 'Operations Manager', 'Process Optimization, Leadership', 'Six Sigma, Management Training', '16 months', '60%']
+        ]
+      }
+    },
+    {
+      id: 'training-budget-analysis',
+      name: 'Training Budget Analysis Report',
+      description: 'Training budget utilization and cost analysis by department',
+      icon: PiggyBank,
+      estimatedTime: '2 minutes',
+      recordCount: 8,
+      sampleData: {
+        headers: ['Department', 'Annual Budget (LKR)', 'Spent (LKR)', 'Utilization (%)', 'Remaining (LKR)', 'Training Hours', 'Cost per Hour'],
+        rows: [
+          ['IT Services', '2,500,000', '2,250,000', '90%', '250,000', '1,250', '1,800'],
+          ['Finance', '1,200,000', '980,000', '82%', '220,000', '480', '2,042'],
+          ['Human Resources', '800,000', '720,000', '90%', '80,000', '360', '2,000'],
+          ['Marketing', '1,500,000', '1,275,000', '85%', '225,000', '650', '1,962'],
+          ['Operations', '1,800,000', '1,530,000', '85%', '270,000', '780', '1,962']
+        ]
+      }
+    },
+    {
+      id: 'training-feedback-summary',
+      name: 'Training Feedback Summary Report',
+      description: 'Training effectiveness and participant feedback analysis',
+      icon: FileText,
+      estimatedTime: '2-3 minutes',
+      recordCount: 178,
+      sampleData: {
+        headers: ['Training Program', 'Participants', 'Avg Rating (1-5)', 'Content Quality', 'Instructor Rating', 'Recommendations', 'Completion Rate'],
+        rows: [
+          ['Leadership Development Program', '25', '4.6', '4.7', '4.8', '96%', '92%'],
+          ['Advanced Excel Training', '45', '4.3', '4.2', '4.5', '89%', '98%'],
+          ['Customer Service Excellence', '32', '4.5', '4.4', '4.6', '94%', '94%'],
+          ['Digital Marketing Certification', '18', '4.4', '4.3', '4.5', '92%', '89%'],
+          ['Six Sigma Green Belt', '15', '4.7', '4.8', '4.9', '98%', '87%']
+        ]
+      }
+    }
   ];
 
   // Comprehensive report categories based on system data
@@ -854,18 +992,9 @@ const Reports = () => {
       icon: GraduationCap,
       color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
       iconBg: 'bg-indigo-100',
-      action: () => console.log('Training reports coming soon'),
-      reportCount: 8,
-      reports: [
-        'Training Completion Report',
-        'Skill Gap Analysis',
-        'Training ROI Analysis',
-        'Certification Tracking',
-        'Training Calendar Report',
-        'Employee Development Plans',
-        'Training Budget Analysis',
-        'Training Feedback Summary'
-      ]
+      action: () => setShowTrainingReports(true),
+      reportCount: trainingReports.length,
+      reports: trainingReports.map(report => report.name)
     },
     {
       id: 'transfer-reports',
@@ -1603,6 +1732,91 @@ const Reports = () => {
                   </button>
                   <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
                     Send Benefit Statements
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Training & Development Reports Modal */}
+      {showTrainingReports && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden m-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center">
+                <div className="p-2 bg-indigo-100 rounded-lg mr-3">
+                  <GraduationCap className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Training & Development Reports</h3>
+                  <p className="text-sm text-gray-600">Training analytics, completion rates, and skill development</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTrainingReports(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {trainingReports.map((report) => (
+                  <div key={report.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <report.icon className="w-5 h-5 text-indigo-600 mr-2" />
+                        <h4 className="font-medium text-gray-900">{report.name}</h4>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{report.description}</p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        <span>{report.estimatedTime}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="w-3 h-3 mr-1" />
+                        <span>{report.recordCount} records</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handlePreviewReport(report)}
+                        className="flex-1 px-3 py-2 text-xs bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 transition-colors flex items-center justify-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Preview
+                      </button>
+                      <button className="flex-1 px-3 py-2 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                        <Download className="w-3 h-3 mr-1" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button className="px-3 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors">
+                    Generate Training Calendar
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
+                    Schedule Skills Assessment
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                    Export Development Plans
+                  </button>
+                  <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                    Training ROI Dashboard
                   </button>
                 </div>
               </div>
