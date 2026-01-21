@@ -75,4 +75,18 @@ namespace SLBFE.HRM.API.Core.Enums
         Imaging = 8,
         Other = 9
     }
+
+    /// <summary>
+    /// Employee status in the system
+    /// </summary>
+    public enum EmployeeStatus
+    {
+        Active = 1,
+        Inactive = 2,
+        OnProbation = 3,
+        OnLeave = 4,
+        Suspended = 5,
+        Terminated = 6,
+        Retired = 7
+    }
 }

@@ -4340,11 +4340,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/ashanwickramanayaka/files/HRM system/SLBFE-HRM-System/backend/SLBFE.HRM.API/SLBFE.HRM.API.csproj",
+      "projectUniqueName": "/Users/ashanwickramanayaka/files/Project/SLBFE-HRM-System/backend/SLBFE.HRM.API/SLBFE.HRM.API.csproj",
       "projectName": "SLBFE.HRM.API",
-      "projectPath": "/Users/ashanwickramanayaka/files/HRM system/SLBFE-HRM-System/backend/SLBFE.HRM.API/SLBFE.HRM.API.csproj",
+      "projectPath": "/Users/ashanwickramanayaka/files/Project/SLBFE-HRM-System/backend/SLBFE.HRM.API/SLBFE.HRM.API.csproj",
       "packagesPath": "/Users/ashanwickramanayaka/.nuget/packages/",
-      "outputPath": "/Users/ashanwickramanayaka/files/HRM system/SLBFE-HRM-System/backend/SLBFE.HRM.API/obj/",
+      "outputPath": "/Users/ashanwickramanayaka/files/Project/SLBFE-HRM-System/backend/SLBFE.HRM.API/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/ashanwickramanayaka/.nuget/NuGet/NuGet.Config"

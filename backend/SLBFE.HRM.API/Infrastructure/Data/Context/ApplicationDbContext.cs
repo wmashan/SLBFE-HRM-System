@@ -13,7 +13,7 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
         // DbSets will be added here as models are created
         // Example:
         // public DbSet<User> Users { get; set; }
-        // public DbSet<Employee> Employees { get; set; }
+        public DbSet<Employee> Employees { get; set; }
         // public DbSet<SalaryRecord> SalaryRecords { get; set; }
         // public DbSet<RetirementRecord> RetirementRecords { get; set; }
         // public DbSet<Application> Applications { get; set; }
@@ -62,6 +62,40 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
                 entity.HasIndex(e => e.EmployeeId);
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => e.SubmittedDate);
+            });
+
+            // Configure Employee entity
+            modelBuilder.Entity<Employee>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                // Unique constraints
+                entity.HasIndex(e => e.EmployeeNumber).IsUnique();
+                entity.HasIndex(e => e.NIC).IsUnique();
+                entity.HasIndex(e => e.EmailAddress).IsUnique();
+                
+                // Configure decimal precision for financial fields
+                entity.Property(e => e.BasicSalary).HasPrecision(18, 2);
+                
+                // Configure self-referencing relationship for reporting manager
+                entity.HasOne(e => e.ReportingManager)
+                    .WithMany(e => e.Subordinates)
+                    .HasForeignKey(e => e.ReportingManagerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Configure relationship with MedicalRequests
+                entity.HasMany(e => e.MedicalRequests)
+                    .WithOne()
+                    .HasForeignKey(mr => mr.EmployeeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                // Configure indexes for performance
+                entity.HasIndex(e => e.FullName);
+                entity.HasIndex(e => e.Division);
+                entity.HasIndex(e => e.Designation);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.TypeOfEmployment);
+                entity.HasIndex(e => e.Department);
             });
 
             // Configure cascade delete behaviors
