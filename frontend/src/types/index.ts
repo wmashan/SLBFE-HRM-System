@@ -42,20 +42,93 @@ export interface AuthState {
 }
 
 // Employee Management Types
-export interface Employee extends User {
-  employeeId: string;
-  department: Department;
-  position: string;
-  branch: Branch;
-  manager?: Employee;
-  joinDate: Date;
-  salary?: number;
+export interface Employee {
+  id?: number;
+  title: string;
+  fullName: string;
+  nameWithInitials: string;
+  firstName: string;
+  lastName: string;
+  nic: string;
+  dateOfBirth: string;
+  division: string;
+  designation: string;
+  grade: string;
+  civilStatus: string;
+  // Address Information
+  permanentAddressLine1: string;
+  permanentAddressLine2?: string;
+  permanentTown: string;
+  temporaryAddressLine1?: string;
+  temporaryAddressLine2?: string;
+  temporaryTown?: string;
+  // Contact Information
+  mobileNumber: string;
+  phoneNumber?: string;
+  emailAddress: string;
+  // Educational Background
+  gceolDetails?: string;
+  gcealDetails?: string;
+  higherStudiesDetails?: string;
+  // Employment Details
+  typeOfEmployment: string;
+  employmentStatus: EmploymentStatus;
+  dateOfPermanent?: string;
+  joinDateContract?: string;
+  joinDateCasual?: string;
+  employeeNumber: string;
+  // Additional Information
+  gender?: string;
+  nationality?: string;
+  bloodGroup?: string;
+  profilePicture?: string;
   status: EmployeeStatus;
-  skills: string[];
-  certifications: Certification[];
+  department?: string;
+  reportingManagerId?: number;
+  basicSalary?: number;
+  notes?: string;
+  // System fields
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export type EmployeeStatus = 'active' | 'inactive' | 'on_leave' | 'terminated';
+export interface EmployeeCreateRequest {
+  title: string;
+  fullName: string;
+  nameWithInitials: string;
+  firstName: string;
+  lastName: string;
+  nic: string;
+  dateOfBirth: string;
+  division: string;
+  designation: string;
+  grade: string;
+  civilStatus: string;
+  permanentAddressLine1: string;
+  permanentAddressLine2?: string;
+  permanentTown: string;
+  temporaryAddressLine1?: string;
+  temporaryAddressLine2?: string;
+  temporaryTown?: string;
+  mobileNumber: string;
+  phoneNumber?: string;
+  emailAddress: string;
+  gceolDetails?: string;
+  gcealDetails?: string;
+  higherStudiesDetails?: string;
+  typeOfEmployment: string;
+  dateOfPermanent?: string;
+  joinDateContract?: string;
+  joinDateCasual?: string;
+  gender?: string;
+  nationality?: string;
+  profilePicture?: string;
+  department?: string;
+  reportingManagerId?: number;
+}
+
+export type EmployeeStatus = 'Active' | 'Inactive' | 'OnLeave' | 'Terminated';
+export type EmploymentStatus = 'Active' | 'Inactive' | 'Probation' | 'Terminated';
 
 export interface Department {
   id: string;

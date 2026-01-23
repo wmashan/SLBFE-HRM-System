@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, CheckCircle, Mail, Clock } from 'lucide-react';
+import { employeeService } from '../services/api';
+import { EmployeeCreateRequest } from '../types';
 
 const UserAccountCreation = () => {
   const navigate = useNavigate();
@@ -94,13 +96,123 @@ const UserAccountCreation = () => {
       return;
     }
 
+    // Validate required fields
+    if (!formData.fullName || !formData.firstName || !formData.lastName || !formData.nic || !formData.birthDay) {
+      alert('Please fill in all required personal details.');
+      return;
+    }
+
+    if (!formData.division || !formData.designation || !formData.civilStatus) {
+      alert('Please fill in all required work details.');
+      return;
+    }
+
+    if (!formData.permanentAddressLine1 || !formData.permanentTown) {
+      alert('Please fill in permanent address details.');
+      return;
+    }
+
+    if (!formData.mobileNumberPersonal || !formData.emailAddress) {
+      alert('Please fill in contact details.');
+      return;
+    }
+
+    if (!formData.typeOfEmployment) {
+      alert('Please select the type of employment.');
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    // Prepare employee data outside try block for error logging
+    let employeeData: EmployeeCreateRequest | null = null;
+    
+    try {
+      // Convert date from MM/dd/yyyy to ISO format (yyyy-MM-dd) for API
+      const convertToISO = (dateString: string) => {
+        if (!dateString) return undefined;
+        // If already in yyyy-MM-dd format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+          return dateString;
+        }
+        // Convert MM/dd/yyyy to yyyy-MM-dd
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+          const month = parts[0].padStart(2, '0');
+          const day = parts[1].padStart(2, '0');
+          const year = parts[2];
+          return `${year}-${month}-${day}`;
+        }
+        return dateString;
+      };
+
+      // Prepare employee data for API
+      employeeData = {
+        title: formData.title,
+        fullName: formData.fullName,
+        nameWithInitials: formData.nameWithInitials,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        nic: formData.nic,
+        dateOfBirth: convertToISO(formData.birthDay) || '',
+        division: formData.division,
+        designation: formData.designation,
+        grade: formData.grade,
+        civilStatus: formData.civilStatus,
+        permanentAddressLine1: formData.permanentAddressLine1,
+        permanentAddressLine2: formData.permanentAddressLine2 || undefined,
+        permanentTown: formData.permanentTown,
+        temporaryAddressLine1: formData.temporaryAddressLine1 || undefined,
+        temporaryAddressLine2: formData.temporaryAddressLine2 || undefined,
+        temporaryTown: formData.temporaryTown || undefined,
+        mobileNumber: formData.mobileNumberPersonal,
+        phoneNumber: formData.phoneNumberOfficial || undefined,
+        emailAddress: formData.emailAddress,
+        typeOfEmployment: formData.typeOfEmployment,
+        dateOfPermanent: convertToISO(formData.dateOfPermanent),
+        joinDateContract: convertToISO(formData.joinDateContract),
+        joinDateCasual: convertToISO(formData.joinDateCasual),
+        // Educational details as JSON
+        gceolDetails: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
+        gcealDetails: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
+        higherStudiesDetails: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
+      };
+
+      console.log('Submitting employee data:', employeeData);
+
+      const response = await employeeService.createEmployee(employeeData);
+      
+      console.log('API Response:', response);
+      
+      if (response.success) {
+        console.log('Employee created successfully!');
+        setIsSubmitting(false);
+        setShowSuccessPage(true);
+      } else {
+        console.error('API returned error:', response.message);
+        throw new Error(response.message || 'Failed to create employee');
+      }
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      if (employeeData) {
+        console.error('Employee data:', employeeData);
+      }
+      
+      // More detailed error message
+      let errorMessage = 'Failed to create employee. ';
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          errorMessage += 'Cannot connect to server. Please check if the backend is running.';
+        } else {
+          errorMessage += `Error: ${error.message}`;
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      alert(errorMessage);
       setIsSubmitting(false);
-      setShowSuccessPage(true);
-    }, 2000);
+    }
   };
 
   const handlePrevious = () => {
@@ -113,12 +225,67 @@ const UserAccountCreation = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      alert('Account created successfully!');
+    try {
+      // Prepare employee data for API
+      const employeeData: EmployeeCreateRequest = {
+        title: formData.title,
+        fullName: formData.fullName,
+        nameWithInitials: formData.nameWithInitials,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        nic: formData.nic,
+        dateOfBirth: formData.birthDay,
+        division: formData.division,
+        designation: formData.designation,
+        grade: formData.grade,
+        civilStatus: formData.civilStatus,
+        permanentAddressLine1: formData.permanentAddressLine1,
+        permanentAddressLine2: formData.permanentAddressLine2 || undefined,
+        permanentTown: formData.permanentTown,
+        temporaryAddressLine1: formData.temporaryAddressLine1 || undefined,
+        temporaryAddressLine2: formData.temporaryAddressLine2 || undefined,
+        temporaryTown: formData.temporaryTown || undefined,
+        mobileNumber: formData.mobileNumberPersonal,
+        phoneNumber: formData.phoneNumberOfficial || undefined,
+        emailAddress: formData.emailAddress,
+        typeOfEmployment: formData.typeOfEmployment,
+        dateOfPermanent: formData.dateOfPermanent || undefined,
+        joinDateContract: formData.joinDateContract || undefined,
+        joinDateCasual: formData.joinDateCasual || undefined,
+        // Educational details as JSON
+        gceolDetails: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
+        gcealDetails: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
+        higherStudiesDetails: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
+      };
+
+      const response = await employeeService.createEmployee(employeeData);
+      
+      if (response.success) {
+        alert('Employee created successfully!');
+        setIsSubmitting(false);
+        navigate('/');
+      } else {
+        throw new Error(response.message || 'Failed to create employee');
+      }
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      console.error('Employee data:', employeeData);
+      
+      // More detailed error message
+      let errorMessage = 'Failed to create employee. ';
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          errorMessage += 'Cannot connect to server. Please check if the backend is running.';
+        } else {
+          errorMessage += `Error: ${error.message}`;
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      alert(errorMessage);
       setIsSubmitting(false);
-      navigate('/');
-    }, 1000);
+    }
   };
 
   return (
@@ -683,16 +850,16 @@ const UserAccountCreation = () => {
 
                     {/* Birth Day */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Birth Day (MM/dd/yyyy)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Birth Day *</label>
                       <div className="relative">
                         <input
-                          type="text"
+                          type="date"
                           value={formData.birthDay}
                           onChange={(e) => handleFieldChange('birthDay', e.target.value)}
-                          placeholder="01/16/1978"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                          required
                         />
-                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
                     </div>
 
@@ -1087,7 +1254,7 @@ const UserAccountCreation = () => {
 
                   {/* Date of Permanent */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Permanent (MM/dd/yyyy)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Permanent</label>
                     <div className="relative">
                       <input
                         type="date"
@@ -1102,7 +1269,7 @@ const UserAccountCreation = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Join Date of Join (Contract) */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Join Date of Join (Contract) (MM/dd/yyyy)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Join Date of Join (Contract)</label>
                       <div className="relative">
                         <input
                           type="date"
@@ -1115,7 +1282,7 @@ const UserAccountCreation = () => {
 
                     {/* Join Date of Join (Casual) */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Join Date of Join (Casual) (MM/dd/yyyy)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Join Date of Join (Casual)</label>
                       <div className="relative">
                         <input
                           type="date"

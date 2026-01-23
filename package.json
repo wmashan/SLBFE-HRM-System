@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && dotnet run --project SLBFE.HRM.API.csproj",
+    "frontend": "cd frontend && npm run dev",
+    "start": "npm run dev",
+    "build": "cd frontend && npm run build",
+    "build-backend": "cd backend && dotnet build",
+    "build-all": "npm run build-backend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

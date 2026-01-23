@@ -1,6 +1,6 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, User, LoginCredentials, RegisterData } from '../types';
+import { ApiResponse, User, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest } from '../types';
 
 // Salary Management Types
 interface SalaryRecord {
@@ -155,22 +155,52 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+    console.log(`Making ${options.method || 'GET'} request to:`, url);
+    
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await fetch(url, {
         headers: this.getHeaders(),
         ...options,
       });
 
-      const data = await response.json();
+      console.log(`Response status: ${response.status} ${response.statusText}`);
 
-      if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      let data: any;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+        console.log('Response data:', data);
+      } else {
+        const text = await response.text();
+        console.log('Response text:', text);
+        data = { message: text };
       }
 
-      return data;
+      if (!response.ok) {
+        console.error('Request failed:', data);
+        return {
+          success: false,
+          message: data.message || data.title || `Request failed with status ${response.status}`,
+          data: null as any,
+        };
+      }
+
+      // Backend returns data directly, wrap it in ApiResponse format
+      return {
+        success: true,
+        message: 'Success',
+        data: data,
+      };
     } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+      console.error('API Fetch Error:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An error occurred',
+        data: null as any,
+      };
     }
   }
 
@@ -359,35 +389,49 @@ class ApiService {
     limit?: number;
     search?: string;
     department?: string;
-    branch?: string;
+    division?: string;
     status?: string;
-  }): Promise<ApiResponse<User[]>> {
+  }): Promise<ApiResponse<Employee[]>> {
     const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<User[]>(`/employees${queryString ? `?${queryString}` : ''}`);
+    return this.request<Employee[]>(`/Employee${queryString ? `?${queryString}` : ''}`);
   }
 
-  async getEmployee(id: string): Promise<ApiResponse<User>> {
-    return this.request<User>(`/employees/${id}`);
+  async getEmployee(id: number): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>(`/Employee/${id}`);
   }
 
-  async createEmployee(employeeData: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<User>('/employees', {
+  async createEmployee(employeeData: EmployeeCreateRequest): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>('/Employee', {
       method: 'POST',
       body: JSON.stringify(employeeData),
     });
   }
 
-  async updateEmployee(id: string, employeeData: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<User>(`/employees/${id}`, {
+  async updateEmployee(id: number, employeeData: Partial<Employee>): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>(`/Employee/${id}`, {
       method: 'PUT',
       body: JSON.stringify(employeeData),
     });
   }
 
-  async deleteEmployee(id: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/employees/${id}`, {
+  async deleteEmployee(id: number): Promise<ApiResponse<null>> {
+    return this.request<null>(`/Employee/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  async searchEmployees(params?: {
+    search?: string;
+    division?: string;
+    designation?: string;
+    status?: string;
+  }): Promise<ApiResponse<Employee[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<Employee[]>(`/Employee/search${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async checkEmployeeUnique(field: string, value: string): Promise<ApiResponse<boolean>> {
+    return this.request<boolean>(`/Employee/check-unique?${field}=${encodeURIComponent(value)}`);
   }
 
   // Department Methods
@@ -969,10 +1013,12 @@ export const authService = {
 
 export const employeeService = {
   getEmployees: (params?: any) => apiService.getEmployees(params),
-  getEmployee: (id: string) => apiService.getEmployee(id),
-  createEmployee: (data: Partial<User>) => apiService.createEmployee(data),
-  updateEmployee: (id: string, data: Partial<User>) => apiService.updateEmployee(id, data),
-  deleteEmployee: (id: string) => apiService.deleteEmployee(id),
+  getEmployee: (id: number) => apiService.getEmployee(id),
+  createEmployee: (data: EmployeeCreateRequest) => apiService.createEmployee(data),
+  updateEmployee: (id: number, data: Partial<Employee>) => apiService.updateEmployee(id, data),
+  deleteEmployee: (id: number) => apiService.deleteEmployee(id),
+  searchEmployees: (params?: any) => apiService.searchEmployees(params),
+  checkEmployeeUnique: (field: string, value: string) => apiService.checkEmployeeUnique(field, value),
 };
 
 export const departmentService = {
