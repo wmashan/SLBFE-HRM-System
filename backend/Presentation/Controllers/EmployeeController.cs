@@ -45,20 +45,20 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// <summary>
         /// Get employee by ID
         /// </summary>
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<EmployeeDto>> GetEmployeeById(int id)
+        [HttpGet("{employeeId}")]
+        public async Task<ActionResult<EmployeeDto>> GetEmployeeById(string employeeId)
         {
             try
             {
-                var employee = await _employeeService.GetEmployeeByIdAsync(id);
+                var employee = await _employeeService.GetEmployeeByIdAsync(employeeId);
                 if (employee == null)
-                    return NotFound($"Employee with ID {id} not found");
+                    return NotFound($"Employee with ID {employeeId} not found");
 
                 return Ok(employee);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting employee by ID: {Id}", id);
+                _logger.LogError(ex, "Error getting employee by ID: {EmployeeId}", employeeId);
                 return StatusCode(500, "An error occurred while retrieving the employee");
             }
         }
@@ -110,15 +110,15 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// </summary>
         [HttpPost]
         [AllowAnonymous] // Allow anonymous access for user registration
-        public async Task<ActionResult<EmployeeDto>> CreateEmployee([FromBody] CreateEmployeeDto createEmployeeDto)
+        public async Task<ActionResult<EmployeeWithCredentialsDto>> CreateEmployee([FromBody] CreateEmployeeDto createEmployeeDto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var employee = await _employeeService.CreateEmployeeAsync(createEmployeeDto);
-                return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, employee);
+                var employeeWithCredentials = await _employeeService.CreateEmployeeWithCredentialsAsync(createEmployeeDto);
+                return CreatedAtAction(nameof(GetEmployeeById), new { employeeId = employeeWithCredentials.EmployeeId }, employeeWithCredentials);
             }
             catch (InvalidOperationException ex)
             {
@@ -134,16 +134,16 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// <summary>
         /// Update existing employee
         /// </summary>
-        [HttpPut("{id:int}")]
+        [HttpPut("{employeeId}")]
         [Authorize(Roles = "admin,senior_hr_manager,hr")]
-        public async Task<ActionResult<EmployeeDto>> UpdateEmployee(int id, [FromBody] UpdateEmployeeDto updateEmployeeDto)
+        public async Task<ActionResult<EmployeeDto>> UpdateEmployee(string employeeId, [FromBody] UpdateEmployeeDto updateEmployeeDto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var employee = await _employeeService.UpdateEmployeeAsync(id, updateEmployeeDto);
+                var employee = await _employeeService.UpdateEmployeeAsync(employeeId, updateEmployeeDto);
                 return Ok(employee);
             }
             catch (InvalidOperationException ex)
@@ -152,7 +152,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating employee with ID: {Id}", id);
+                _logger.LogError(ex, "Error updating employee with ID: {EmployeeId}", employeeId);
                 return StatusCode(500, "An error occurred while updating the employee");
             }
         }
@@ -160,21 +160,21 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// <summary>
         /// Delete employee (soft delete)
         /// </summary>
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{employeeId}")]
         [Authorize(Roles = "admin,senior_hr_manager")]
-        public async Task<ActionResult> DeleteEmployee(int id)
+        public async Task<ActionResult> DeleteEmployee(string employeeId)
         {
             try
             {
-                var result = await _employeeService.DeleteEmployeeAsync(id);
+                var result = await _employeeService.DeleteEmployeeAsync(employeeId);
                 if (!result)
-                    return NotFound($"Employee with ID {id} not found");
+                    return NotFound($"Employee with ID {employeeId} not found");
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting employee with ID: {Id}", id);
+                _logger.LogError(ex, "Error deleting employee with ID: {EmployeeId}", employeeId);
                 return StatusCode(500, "An error occurred while deleting the employee");
             }
         }
@@ -234,24 +234,6 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         }
 
         /// <summary>
-        /// Get subordinates of a manager
-        /// </summary>
-        [HttpGet("{managerId:int}/subordinates")]
-        public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetSubordinates(int managerId)
-        {
-            try
-            {
-                var subordinates = await _employeeService.GetSubordinatesAsync(managerId);
-                return Ok(subordinates);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting subordinates for manager ID: {ManagerId}", managerId);
-                return StatusCode(500, "An error occurred while retrieving subordinates");
-            }
-        }
-
-        /// <summary>
         /// Get total employee count
         /// </summary>
         [HttpGet("count")]
@@ -272,17 +254,17 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// <summary>
         /// Get employees by division
         /// </summary>
-        [HttpGet("by-division/{division}")]
-        public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetEmployeesByDivision(string division)
+        [HttpGet("by-division/{divisionId}")]
+        public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetEmployeesByDivision(int divisionId)
         {
             try
             {
-                var employees = await _employeeService.GetEmployeesByDivisionAsync(division);
+                var employees = await _employeeService.GetEmployeesByDivisionAsync(divisionId);
                 return Ok(employees);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting employees by division: {Division}", division);
+                _logger.LogError(ex, "Error getting employees by division: {DivisionId}", divisionId);
                 return StatusCode(500, "An error occurred while retrieving employees");
             }
         }
@@ -305,26 +287,5 @@ namespace SLBFE.HRM.API.Presentation.Controllers
             }
         }
 
-        /// <summary>
-        /// Update employee status
-        /// </summary>
-        [HttpPatch("{id:int}/status")]
-        [Authorize(Roles = "admin,senior_hr_manager,hr")]
-        public async Task<ActionResult> UpdateEmployeeStatus(int id, [FromBody] EmployeeStatus status)
-        {
-            try
-            {
-                var result = await _employeeService.UpdateEmployeeStatusAsync(id, status);
-                if (!result)
-                    return NotFound($"Employee with ID {id} not found");
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating employee status for ID: {Id}", id);
-                return StatusCode(500, "An error occurred while updating employee status");
-            }
-        }
     }
 }

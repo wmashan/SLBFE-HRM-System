@@ -1,5 +1,5 @@
-using SLBFE.HRM.API.Core.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SLBFE.HRM.API.Application.DTOs.Response
 {
@@ -8,70 +8,55 @@ namespace SLBFE.HRM.API.Application.DTOs.Response
     /// </summary>
     public class EmployeeDto
     {
-        public int Id { get; set; }
+        #region Primary Key
+        public string EmployeeId { get; set; } = string.Empty;
+        #endregion
         
         #region Basic Information
-        public string Title { get; set; } = string.Empty;
+        public int TitleId { get; set; }
         public string FullName { get; set; } = string.Empty;
-        public string NameWithInitials { get; set; } = string.Empty;
+        public string NameInitials { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string NIC { get; set; } = string.Empty;
-        public DateTime DateOfBirth { get; set; }
-        public string Division { get; set; } = string.Empty;
-        public string Designation { get; set; } = string.Empty;
-        public string Grade { get; set; } = string.Empty;
-        public string CivilStatus { get; set; } = string.Empty;
+        public string Nic { get; set; } = string.Empty;
+        public DateTime BirthDate { get; set; }
+        public int DivisionId { get; set; }
+        public string DesignationId { get; set; } = string.Empty;
+        public string GradeId { get; set; } = string.Empty;
+        public string CivilStatusId { get; set; } = string.Empty;
         #endregion
 
         #region Address Information
-        public string PermanentAddressLine1 { get; set; } = string.Empty;
-        public string? PermanentAddressLine2 { get; set; }
-        public string PermanentTown { get; set; } = string.Empty;
-        public string? TemporaryAddressLine1 { get; set; }
-        public string? TemporaryAddressLine2 { get; set; }
-        public string? TemporaryTown { get; set; }
+        public string PermanentAddressL1 { get; set; } = string.Empty;
+        public string? PermanentAddressL2 { get; set; }
+        public string PermanentTownId { get; set; } = string.Empty;
+        public string? TemporaryAddressL1 { get; set; }
+        public string? TemporaryAddressL2 { get; set; }
+        public string? TemporaryTownId { get; set; }
         #endregion
 
         #region Contact Information
-        public string MobileNumber { get; set; } = string.Empty;
-        public string? PhoneNumber { get; set; }
-        public string EmailAddress { get; set; } = string.Empty;
+        public string Contact1 { get; set; } = string.Empty;
+        public string? Contact2 { get; set; }
+        public string Email { get; set; } = string.Empty;
         #endregion
 
         #region Educational Background
-        public string? GCEOLDetails { get; set; }
-        public string? GCEALDetails { get; set; }
-        public string? HigherStudiesDetails { get; set; }
+        public string? OL { get; set; }
+        public string? AL { get; set; }
+        public string? HigherStudies { get; set; }
         #endregion
 
         #region Employment Details
-        public string TypeOfEmployment { get; set; } = string.Empty;
-        public string EmploymentStatus { get; set; } = string.Empty;
-        public DateTime? DateOfPermanent { get; set; }
+        public string EmployeeTypeId { get; set; } = string.Empty;
+        public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
         public DateTime? JoinDateCasual { get; set; }
-        public string EmployeeNumber { get; set; } = string.Empty;
-        #endregion
-
-        #region Additional Information
-        public string? Gender { get; set; }
-        public string? Nationality { get; set; }
-        public string? BloodGroup { get; set; }
-        public string? ProfilePicture { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string? Department { get; set; }
-        public int? ReportingManagerId { get; set; }
-        public string? ReportingManagerName { get; set; }
-        public decimal? BasicSalary { get; set; }
-        public string? Notes { get; set; }
         #endregion
 
         #region Audit Information
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public string? CreatedBy { get; set; }
-        public string? UpdatedBy { get; set; }
         #endregion
     }
 
@@ -80,17 +65,32 @@ namespace SLBFE.HRM.API.Application.DTOs.Response
     /// </summary>
     public class EmployeeSummaryDto
     {
-        public int Id { get; set; }
-        public string EmployeeNumber { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public string NameWithInitials { get; set; } = string.Empty;
-        public string Designation { get; set; } = string.Empty;
-        public string Division { get; set; } = string.Empty;
-        public string Department { get; set; } = string.Empty;
-        public string EmailAddress { get; set; } = string.Empty;
-        public string MobileNumber { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
-        public string TypeOfEmployment { get; set; } = string.Empty;
+        public string NameInitials { get; set; } = string.Empty;
+        public string DesignationId { get; set; } = string.Empty;
+        public int DivisionId { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Contact1 { get; set; } = string.Empty;
+        public string EmployeeTypeId { get; set; } = string.Empty;
         public DateTime? JoinDate { get; set; }
+    }
+
+    /// <summary>
+    /// Employee with generated login credentials (returned only during registration)
+    /// </summary>
+    public class EmployeeWithCredentialsDto : EmployeeDto
+    {
+        /// <summary>
+        /// Username for login (same as EmployeeId)
+        /// </summary>
+        [JsonPropertyName("username")]
+        public string Username { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Generated password (only returned once during creation)
+        /// </summary>
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = string.Empty;
     }
 }

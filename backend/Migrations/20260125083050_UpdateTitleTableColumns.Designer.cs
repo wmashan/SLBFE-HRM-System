@@ -12,8 +12,8 @@ using SLBFE.HRM.API.Infrastructure.Data.Context;
 namespace SLBFE.HRM.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260122032759_CreateEmployeeTable")]
-    partial class CreateEmployeeTable
+    [Migration("20260125083050_UpdateTitleTableColumns")]
+    partial class UpdateTitleTableColumns
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,63 +27,52 @@ namespace SLBFE.HRM.API.Migrations
 
             modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.Employee", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("EmployeeId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("AL")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("BasicSalary")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("BloodGroup")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
-
-                    b.Property<string>("CivilStatus")
+                    b.Property<string>("CivilStatusId")
                         .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Contact1")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Contact2")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateOfPermanent")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Department")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Designation")
+                    b.Property<string>("DesignationId")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Division")
+                    b.Property<string>("DivisionId")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("EmailAddress")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("EmployeeNumber")
+                    b.Property<string>("EmployeeTypeId")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("EmploymentStatus")
-                        .HasColumnType("int");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -95,26 +84,13 @@ namespace SLBFE.HRM.API.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("GCEALDetails")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GCEOLDetails")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Gender")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Grade")
+                    b.Property<string>("GradeId")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("HigherStudiesDetails")
+                    b.Property<string>("HigherStudies")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("JoinDateCasual")
                         .HasColumnType("datetime2");
@@ -127,107 +103,79 @@ namespace SLBFE.HRM.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("MobileNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("NIC")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("NameWithInitials")
+                    b.Property<string>("NameInitials")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Nationality")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("Nic")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Notes")
+                    b.Property<string>("OL")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PermanentAddressLine1")
+                    b.Property<string>("PermanentAddressL1")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("PermanentAddressLine2")
+                    b.Property<string>("PermanentAddressL2")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("PermanentTown")
+                    b.Property<DateTime?>("PermanentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PermanentTownId")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ProfilePicture")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ReportingManagerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TemporaryAddressLine1")
+                    b.Property<string>("TemporaryAddressL1")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("TemporaryAddressLine2")
+                    b.Property<string>("TemporaryAddressL2")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("TemporaryTown")
+                    b.Property<string>("TemporaryTownId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("TitleId")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("TypeOfEmployment")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("EmployeeId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("CivilStatusId");
 
-                    b.HasIndex("Department");
+                    b.HasIndex("DesignationId");
 
-                    b.HasIndex("Designation");
+                    b.HasIndex("DivisionId");
 
-                    b.HasIndex("Division");
-
-                    b.HasIndex("EmailAddress")
+                    b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("EmployeeNumber")
-                        .IsUnique();
+                    b.HasIndex("EmployeeTypeId");
 
                     b.HasIndex("FullName");
 
-                    b.HasIndex("NIC")
+                    b.HasIndex("GradeId");
+
+                    b.HasIndex("Nic")
                         .IsUnique();
 
-                    b.HasIndex("ReportingManagerId");
+                    b.HasIndex("PermanentTownId");
 
-                    b.HasIndex("Status");
-
-                    b.HasIndex("TypeOfEmployment");
+                    b.HasIndex("TitleId");
 
                     b.ToTable("Employees");
                 });
@@ -382,30 +330,79 @@ namespace SLBFE.HRM.API.Migrations
                     b.ToTable("MedicalRequests");
                 });
 
-            modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.Employee", b =>
+            modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.Title", b =>
                 {
-                    b.HasOne("SLBFE.HRM.API.Core.Entities.Employee", "ReportingManager")
-                        .WithMany("Subordinates")
-                        .HasForeignKey("ReportingManagerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.Property<string>("TitleId")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Navigation("ReportingManager");
-                });
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-            modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.MedicalRequest", b =>
-                {
-                    b.HasOne("SLBFE.HRM.API.Core.Entities.Employee", null)
-                        .WithMany("MedicalRequests")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
 
-            modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.Employee", b =>
-                {
-                    b.Navigation("MedicalRequests");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                    b.Navigation("Subordinates");
+                    b.HasKey("TitleId");
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.ToTable("Titles");
+
+                    b.HasData(
+                        new
+                        {
+                            TitleId = "MR",
+                            Description = "Mr.",
+                            DisplayOrder = 1,
+                            IsActive = true
+                        },
+                        new
+                        {
+                            TitleId = "MRS",
+                            Description = "Mrs.",
+                            DisplayOrder = 2,
+                            IsActive = true
+                        },
+                        new
+                        {
+                            TitleId = "MS",
+                            Description = "Ms.",
+                            DisplayOrder = 3,
+                            IsActive = true
+                        },
+                        new
+                        {
+                            TitleId = "MISS",
+                            Description = "Miss",
+                            DisplayOrder = 4,
+                            IsActive = true
+                        },
+                        new
+                        {
+                            TitleId = "DR",
+                            Description = "Dr.",
+                            DisplayOrder = 5,
+                            IsActive = true
+                        },
+                        new
+                        {
+                            TitleId = "PROF",
+                            Description = "Prof.",
+                            DisplayOrder = 6,
+                            IsActive = true
+                        },
+                        new
+                        {
+                            TitleId = "REV",
+                            Description = "Rev.",
+                            DisplayOrder = 7,
+                            IsActive = true
+                        });
                 });
 #pragma warning restore 612, 618
         }

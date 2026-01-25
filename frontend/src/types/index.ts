@@ -44,39 +44,38 @@ export interface AuthState {
 // Employee Management Types
 export interface Employee {
   id?: number;
-  title: string;
+  titleId: number;
   fullName: string;
-  nameWithInitials: string;
+  nameInitials: string;
   firstName: string;
   lastName: string;
   nic: string;
-  dateOfBirth: string;
-  division: string;
-  designation: string;
-  grade: string;
-  civilStatus: string;
+  birthDate: string;
+  divisionId: number;
+  designationId: string;
+  gradeId: string;
+  civilStatusId: string;
   // Address Information
-  permanentAddressLine1: string;
-  permanentAddressLine2?: string;
-  permanentTown: string;
-  temporaryAddressLine1?: string;
-  temporaryAddressLine2?: string;
-  temporaryTown?: string;
+  permanentAddressL1: string;
+  permanentAddressL2?: string;
+  permanentTownId: string;
+  temporaryAddressL1?: string;
+  temporaryAddressL2?: string;
+  temporaryTownId?: string;
   // Contact Information
-  mobileNumber: string;
-  phoneNumber?: string;
-  emailAddress: string;
+  contact1: string;
+  contact2?: string;
+  email: string;
   // Educational Background
-  gceolDetails?: string;
-  gcealDetails?: string;
-  higherStudiesDetails?: string;
+  ol?: string;
+  al?: string;
+  higherStudies?: string;
   // Employment Details
-  typeOfEmployment: string;
-  employmentStatus: EmploymentStatus;
-  dateOfPermanent?: string;
+  employeeTypeId: string;
+  permanentDate?: string;
   joinDateContract?: string;
   joinDateCasual?: string;
-  employeeNumber: string;
+  employeeId: string;
   // Additional Information
   gender?: string;
   nationality?: string;
@@ -93,31 +92,31 @@ export interface Employee {
 }
 
 export interface EmployeeCreateRequest {
-  title: string;
+  titleId: number;
   fullName: string;
-  nameWithInitials: string;
+  nameInitials: string;
   firstName: string;
   lastName: string;
   nic: string;
-  dateOfBirth: string;
-  division: string;
-  designation: string;
-  grade: string;
-  civilStatus: string;
-  permanentAddressLine1: string;
-  permanentAddressLine2?: string;
-  permanentTown: string;
-  temporaryAddressLine1?: string;
-  temporaryAddressLine2?: string;
-  temporaryTown?: string;
-  mobileNumber: string;
-  phoneNumber?: string;
-  emailAddress: string;
-  gceolDetails?: string;
-  gcealDetails?: string;
-  higherStudiesDetails?: string;
-  typeOfEmployment: string;
-  dateOfPermanent?: string;
+  birthDate: string;
+  divisionId: number;
+  designationId: string;
+  gradeId: string;
+  civilStatusId: string;
+  permanentAddressL1: string;
+  permanentAddressL2?: string;
+  permanentTownId: string;
+  temporaryAddressL1?: string;
+  temporaryAddressL2?: string;
+  temporaryTownId?: string;
+  contact1: string;
+  contact2?: string;
+  email: string;
+  ol?: string;
+  al?: string;
+  higherStudies?: string;
+  employeeTypeId: string;
+  permanentDate?: string;
   joinDateContract?: string;
   joinDateCasual?: string;
   gender?: string;
@@ -136,6 +135,24 @@ export interface Department {
   description: string;
   headOfDepartment: Employee;
   budget?: number;
+}
+
+// Title Types
+export interface Title {
+  titleId: number;
+  description: string;
+}
+
+// Division Types
+export interface Division {
+  divisionId: number;
+  description: string;
+}
+
+// Grade Types
+export interface Grade {
+  gradeId: string;
+  designation: string;
 }
 
 export interface Branch {

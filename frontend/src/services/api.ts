@@ -1,6 +1,6 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, User, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest } from '../types';
+import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, Title, Division, Grade } from '../types';
 
 // Salary Management Types
 interface SalaryRecord {
@@ -204,86 +204,74 @@ class ApiService {
     }
   }
 
+  // Helper to map RoleId to role string
+  private mapRoleIdToRole(roleId: number): UserRole {
+    switch (roleId) {
+      case 1:
+        return 'admin';
+      case 2:
+        return 'hr';
+      case 3:
+        return 'employee';
+      default:
+        return 'employee';
+    }
+  }
+
   // Authentication Methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
-    // Demo users for development
-    const demoUsers = [
-      {
-        id: 'admin001',
-        username: 'admin',
-        email: 'admin@slbfe.com',
-        fullName: 'System Administrator',
-        role: 'admin' as const,
-        isActive: true,
-        createdAt: new Date('2022-01-01'),
-        updatedAt: new Date('2024-09-30')
-      },
-      {
-        id: 'hr001',
-        username: 'hrmanager',
-        email: 'hrmanager@slbfe.com',
-        fullName: 'John Anderson',
-        role: 'hr' as const,
-        isActive: true,
-        createdAt: new Date('2023-01-01'),
-        updatedAt: new Date('2024-09-30')
-      },
-      {
-        id: 'emp001',
-        username: 'employee',
-        email: 'employee@slbfe.com',
-        fullName: 'Mike Johnson',
-        role: 'employee' as const,
-        isActive: true,
-        createdAt: new Date('2023-03-10'),
-        updatedAt: new Date('2024-09-30')
-      }
-    ];
-
-    // Check demo credentials
-    const user = demoUsers.find(u => {
-      if (u.username === credentials.username) {
-        if (u.role === 'admin' && credentials.password === 'admin123') return true;
-        if (u.role === 'hr' && credentials.password === 'hrpass123') return true;
-        if (u.role === 'employee' && credentials.password === 'emp123') return true;
-      }
-      return false;
-    });
-
-    if (user) {
-      const token = 'demo_token_' + user.id + '_' + Date.now();
-      const response = {
-        success: true,
-        data: { user, token },
-        message: 'Login successful'
-      };
-
-      this.token = token;
-      localStorage.setItem('slbfe_auth_token', this.token);
-      localStorage.setItem('slbfe_user_data', JSON.stringify(user));
-
-      return response;
-    }
-
-    // Fallback to API call for production
     try {
-      const response = await this.request<{ user: User; token: string }>('/auth/login', {
+      const response = await this.request<{
+        userId: number;
+        employeeId: number;
+        roleId: number;
+        userName: string;
+        status: string;
+        lastLogin: string;
+      }>('/Auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
 
       if (response.success && response.data) {
-        this.token = response.data.token;
-        localStorage.setItem('slbfe_auth_token', this.token);
-        localStorage.setItem('slbfe_user_data', JSON.stringify(response.data.user));
+        // Map backend response to User type
+        const user: User = {
+          id: response.data.userId.toString(),
+          username: response.data.userName,
+          email: '', // Not provided by backend, can be fetched separately if needed
+          fullName: '', // Not provided by backend, can be fetched from employee table
+          role: this.mapRoleIdToRole(response.data.roleId),
+          isActive: response.data.status === 'Active',
+          lastLogin: new Date(response.data.lastLogin),
+          createdAt: new Date(), // Not provided by backend
+          updatedAt: new Date(), // Not provided by backend
+        };
+
+        // Generate a simple token (in production, this should come from backend)
+        const token = 'auth_token_' + user.id + '_' + Date.now();
+        
+        this.token = token;
+        localStorage.setItem('slbfe_auth_token', token);
+        localStorage.setItem('slbfe_user_data', JSON.stringify(user));
+        localStorage.setItem('slbfe_employee_id', response.data.employeeId.toString());
+
+        return {
+          success: true,
+          message: 'Login successful',
+          data: { user, token }
+        };
       }
 
-      return response;
+      return {
+        success: false,
+        message: response.message || 'Login failed',
+        data: null as any
+      };
     } catch (error) {
       return {
         success: false,
-        message: 'Invalid username or password',
-        error: 'Authentication failed'
+        message: error instanceof Error ? error.message : 'Invalid username or password',
+        data: null as any
       };
     }
   }
@@ -405,6 +393,21 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(employeeData),
     });
+  }
+
+  // Title Methods
+  async getTitles(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Title');
+  }
+
+  // Division Methods
+  async getDivisions(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Division');
+  }
+
+  // Grade Methods
+  async getGrades(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Grade');
   }
 
   async updateEmployee(id: number, employeeData: Partial<Employee>): Promise<ApiResponse<Employee>> {

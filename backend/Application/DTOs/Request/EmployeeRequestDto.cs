@@ -8,8 +8,8 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
     public class CreateEmployeeDto
     {
         #region Basic Information
-        [MaxLength(20)]
-        public string Title { get; set; } = string.Empty;
+        [Required]
+        public int TitleId { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -17,7 +17,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
 
         [Required]
         [MaxLength(100)]
-        public string NameWithInitials { get; set; } = string.Empty;
+        public string NameInitials { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
@@ -29,77 +29,76 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
 
         [Required]
         [MaxLength(20)]
-        public string NIC { get; set; } = string.Empty;
+        public string Nic { get; set; } = string.Empty;
 
         [Required]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime BirthDate { get; set; }
+
+        [Required]
+        public int DivisionId { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string Division { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(100)]
-        public string Designation { get; set; } = string.Empty;
+        public string DesignationId { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string Grade { get; set; } = string.Empty;
+        public string GradeId { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(20)]
-        public string CivilStatus { get; set; } = string.Empty;
+        public string CivilStatusId { get; set; } = string.Empty;
         #endregion
 
         #region Address Information
         [Required]
         [MaxLength(200)]
-        public string PermanentAddressLine1 { get; set; } = string.Empty;
+        public string PermanentAddressL1 { get; set; } = string.Empty;
 
         [MaxLength(200)]
-        public string? PermanentAddressLine2 { get; set; }
+        public string? PermanentAddressL2 { get; set; }
 
         [Required]
         [MaxLength(100)]
-        public string PermanentTown { get; set; } = string.Empty;
+        public string PermanentTownId { get; set; } = string.Empty;
 
         [MaxLength(200)]
-        public string? TemporaryAddressLine1 { get; set; }
+        public string? TemporaryAddressL1 { get; set; }
 
         [MaxLength(200)]
-        public string? TemporaryAddressLine2 { get; set; }
+        public string? TemporaryAddressL2 { get; set; }
 
         [MaxLength(100)]
-        public string? TemporaryTown { get; set; }
+        public string? TemporaryTownId { get; set; }
         #endregion
 
         #region Contact Information
         [Required]
         [MaxLength(20)]
         [Phone]
-        public string MobileNumber { get; set; } = string.Empty;
+        public string Contact1 { get; set; } = string.Empty;
 
         [MaxLength(20)]
         [Phone]
-        public string? PhoneNumber { get; set; }
+        public string? Contact2 { get; set; }
 
         [Required]
         [MaxLength(100)]
         [EmailAddress]
-        public string EmailAddress { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         #endregion
 
         #region Educational Background
-        public string? GCEOLDetails { get; set; }
-        public string? GCEALDetails { get; set; }
-        public string? HigherStudiesDetails { get; set; }
+        public string? OL { get; set; }
+        public string? AL { get; set; }
+        public string? HigherStudies { get; set; }
         #endregion
 
         #region Employment Details
         [Required]
         [MaxLength(50)]
-        public string TypeOfEmployment { get; set; } = string.Empty;
+        public string EmployeeTypeId { get; set; } = string.Empty;
 
-        public DateTime? DateOfPermanent { get; set; }
+        public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
         public DateTime? JoinDateCasual { get; set; }
 
@@ -107,28 +106,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         /// Employee Number - Auto-generated if not provided
         /// </summary>
         [MaxLength(50)]
-        public string? EmployeeNumber { get; set; }
-        #endregion
-
-        #region Additional Information
-        [MaxLength(10)]
-        public string? Gender { get; set; }
-
-        [MaxLength(50)]
-        public string? Nationality { get; set; }
-
-        [MaxLength(5)]
-        public string? BloodGroup { get; set; }
-
-        [MaxLength(100)]
-        public string? Department { get; set; }
-
-        public int? ReportingManagerId { get; set; }
-
-        [Range(0, 9999999.99)]
-        public decimal? BasicSalary { get; set; }
-
-        public string? Notes { get; set; }
+        public string? EmployeeId { get; set; }
         #endregion
     }
 
@@ -138,14 +116,13 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
     public class UpdateEmployeeDto
     {
         #region Basic Information
-        [MaxLength(20)]
-        public string? Title { get; set; }
+        public int? TitleId { get; set; }
 
         [MaxLength(200)]
         public string? FullName { get; set; }
 
         [MaxLength(100)]
-        public string? NameWithInitials { get; set; }
+        public string? NameInitials { get; set; }
 
         [MaxLength(100)]
         public string? FirstName { get; set; }
@@ -154,91 +131,69 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         public string? LastName { get; set; }
 
         [MaxLength(20)]
-        public string? NIC { get; set; }
+        public string? Nic { get; set; }
 
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime? BirthDate { get; set; }
+
+        public int? DivisionId { get; set; }
 
         [MaxLength(100)]
-        public string? Division { get; set; }
-
-        [MaxLength(100)]
-        public string? Designation { get; set; }
+        public string? DesignationId { get; set; }
 
         [MaxLength(50)]
-        public string? Grade { get; set; }
+        public string? GradeId { get; set; }
 
         [MaxLength(20)]
-        public string? CivilStatus { get; set; }
+        public string? CivilStatusId { get; set; }
         #endregion
 
         #region Address Information
         [MaxLength(200)]
-        public string? PermanentAddressLine1 { get; set; }
+        public string? PermanentAddressL1 { get; set; }
 
         [MaxLength(200)]
-        public string? PermanentAddressLine2 { get; set; }
+        public string? PermanentAddressL2 { get; set; }
 
         [MaxLength(100)]
-        public string? PermanentTown { get; set; }
+        public string? PermanentTownId { get; set; }
 
         [MaxLength(200)]
-        public string? TemporaryAddressLine1 { get; set; }
+        public string? TemporaryAddressL1 { get; set; }
 
         [MaxLength(200)]
-        public string? TemporaryAddressLine2 { get; set; }
+        public string? TemporaryAddressL2 { get; set; }
 
         [MaxLength(100)]
-        public string? TemporaryTown { get; set; }
+        public string? TemporaryTownId { get; set; }
         #endregion
 
         #region Contact Information
         [MaxLength(20)]
         [Phone]
-        public string? MobileNumber { get; set; }
+        public string? Contact1 { get; set; }
 
         [MaxLength(20)]
         [Phone]
-        public string? PhoneNumber { get; set; }
+        public string? Contact2 { get; set; }
 
         [MaxLength(100)]
         [EmailAddress]
-        public string? EmailAddress { get; set; }
+        public string? Email { get; set; }
         #endregion
 
         #region Educational Background
-        public string? GCEOLDetails { get; set; }
-        public string? GCEALDetails { get; set; }
-        public string? HigherStudiesDetails { get; set; }
+        public string? OL { get; set; }
+        public string? AL { get; set; }
+        public string? HigherStudies { get; set; }
         #endregion
 
         #region Employment Details
         [MaxLength(50)]
-        public string? TypeOfEmployment { get; set; }
+        public string? EmployeeTypeId { get; set; }
 
-        public DateTime? DateOfPermanent { get; set; }
+        public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
         public DateTime? JoinDateCasual { get; set; }
-        #endregion
-
-        #region Additional Information
-        [MaxLength(10)]
-        public string? Gender { get; set; }
-
-        [MaxLength(50)]
-        public string? Nationality { get; set; }
-
-        [MaxLength(5)]
-        public string? BloodGroup { get; set; }
-
-        [MaxLength(100)]
-        public string? Department { get; set; }
-
-        public int? ReportingManagerId { get; set; }
-
-        [Range(0, 9999999.99)]
-        public decimal? BasicSalary { get; set; }
-
-        public string? Notes { get; set; }
         #endregion
     }
 
@@ -247,14 +202,11 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
     /// </summary>
     public class EmployeeSearchDto
     {
-        public string? EmployeeNumber { get; set; }
+        public string? EmployeeId { get; set; }
         public string? FullName { get; set; }
-        public string? Division { get; set; }
-        public string? Designation { get; set; }
-        public string? Department { get; set; }
-        public string? TypeOfEmployment { get; set; }
-        public string? Status { get; set; }
-        public int? ReportingManagerId { get; set; }
+        public int? DivisionId { get; set; }
+        public string? DesignationId { get; set; }
+        public string? EmployeeTypeId { get; set; }
         public DateTime? JoinDateFrom { get; set; }
         public DateTime? JoinDateTo { get; set; }
         public int? PageNumber { get; set; } = 1;

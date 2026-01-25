@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SLBFE.HRM.API.Infrastructure.Data.Context;
 
@@ -11,9 +12,11 @@ using SLBFE.HRM.API.Infrastructure.Data.Context;
 namespace SLBFE.HRM.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260125082657_AddTitleTable")]
+    partial class AddTitleTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,7 +177,7 @@ namespace SLBFE.HRM.API.Migrations
 
                     b.HasIndex("TitleId");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.MedicalRequest", b =>
@@ -324,7 +327,7 @@ namespace SLBFE.HRM.API.Migrations
 
                     b.HasIndex("SubmittedDate");
 
-                    b.ToTable("MedicalRequests", (string)null);
+                    b.ToTable("MedicalRequests");
                 });
 
             modelBuilder.Entity("SLBFE.HRM.API.Core.Entities.Title", b =>
@@ -348,7 +351,7 @@ namespace SLBFE.HRM.API.Migrations
 
                     b.HasIndex("DisplayOrder");
 
-                    b.ToTable("Titles", (string)null);
+                    b.ToTable("Titles");
 
                     b.HasData(
                         new

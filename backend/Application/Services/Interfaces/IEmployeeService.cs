@@ -1,6 +1,5 @@
 using SLBFE.HRM.API.Application.DTOs.Request;
 using SLBFE.HRM.API.Application.DTOs.Response;
-using SLBFE.HRM.API.Core.Entities;
 
 namespace SLBFE.HRM.API.Application.Services.Interfaces
 {
@@ -15,9 +14,9 @@ namespace SLBFE.HRM.API.Application.Services.Interfaces
         Task<IEnumerable<EmployeeSummaryDto>> GetEmployeesAsync(EmployeeSearchDto searchDto);
 
         /// <summary>
-        /// Get employee by ID
+        /// Get employee by EmployeeId
         /// </summary>
-        Task<EmployeeDto?> GetEmployeeByIdAsync(int id);
+        Task<EmployeeDto?> GetEmployeeByIdAsync(string employeeId);
 
         /// <summary>
         /// Get employee by employee number
@@ -35,14 +34,19 @@ namespace SLBFE.HRM.API.Application.Services.Interfaces
         Task<EmployeeDto> CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto);
 
         /// <summary>
-        /// Update existing employee
+        /// Create new employee and return with generated login credentials
         /// </summary>
-        Task<EmployeeDto> UpdateEmployeeAsync(int id, UpdateEmployeeDto updateEmployeeDto);
+        Task<EmployeeWithCredentialsDto> CreateEmployeeWithCredentialsAsync(CreateEmployeeDto createEmployeeDto);
 
         /// <summary>
-        /// Soft delete employee
+        /// Update existing employee
         /// </summary>
-        Task<bool> DeleteEmployeeAsync(int id);
+        Task<EmployeeDto> UpdateEmployeeAsync(string employeeId, UpdateEmployeeDto updateEmployeeDto);
+
+        /// <summary>
+        /// Delete employee
+        /// </summary>
+        Task<bool> DeleteEmployeeAsync(string employeeId);
 
         /// <summary>
         /// Check if employee number exists
@@ -60,11 +64,6 @@ namespace SLBFE.HRM.API.Application.Services.Interfaces
         Task<bool> EmailExistsAsync(string email);
 
         /// <summary>
-        /// Get employees by reporting manager
-        /// </summary>
-        Task<IEnumerable<EmployeeSummaryDto>> GetSubordinatesAsync(int managerId);
-
-        /// <summary>
         /// Get total employee count
         /// </summary>
         Task<int> GetEmployeeCountAsync();
@@ -72,16 +71,11 @@ namespace SLBFE.HRM.API.Application.Services.Interfaces
         /// <summary>
         /// Get employees by division
         /// </summary>
-        Task<IEnumerable<EmployeeSummaryDto>> GetEmployeesByDivisionAsync(string division);
+        Task<IEnumerable<EmployeeSummaryDto>> GetEmployeesByDivisionAsync(int divisionId);
 
         /// <summary>
         /// Get employees by designation
         /// </summary>
         Task<IEnumerable<EmployeeSummaryDto>> GetEmployeesByDesignationAsync(string designation);
-
-        /// <summary>
-        /// Update employee status
-        /// </summary>
-        Task<bool> UpdateEmployeeStatusAsync(int id, Core.Enums.EmployeeStatus status);
     }
 }

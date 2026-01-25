@@ -1,4 +1,3 @@
-using SLBFE.HRM.API.Core.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace SLBFE.HRM.API.Core.Entities
@@ -6,14 +5,24 @@ namespace SLBFE.HRM.API.Core.Entities
     /// <summary>
     /// Employee entity with comprehensive personal, educational and employment information
     /// </summary>
-    public class Employee : BaseEntity
+    public class Employee
     {
+        #region Primary Key
+        /// <summary>
+        /// Employee Number (unique identifier) - Primary Key
+        /// </summary>
+        [Key]
+        [Required]
+        [MaxLength(50)]
+        public string EmployeeId { get; set; } = string.Empty;
+        #endregion
+
         #region Basic Information
         /// <summary>
-        /// Employee Title (Mr., Mrs., Ms., Dr., Prof., etc.)
+        /// Employee Title (Mr., Mrs., Ms., Dr., Prof., etc.) - Foreign Key to Titles table
         /// </summary>
-        [MaxLength(20)]
-        public string Title { get; set; } = string.Empty;
+        [Required]
+        public int TitleId { get; set; }
 
         /// <summary>
         /// Full Name of the employee
@@ -27,7 +36,7 @@ namespace SLBFE.HRM.API.Core.Entities
         /// </summary>
         [Required]
         [MaxLength(100)]
-        public string NameWithInitials { get; set; } = string.Empty;
+        public string NameInitials { get; set; } = string.Empty;
 
         /// <summary>
         /// First Name
@@ -48,39 +57,39 @@ namespace SLBFE.HRM.API.Core.Entities
         /// </summary>
         [Required]
         [MaxLength(20)]
-        public string NIC { get; set; } = string.Empty;
+        public string Nic { get; set; } = string.Empty;
 
         /// <summary>
         /// Date of Birth
         /// </summary>
-        public DateTime DateOfBirth { get; set; }
+        public DateTime BirthDate { get; set; }
 
         /// <summary>
-        /// Employee Division
+        /// Employee Division - Foreign Key to Division table
         /// </summary>
         [Required]
-        [MaxLength(100)]
-        public string Division { get; set; } = string.Empty;
+        public int DivisionId { get; set; }
 
         /// <summary>
         /// Employee Designation/Position
         /// </summary>
         [Required]
         [MaxLength(100)]
-        public string Designation { get; set; } = string.Empty;
+        public string DesignationId { get; set; } = string.Empty;
 
         /// <summary>
         /// Employee Grade
         /// </summary>
+        [Required]
         [MaxLength(50)]
-        public string Grade { get; set; } = string.Empty;
+        public string GradeId { get; set; } = string.Empty;
 
         /// <summary>
         /// Civil Status (Single, Married, Divorced, Widowed)
         /// </summary>
         [Required]
         [MaxLength(20)]
-        public string CivilStatus { get; set; } = string.Empty;
+        public string CivilStatusId { get; set; } = string.Empty;
         #endregion
 
         #region Address Information
@@ -89,38 +98,38 @@ namespace SLBFE.HRM.API.Core.Entities
         /// </summary>
         [Required]
         [MaxLength(200)]
-        public string PermanentAddressLine1 { get; set; } = string.Empty;
+        public string PermanentAddressL1 { get; set; } = string.Empty;
 
         /// <summary>
         /// Permanent Address Line 2
         /// </summary>
         [MaxLength(200)]
-        public string? PermanentAddressLine2 { get; set; }
+        public string? PermanentAddressL2 { get; set; }
 
         /// <summary>
         /// Permanent Address Town
         /// </summary>
         [Required]
         [MaxLength(100)]
-        public string PermanentTown { get; set; } = string.Empty;
+        public string PermanentTownId { get; set; } = string.Empty;
 
         /// <summary>
         /// Temporary Address Line 1
         /// </summary>
         [MaxLength(200)]
-        public string? TemporaryAddressLine1 { get; set; }
+        public string? TemporaryAddressL1 { get; set; }
 
         /// <summary>
         /// Temporary Address Line 2
         /// </summary>
         [MaxLength(200)]
-        public string? TemporaryAddressLine2 { get; set; }
+        public string? TemporaryAddressL2 { get; set; }
 
         /// <summary>
         /// Temporary Address Town
         /// </summary>
         [MaxLength(100)]
-        public string? TemporaryTown { get; set; }
+        public string? TemporaryTownId { get; set; }
         #endregion
 
         #region Contact Information
@@ -129,13 +138,13 @@ namespace SLBFE.HRM.API.Core.Entities
         /// </summary>
         [Required]
         [MaxLength(20)]
-        public string MobileNumber { get; set; } = string.Empty;
+        public string Contact1 { get; set; } = string.Empty;
 
         /// <summary>
         /// Official Phone Number
         /// </summary>
         [MaxLength(20)]
-        public string? PhoneNumber { get; set; }
+        public string? Contact2 { get; set; }
 
         /// <summary>
         /// Email Address
@@ -143,7 +152,7 @@ namespace SLBFE.HRM.API.Core.Entities
         [Required]
         [MaxLength(100)]
         [EmailAddress]
-        public string EmailAddress { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
         #endregion
 
         #region Educational Background
@@ -151,19 +160,19 @@ namespace SLBFE.HRM.API.Core.Entities
         /// GCE O/L Examination Details
         /// JSON string to store subject details, results, year, etc.
         /// </summary>
-        public string? GCEOLDetails { get; set; }
+        public string? OL { get; set; }
 
         /// <summary>
         /// GCE A/L Examination Details
         /// JSON string to store subject details, results, year, etc.
         /// </summary>
-        public string? GCEALDetails { get; set; }
+        public string? AL { get; set; }
 
         /// <summary>
         /// Higher Studies Details
         /// JSON string to store degree details, institution, year, etc.
         /// </summary>
-        public string? HigherStudiesDetails { get; set; }
+        public string? HigherStudies { get; set; }
         #endregion
 
         #region Employment Details
@@ -172,17 +181,12 @@ namespace SLBFE.HRM.API.Core.Entities
         /// </summary>
         [Required]
         [MaxLength(50)]
-        public string TypeOfEmployment { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Current Employment Status
-        /// </summary>
-        public EmploymentStatus EmploymentStatus { get; set; }
+        public string EmployeeTypeId { get; set; } = string.Empty;
 
         /// <summary>
         /// Date when employee became permanent
         /// </summary>
-        public DateTime? DateOfPermanent { get; set; }
+        public DateTime? PermanentDate { get; set; }
 
         /// <summary>
         /// Join Date for Contract employees
@@ -193,81 +197,19 @@ namespace SLBFE.HRM.API.Core.Entities
         /// Join Date for Casual employees
         /// </summary>
         public DateTime? JoinDateCasual { get; set; }
+        #endregion
 
+        #region Audit Fields
         /// <summary>
-        /// Employee Number (unique identifier)
+        /// Record creation timestamp
         /// </summary>
         [Required]
-        [MaxLength(50)]
-        public string EmployeeNumber { get; set; } = string.Empty;
-        #endregion
-
-        #region Additional Information
-        /// <summary>
-        /// Gender
-        /// </summary>
-        [MaxLength(10)]
-        public string? Gender { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Nationality
+        /// Record last update timestamp
         /// </summary>
-        [MaxLength(50)]
-        public string? Nationality { get; set; }
-
-        /// <summary>
-        /// Blood Group
-        /// </summary>
-        [MaxLength(5)]
-        public string? BloodGroup { get; set; }
-
-        /// <summary>
-        /// Employee Profile Picture
-        /// </summary>
-        public string? ProfilePicture { get; set; }
-
-        /// <summary>
-        /// Employee Status (Active, Inactive, Terminated, etc.)
-        /// </summary>
-        public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
-
-        /// <summary>
-        /// Department/Branch the employee belongs to
-        /// </summary>
-        [MaxLength(100)]
-        public string? Department { get; set; }
-
-        /// <summary>
-        /// Direct reporting manager's employee ID
-        /// </summary>
-        public int? ReportingManagerId { get; set; }
-
-        /// <summary>
-        /// Basic salary amount
-        /// </summary>
-        public decimal? BasicSalary { get; set; }
-
-        /// <summary>
-        /// Additional notes or comments
-        /// </summary>
-        public string? Notes { get; set; }
-        #endregion
-
-        #region Navigation Properties
-        /// <summary>
-        /// Navigation property for reporting manager
-        /// </summary>
-        public virtual Employee? ReportingManager { get; set; }
-
-        /// <summary>
-        /// Navigation property for subordinates
-        /// </summary>
-        public virtual ICollection<Employee> Subordinates { get; set; } = new List<Employee>();
-
-        /// <summary>
-        /// Navigation property for medical requests
-        /// </summary>
-        public virtual ICollection<MedicalRequest> MedicalRequests { get; set; } = new List<MedicalRequest>();
+        public DateTime? UpdatedAt { get; set; }
         #endregion
     }
 }

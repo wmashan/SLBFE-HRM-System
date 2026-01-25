@@ -5,7 +5,7 @@
 namespace SLBFE.HRM.API.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateEmployeeTableV2 : Migration
+    public partial class UpdateTitleTableColumns : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -176,8 +176,12 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register Application Services
 // TODO: Add service registrations here
-// builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IAuthService, SLBFE.HRM.API.Application.Services.Implementations.AuthService>();
 builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IEmployeeService, SLBFE.HRM.API.Application.Services.Implementations.EmployeeService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IUserService, SLBFE.HRM.API.Application.Services.Implementations.UserService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.ITitleService, SLBFE.HRM.API.Application.Services.Implementations.TitleService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IDivisionService, SLBFE.HRM.API.Application.Services.Implementations.DivisionService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IGradeService, SLBFE.HRM.API.Application.Services.Implementations.GradeService>();
 // etc.
 
 // Register Infrastructure Services

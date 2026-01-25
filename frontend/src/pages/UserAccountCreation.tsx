@@ -1,8 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, CheckCircle, Mail, Clock } from 'lucide-react';
-import { employeeService } from '../services/api';
-import { EmployeeCreateRequest } from '../types';
+import { ArrowLeft, User, Calendar, CheckCircle, Mail, Clock, Copy, Check } from 'lucide-react';
+import { employeeService, apiService } from '../services/api';
+import { EmployeeCreateRequest, Title, Division, Grade } from '../types';
+
+// Sri Lankan Towns/Cities List
+const SRI_LANKAN_TOWNS = [
+  'Akkaraipattu', 'Akmeemana', 'Akurana', 'Alawwa', 'Ambalangoda', 'Ambalantota', 'Ampara',
+  'Anuradhapura', 'Avissawella', 'Badulla', 'Balangoda', 'Batticaloa', 'Battaramulla',
+  'Beruwala', 'Boralesgamuwa', 'Chavakacheri', 'Chilaw', 'Chunnakam', 'Colombo',
+  'Dambulla', 'Dehiwala', 'Delft', 'Deniyaya', 'Devinuwara', 'Divulapitiya',
+  'Eheliyagoda', 'Ella', 'Elpitiya', 'Embilipitiya', 'Eravur',
+  'Galgamuwa', 'Galle', 'Gampaha', 'Gampola', 'Ganemulla', 'Giriulla',
+  'Habarana', 'Hambantota', 'Haputale', 'Hatton', 'Havelok Town', 'Hikkaduwa', 'Homagama', 'Horana',
+  'Ja-Ela', 'Jaffna', 'Kadugannawa', 'Kaduwela', 'Kalmunai', 'Kalutara', 'Kandana', 'Kandy',
+  'Kanthale', 'Karapitiya', 'Kataragama', 'Katunayake', 'Kegalle', 'Kekirawa', 'Kelaniya', 'Kilinochchi',
+  'Kolonnawa', 'Kuliyapitiya', 'Kurunegala',
+  'Maharagama', 'Mahiyanganaya', 'Makumbura', 'Mannar', 'Maskeliya', 'Matale', 'Matara',
+  'Mathugama', 'Medawachchiya', 'Minuwangoda', 'Moneragala', 'Moratuwa', 'Mount Lavinia', 'Mullativu',
+  'Nawalapitiya', 'Negombo', 'Nelliady', 'Nikaweratiya', 'Nittambuwa', 'Nugegoda', 'Nuwara Eliya',
+  'Padukka', 'Panadura', 'Peliyagoda', 'Pelmadulla', 'Piliyandala', 'Point Pedro', 'Polgahawela',
+  'Polonnaruwa', 'Puttalam',
+  'Ragama', 'Rambukkana', 'Ratmalana', 'Ratnapura',
+  'Seeduwa', 'Sigiriya', 'Siyambalanduwa', 'Sri Jayewardenepura Kotte',
+  'Talawakele', 'Tangalle', 'Thissamaharama', 'Trincomalee',
+  'Valvettithurai', 'Vavuniya', 'Velvetiturai',
+  'Wadduwa', 'Warakapola', 'Wattala', 'Wattegama', 'Weligama', 'Wellawaya', 'Welisara'
+].sort();
 
 const UserAccountCreation = () => {
   const navigate = useNavigate();
@@ -10,6 +34,15 @@ const UserAccountCreation = () => {
   const [showReviewPage, setShowReviewPage] = useState(false);
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [titles, setTitles] = useState<Title[]>([]);
+  const [divisions, setDivisions] = useState<Division[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [designations, setDesignations] = useState<string[]>([]);
+  const [loadingTitles, setLoadingTitles] = useState(true);
+  const [loadingDivisions, setLoadingDivisions] = useState(true);
+  const [loadingGrades, setLoadingGrades] = useState(true);
+  const [generatedCredentials, setGeneratedCredentials] = useState<{username: string, password: string} | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     // Stage 1 - Personal Details
     profilePicture: null as File | null,
@@ -47,6 +80,83 @@ const UserAccountCreation = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+
+  // Fetch titles, divisions, and grades on component mount
+  useEffect(() => {
+    const fetchTitles = async () => {
+      try {
+        setLoadingTitles(true);
+        const response = await apiService.getTitles();
+        if (response.success && response.data) {
+          setTitles(response.data);
+        } else {
+          console.error('Failed to fetch titles:', response.message);
+        }
+      } catch (error) {
+        console.error('Error fetching titles:', error);
+      } finally {
+        setLoadingTitles(false);
+      }
+    };
+
+    const fetchDivisions = async () => {
+      try {
+        setLoadingDivisions(true);
+        const response = await apiService.getDivisions();
+        if (response.success && response.data) {
+          setDivisions(response.data);
+        } else {
+          console.error('Failed to fetch divisions:', response.message);
+        }
+      } catch (error) {
+        console.error('Error fetching divisions:', error);
+      } finally {
+        setLoadingDivisions(false);
+      }
+    };
+
+    const fetchGrades = async () => {
+      try {
+        setLoadingGrades(true);
+        const response = await apiService.getGrades();
+        if (response.success && response.data) {
+          setGrades(response.data);
+        } else {
+          console.error('Failed to fetch grades:', response.message);
+        }
+      } catch (error) {
+        console.error('Error fetching grades:', error);
+      } finally {
+        setLoadingGrades(false);
+      }
+    };
+
+    fetchTitles();
+    fetchDivisions();
+    fetchGrades();
+  }, []);
+
+  // Handle grade change to populate designations
+  const handleGradeChange = (gradeId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      grade: gradeId,
+      designation: '' // Reset designation when grade changes
+    }));
+
+    // Find the selected grade and parse designations
+    const selectedGrade = grades.find(g => g.gradeId === gradeId);
+    if (selectedGrade && selectedGrade.designation) {
+      // Split by comma and trim whitespace
+      const parsedDesignations = selectedGrade.designation
+        .split(',')
+        .map(d => d.trim())
+        .filter(d => d.length > 0);
+      setDesignations(parsedDesignations);
+    } else {
+      setDesignations([]);
+    }
+  };
 
   const handleFieldChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -88,6 +198,13 @@ const UserAccountCreation = () => {
 
   const handleCompleteRegistration = () => {
     setShowReviewPage(true);
+  };
+
+  const handleCopyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    });
   };
 
   const handleFinalSubmit = async () => {
@@ -148,34 +265,34 @@ const UserAccountCreation = () => {
 
       // Prepare employee data for API
       employeeData = {
-        title: formData.title,
+        titleId: parseInt(formData.title),
         fullName: formData.fullName,
-        nameWithInitials: formData.nameWithInitials,
+        nameInitials: formData.nameWithInitials,
         firstName: formData.firstName,
         lastName: formData.lastName,
         nic: formData.nic,
-        dateOfBirth: convertToISO(formData.birthDay) || '',
-        division: formData.division,
-        designation: formData.designation,
-        grade: formData.grade,
-        civilStatus: formData.civilStatus,
-        permanentAddressLine1: formData.permanentAddressLine1,
-        permanentAddressLine2: formData.permanentAddressLine2 || undefined,
-        permanentTown: formData.permanentTown,
-        temporaryAddressLine1: formData.temporaryAddressLine1 || undefined,
-        temporaryAddressLine2: formData.temporaryAddressLine2 || undefined,
-        temporaryTown: formData.temporaryTown || undefined,
-        mobileNumber: formData.mobileNumberPersonal,
-        phoneNumber: formData.phoneNumberOfficial || undefined,
-        emailAddress: formData.emailAddress,
-        typeOfEmployment: formData.typeOfEmployment,
-        dateOfPermanent: convertToISO(formData.dateOfPermanent),
+        birthDate: convertToISO(formData.birthDay) || '',
+        divisionId: parseInt(formData.division),
+        designationId: formData.designation,
+        gradeId: formData.grade,
+        civilStatusId: formData.civilStatus,
+        permanentAddressL1: formData.permanentAddressLine1,
+        permanentAddressL2: formData.permanentAddressLine2 || undefined,
+        permanentTownId: formData.permanentTown,
+        temporaryAddressL1: formData.temporaryAddressLine1 || undefined,
+        temporaryAddressL2: formData.temporaryAddressLine2 || undefined,
+        temporaryTownId: formData.temporaryTown || undefined,
+        contact1: formData.mobileNumberPersonal,
+        contact2: formData.phoneNumberOfficial || undefined,
+        email: formData.emailAddress,
+        employeeTypeId: formData.typeOfEmployment,
+        permanentDate: convertToISO(formData.dateOfPermanent),
         joinDateContract: convertToISO(formData.joinDateContract),
         joinDateCasual: convertToISO(formData.joinDateCasual),
         // Educational details as JSON
-        gceolDetails: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
-        gcealDetails: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
-        higherStudiesDetails: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
+        ol: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
+        al: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
+        higherStudies: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
       };
 
       console.log('Submitting employee data:', employeeData);
@@ -183,9 +300,30 @@ const UserAccountCreation = () => {
       const response = await employeeService.createEmployee(employeeData);
       
       console.log('API Response:', response);
+      console.log('Response data:', response.data);
       
       if (response.success) {
         console.log('Employee created successfully!');
+        
+        // Capture login credentials from response
+        // Check both PascalCase (C#) and camelCase (JSON serialized) properties
+        const data = response.data as any;
+        const username = data.username || data.Username || data.employeeId || data.EmployeeId;
+        const password = data.password || data.Password;
+        
+        console.log('Username:', username);
+        console.log('Password:', password);
+        
+        if (username && password) {
+          console.log('Setting credentials:', { username, password });
+          setGeneratedCredentials({
+            username: username,
+            password: password
+          });
+        } else {
+          console.warn('Credentials not found in response! Full data:', data);
+        }
+        
         setIsSubmitting(false);
         setShowSuccessPage(true);
       } else {
@@ -225,37 +363,39 @@ const UserAccountCreation = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
+    let employeeData: EmployeeCreateRequest | null = null;
+    
     try {
       // Prepare employee data for API
-      const employeeData: EmployeeCreateRequest = {
-        title: formData.title,
+      employeeData = {
+        titleId: parseInt(formData.title),
         fullName: formData.fullName,
-        nameWithInitials: formData.nameWithInitials,
+        nameInitials: formData.nameWithInitials,
         firstName: formData.firstName,
         lastName: formData.lastName,
         nic: formData.nic,
-        dateOfBirth: formData.birthDay,
-        division: formData.division,
-        designation: formData.designation,
-        grade: formData.grade,
-        civilStatus: formData.civilStatus,
-        permanentAddressLine1: formData.permanentAddressLine1,
-        permanentAddressLine2: formData.permanentAddressLine2 || undefined,
-        permanentTown: formData.permanentTown,
-        temporaryAddressLine1: formData.temporaryAddressLine1 || undefined,
-        temporaryAddressLine2: formData.temporaryAddressLine2 || undefined,
-        temporaryTown: formData.temporaryTown || undefined,
-        mobileNumber: formData.mobileNumberPersonal,
-        phoneNumber: formData.phoneNumberOfficial || undefined,
-        emailAddress: formData.emailAddress,
-        typeOfEmployment: formData.typeOfEmployment,
-        dateOfPermanent: formData.dateOfPermanent || undefined,
+        birthDate: formData.birthDay,
+        divisionId: parseInt(formData.division),
+        designationId: formData.designation,
+        gradeId: formData.grade,
+        civilStatusId: formData.civilStatus,
+        permanentAddressL1: formData.permanentAddressLine1,
+        permanentAddressL2: formData.permanentAddressLine2 || undefined,
+        permanentTownId: formData.permanentTown,
+        temporaryAddressL1: formData.temporaryAddressLine1 || undefined,
+        temporaryAddressL2: formData.temporaryAddressLine2 || undefined,
+        temporaryTownId: formData.temporaryTown || undefined,
+        contact1: formData.mobileNumberPersonal,
+        contact2: formData.phoneNumberOfficial || undefined,
+        email: formData.emailAddress,
+        employeeTypeId: formData.typeOfEmployment,
+        permanentDate: formData.dateOfPermanent || undefined,
         joinDateContract: formData.joinDateContract || undefined,
         joinDateCasual: formData.joinDateCasual || undefined,
         // Educational details as JSON
-        gceolDetails: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
-        gcealDetails: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
-        higherStudiesDetails: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
+        ol: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
+        al: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
+        higherStudies: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
       };
 
       const response = await employeeService.createEmployee(employeeData);
@@ -269,7 +409,9 @@ const UserAccountCreation = () => {
       }
     } catch (error) {
       console.error('Error creating employee:', error);
-      console.error('Employee data:', employeeData);
+      if (employeeData) {
+        console.error('Employee data:', employeeData);
+      }
       
       // More detailed error message
       let errorMessage = 'Failed to create employee. ';
@@ -430,6 +572,85 @@ const UserAccountCreation = () => {
                 </div>
               </div>
 
+              {/* Login Credentials Section */}
+              {generatedCredentials && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6 mb-8">
+                  <div className="flex items-center justify-center mb-4">
+                    <User className="w-6 h-6 text-purple-600 mr-3" />
+                    <h3 className="text-xl font-bold text-purple-800">Your Login Credentials</h3>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-6 shadow-md">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Username */}
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-2">Username</p>
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 relative group">
+                          <p className="text-lg font-mono font-bold text-gray-900">{generatedCredentials.username}</p>
+                          <button
+                            onClick={() => handleCopyToClipboard(generatedCredentials.username, 'username')}
+                            className="absolute top-2 right-2 p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="Copy username"
+                          >
+                            {copiedField === 'username' ? (
+                              <Check className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Password */}
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-2">Password</p>
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 relative group">
+                          <p className="text-lg font-mono font-bold text-gray-900">{generatedCredentials.password}</p>
+                          <button
+                            onClick={() => handleCopyToClipboard(generatedCredentials.password, 'password')}
+                            className="absolute top-2 right-2 p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="Copy password"
+                          >
+                            {copiedField === 'password' ? (
+                              <Check className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800 flex items-start">
+                        <span className="text-yellow-600 mr-2 font-bold">⚠️</span>
+                        <span><strong>Important:</strong> Please save these credentials securely. This is the only time you'll see your password. You can use these to log in to the system.</span>
+                      </p>
+                    </div>
+
+                    {/* Copy Both Button */}
+                    <div className="mt-4 text-center">
+                      <button
+                        onClick={() => handleCopyToClipboard(`Username: ${generatedCredentials.username}\nPassword: ${generatedCredentials.password}`, 'both')}
+                        className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                      >
+                        {copiedField === 'both' ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy Both Credentials
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Call to Action */}
               <div className="mb-6">
                 <p className="text-gray-600 mb-6">
@@ -487,7 +708,9 @@ const UserAccountCreation = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium text-gray-500">Title:</span>
-                  <p className="text-gray-900">{formData.title || 'Not provided'}</p>
+                  <p className="text-gray-900">
+                    {titles.find(t => t.titleId === formData.title)?.description || formData.title || 'Not provided'}
+                  </p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Full Name:</span>
@@ -515,7 +738,12 @@ const UserAccountCreation = () => {
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Division:</span>
-                  <p className="text-gray-900">{formData.division || 'Not provided'}</p>
+                  <p className="text-gray-900">
+                    {formData.division 
+                      ? divisions.find(d => d.divisionId.toString() === formData.division)?.description || formData.division
+                      : 'Not provided'
+                    }
+                  </p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Designation:</span>
@@ -778,13 +1006,18 @@ const UserAccountCreation = () => {
                         value={formData.title}
                         onChange={(e) => handleFieldChange('title', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={loadingTitles}
                       >
                         <option value="">- select title -</option>
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Miss">Miss</option>
-                        <option value="Dr">Dr</option>
-                        <option value="Prof">Prof</option>
+                        {loadingTitles ? (
+                          <option disabled>Loading titles...</option>
+                        ) : (
+                          titles.map((title) => (
+                            <option key={title.titleId} value={title.titleId}>
+                              {title.description}
+                            </option>
+                          ))
+                        )}
                       </select>
                     </div>
 
@@ -865,50 +1098,84 @@ const UserAccountCreation = () => {
 
                     {/* Division */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Division</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Division <span className="text-red-500">*</span></label>
+                      <select
                         value={formData.division}
                         onChange={(e) => handleFieldChange('division', e.target.value)}
-                        placeholder="DGM ( Employment Approval )"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    {/* Designation */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Designation</label>
-                      <input
-                        type="text"
-                        value={formData.designation}
-                        onChange={(e) => handleFieldChange('designation', e.target.value)}
-                        placeholder="Director Admin"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                        required
+                      >
+                        <option value="">Select Division</option>
+                        {loadingDivisions ? (
+                          <option disabled>Loading divisions...</option>
+                        ) : (
+                          divisions.map((division) => (
+                            <option key={division.divisionId} value={division.divisionId}>
+                              {division.description}
+                            </option>
+                          ))
+                        )}
+                      </select>
                     </div>
 
                     {/* Grade */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Grade</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Grade <span className="text-red-500">*</span></label>
+                      <select
                         value={formData.grade}
-                        onChange={(e) => handleFieldChange('grade', e.target.value)}
-                        placeholder="HM 1-1"
+                        onChange={(e) => handleGradeChange(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                        required
+                      >
+                        <option value="">Select Grade</option>
+                        {loadingGrades ? (
+                          <option disabled>Loading grades...</option>
+                        ) : (
+                          grades.map((grade) => (
+                            <option key={grade.gradeId} value={grade.gradeId}>
+                              {grade.gradeId}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+
+                    {/* Designation */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Designation {formData.grade && <span className="text-red-500">*</span>}
+                      </label>
+                      <select
+                        value={formData.designation}
+                        onChange={(e) => handleFieldChange('designation', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!formData.grade || designations.length === 0}
+                        required={!!formData.grade}
+                      >
+                        <option value="">{formData.grade ? 'Select Designation' : 'Select Grade First'}</option>
+                        {designations.map((designation, index) => (
+                          <option key={index} value={designation}>
+                            {designation}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Civil Status */}
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Civil Status</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Civil Status <span className="text-red-500">*</span></label>
+                      <select
                         value={formData.civilStatus}
                         onChange={(e) => handleFieldChange('civilStatus', e.target.value)}
-                        placeholder="Married"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                        required
+                      >
+                        <option value="">Select Civil Status</option>
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                        <option value="Divorced">Divorced</option>
+                        <option value="Widowed">Widowed</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -1016,14 +1283,20 @@ const UserAccountCreation = () => {
 
                     {/* Town */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Town</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Town <span className="text-red-500">*</span></label>
+                      <select
                         value={formData.permanentTown}
                         onChange={(e) => handleFieldChange('permanentTown', e.target.value)}
-                        placeholder="SL CERT"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                        required
+                      >
+                        <option value="">Select Town</option>
+                        {SRI_LANKAN_TOWNS.map((town) => (
+                          <option key={town} value={town}>
+                            {town}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
@@ -1060,12 +1333,18 @@ const UserAccountCreation = () => {
                     {/* Town */}
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Town</label>
-                      <input
-                        type="text"
+                      <select
                         value={formData.temporaryTown}
                         onChange={(e) => handleFieldChange('temporaryTown', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      >
+                        <option value="">Select Town (Optional)</option>
+                        {SRI_LANKAN_TOWNS.map((town) => (
+                          <option key={town} value={town}>
+                            {town}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Contact Information */}

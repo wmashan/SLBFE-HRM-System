@@ -14,6 +14,10 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
         // Example:
         // public DbSet<User> Users { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Title> Titles { get; set; }
+        public DbSet<Division> Divisions { get; set; }
+        public DbSet<Grade> Grades { get; set; }
         // public DbSet<SalaryRecord> SalaryRecords { get; set; }
         // public DbSet<RetirementRecord> RetirementRecords { get; set; }
         // public DbSet<Application> Applications { get; set; }
@@ -67,35 +71,79 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
             // Configure Employee entity
             modelBuilder.Entity<Employee>(entity =>
             {
-                entity.HasKey(e => e.Id);
+                // Primary key is EmployeeId (string)
+                entity.HasKey(e => e.EmployeeId);
                 
                 // Unique constraints
-                entity.HasIndex(e => e.EmployeeNumber).IsUnique();
-                entity.HasIndex(e => e.NIC).IsUnique();
-                entity.HasIndex(e => e.EmailAddress).IsUnique();
-                
-                // Configure decimal precision for financial fields
-                entity.Property(e => e.BasicSalary).HasPrecision(18, 2);
-                
-                // Configure self-referencing relationship for reporting manager
-                entity.HasOne(e => e.ReportingManager)
-                    .WithMany(e => e.Subordinates)
-                    .HasForeignKey(e => e.ReportingManagerId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                
-                // Configure relationship with MedicalRequests
-                entity.HasMany(e => e.MedicalRequests)
-                    .WithOne()
-                    .HasForeignKey(mr => mr.EmployeeId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => e.Nic).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
                     
-                // Configure indexes for performance
+                // Configure indexes for performance as per schema
                 entity.HasIndex(e => e.FullName);
-                entity.HasIndex(e => e.Division);
-                entity.HasIndex(e => e.Designation);
-                entity.HasIndex(e => e.Status);
-                entity.HasIndex(e => e.TypeOfEmployment);
-                entity.HasIndex(e => e.Department);
+                entity.HasIndex(e => e.DivisionId);
+                entity.HasIndex(e => e.DesignationId);
+                entity.HasIndex(e => e.EmployeeTypeId);
+                entity.HasIndex(e => e.TitleId);
+                entity.HasIndex(e => e.GradeId);
+                entity.HasIndex(e => e.CivilStatusId);
+                entity.HasIndex(e => e.PermanentTownId);
+
+                // Configure foreign keys to match database
+                entity.HasOne<Title>()
+                    .WithMany()
+                    .HasForeignKey(e => e.TitleId)
+                    .HasConstraintName("FK_Employees_Titles")
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Division>()
+                    .WithMany()
+                    .HasForeignKey(e => e.DivisionId)
+                    .HasConstraintName("FK_Employees_Division")
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Grade>()
+                    .WithMany()
+                    .HasForeignKey(e => e.GradeId)
+                    .HasConstraintName("FK_Employees_Grade")
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Division entity - Map to existing Division table (singular)
+            modelBuilder.Entity<Division>(entity =>
+            {
+                entity.ToTable("Division"); // Explicitly map to Division table (not Divisions)
+                entity.HasKey(e => e.DivisionId);
+                entity.HasIndex(e => e.Description).IsUnique();
+            });
+
+            // Configure Title entity - Map to existing Titles table (plural)
+            modelBuilder.Entity<Title>(entity =>
+            {
+                entity.ToTable("Titles"); // Explicitly map to Titles table (not Title)
+                entity.HasKey(e => e.TitleId);
+                entity.HasIndex(e => e.Description).IsUnique();
+            });
+
+            // Configure Grade entity - Map to existing Grade table (singular)
+            modelBuilder.Entity<Grade>(entity =>
+            {
+                entity.ToTable("Grade"); // Explicitly map to Grade table
+                entity.HasKey(e => e.GradeId);
+            });
+
+            // Configure User entity
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("Users");
+                entity.HasKey(e => e.UserId);
+                
+                // Unique constraints
+                entity.HasIndex(e => e.EmployeeId).IsUnique();
+                entity.HasIndex(e => e.UserName).IsUnique();
+                
+                // Configure properties
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("getdate()");
             });
 
             // Configure cascade delete behaviors
