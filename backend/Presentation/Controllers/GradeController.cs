@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SLBFE.HRM.API.Application.Services.Interfaces;
 
@@ -20,6 +21,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// Get all grades
         /// </summary>
         [HttpGet]
+        [AllowAnonymous] // Allow public access for user account creation form
         public async Task<IActionResult> GetAllGrades()
         {
             try

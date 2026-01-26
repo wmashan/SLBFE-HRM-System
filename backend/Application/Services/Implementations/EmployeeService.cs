@@ -53,9 +53,9 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
                 query = query.Where(e => e.DesignationId.Contains(searchDto.DesignationId));
             }
 
-            if (!string.IsNullOrEmpty(searchDto.EmployeeTypeId))
+            if (searchDto.EmployeeTypeId.HasValue)
             {
-                query = query.Where(e => e.EmployeeTypeId == searchDto.EmployeeTypeId);
+                query = query.Where(e => e.EmployeeTypeId == searchDto.EmployeeTypeId.Value);
             }
 
             if (searchDto.JoinDateFrom.HasValue)

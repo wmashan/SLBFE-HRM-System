@@ -182,6 +182,8 @@ builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IUserSe
 builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.ITitleService, SLBFE.HRM.API.Application.Services.Implementations.TitleService>();
 builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IDivisionService, SLBFE.HRM.API.Application.Services.Implementations.DivisionService>();
 builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IGradeService, SLBFE.HRM.API.Application.Services.Implementations.GradeService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IEmployeeTypeService, SLBFE.HRM.API.Application.Services.Implementations.EmployeeTypeService>();
+builder.Services.AddScoped<SLBFE.HRM.API.Application.Services.Interfaces.IOtpService, SLBFE.HRM.API.Application.Services.Implementations.OtpService>();
 // etc.
 
 // Register Infrastructure Services

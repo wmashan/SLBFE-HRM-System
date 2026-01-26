@@ -115,7 +115,7 @@ export interface EmployeeCreateRequest {
   ol?: string;
   al?: string;
   higherStudies?: string;
-  employeeTypeId: string;
+  employeeTypeId: number;
   permanentDate?: string;
   joinDateContract?: string;
   joinDateCasual?: string;
@@ -153,6 +153,13 @@ export interface Division {
 export interface Grade {
   gradeId: string;
   designation: string;
+}
+
+// Employee Type
+export interface EmployeeType {
+  employeeTypeId: number;
+  typeName: string;
+  description?: string;
 }
 
 export interface Branch {

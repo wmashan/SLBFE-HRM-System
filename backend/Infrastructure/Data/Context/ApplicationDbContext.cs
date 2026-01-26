@@ -18,6 +18,8 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
         public DbSet<Title> Titles { get; set; }
         public DbSet<Division> Divisions { get; set; }
         public DbSet<Grade> Grades { get; set; }
+        public DbSet<EmployeeType> EmployeeTypes { get; set; }
+        public DbSet<OtpRecord> OtpRecords { get; set; }
         // public DbSet<SalaryRecord> SalaryRecords { get; set; }
         // public DbSet<RetirementRecord> RetirementRecords { get; set; }
         // public DbSet<Application> Applications { get; set; }
@@ -129,6 +131,14 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
             {
                 entity.ToTable("Grade"); // Explicitly map to Grade table
                 entity.HasKey(e => e.GradeId);
+            });
+
+            // Configure EmployeeType entity - Map to existing EmployeeType table (singular)
+            modelBuilder.Entity<EmployeeType>(entity =>
+            {
+                entity.ToTable("EmployeeType"); // Explicitly map to EmployeeType table (not EmployeeTypes)
+                entity.HasKey(e => e.EmployeeTypeId);
+                entity.HasIndex(e => e.TypeName).IsUnique();
             });
 
             // Configure User entity

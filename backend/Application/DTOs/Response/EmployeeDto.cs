@@ -48,7 +48,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Response
         #endregion
 
         #region Employment Details
-        public string EmployeeTypeId { get; set; } = string.Empty;
+        public int EmployeeTypeId { get; set; }
         public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
         public DateTime? JoinDateCasual { get; set; }
@@ -72,7 +72,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Response
         public int DivisionId { get; set; }
         public string Email { get; set; } = string.Empty;
         public string Contact1 { get; set; } = string.Empty;
-        public string EmployeeTypeId { get; set; } = string.Empty;
+        public int EmployeeTypeId { get; set; }
         public DateTime? JoinDate { get; set; }
     }
 

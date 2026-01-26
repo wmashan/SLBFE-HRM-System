@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, CheckCircle, Mail, Clock, Copy, Check } from 'lucide-react';
 import { employeeService, apiService } from '../services/api';
-import { EmployeeCreateRequest, Title, Division, Grade } from '../types';
+import { EmployeeCreateRequest, Title, Division, Grade, EmployeeType } from '../types';
+import OtpVerification from '../components/auth/OtpVerification';
 
 // Sri Lankan Towns/Cities List
 const SRI_LANKAN_TOWNS = [
@@ -32,17 +33,21 @@ const UserAccountCreation = () => {
   const navigate = useNavigate();
   const [currentStage, setCurrentStage] = useState(1);
   const [showReviewPage, setShowReviewPage] = useState(false);
+  const [showOtpPage, setShowOtpPage] = useState(false);
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [titles, setTitles] = useState<Title[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [employeeTypes, setEmployeeTypes] = useState<EmployeeType[]>([]);
   const [designations, setDesignations] = useState<string[]>([]);
   const [loadingTitles, setLoadingTitles] = useState(true);
   const [loadingDivisions, setLoadingDivisions] = useState(true);
   const [loadingGrades, setLoadingGrades] = useState(true);
+  const [loadingEmployeeTypes, setLoadingEmployeeTypes] = useState(true);
   const [generatedCredentials, setGeneratedCredentials] = useState<{username: string, password: string} | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [pendingEmployeeData, setPendingEmployeeData] = useState<EmployeeCreateRequest | null>(null);
   const [formData, setFormData] = useState({
     // Stage 1 - Personal Details
     profilePicture: null as File | null,
@@ -131,9 +136,26 @@ const UserAccountCreation = () => {
       }
     };
 
+    const fetchEmployeeTypes = async () => {
+      try {
+        setLoadingEmployeeTypes(true);
+        const response = await apiService.getEmployeeTypes();
+        if (response.success && response.data) {
+          setEmployeeTypes(response.data);
+        } else {
+          console.error('Failed to fetch employee types:', response.message);
+        }
+      } catch (error) {
+        console.error('Error fetching employee types:', error);
+      } finally {
+        setLoadingEmployeeTypes(false);
+      }
+    };
+
     fetchTitles();
     fetchDivisions();
     fetchGrades();
+    fetchEmployeeTypes();
   }, []);
 
   // Handle grade change to populate designations
@@ -241,9 +263,6 @@ const UserAccountCreation = () => {
 
     setIsSubmitting(true);
     
-    // Prepare employee data outside try block for error logging
-    let employeeData: EmployeeCreateRequest | null = null;
-    
     try {
       // Convert date from MM/dd/yyyy to ISO format (yyyy-MM-dd) for API
       const convertToISO = (dateString: string) => {
@@ -264,7 +283,7 @@ const UserAccountCreation = () => {
       };
 
       // Prepare employee data for API
-      employeeData = {
+      const employeeData: EmployeeCreateRequest = {
         titleId: parseInt(formData.title),
         fullName: formData.fullName,
         nameInitials: formData.nameWithInitials,
@@ -285,7 +304,7 @@ const UserAccountCreation = () => {
         contact1: formData.mobileNumberPersonal,
         contact2: formData.phoneNumberOfficial || undefined,
         email: formData.emailAddress,
-        employeeTypeId: formData.typeOfEmployment,
+        employeeTypeId: parseInt(formData.typeOfEmployment),
         permanentDate: convertToISO(formData.dateOfPermanent),
         joinDateContract: convertToISO(formData.joinDateContract),
         joinDateCasual: convertToISO(formData.joinDateCasual),
@@ -295,49 +314,35 @@ const UserAccountCreation = () => {
         higherStudies: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
       };
 
-      console.log('Submitting employee data:', employeeData);
+      // Store employee data temporarily
+      setPendingEmployeeData(employeeData);
 
-      const response = await employeeService.createEmployee(employeeData);
-      
-      console.log('API Response:', response);
-      console.log('Response data:', response.data);
-      
-      if (response.success) {
-        console.log('Employee created successfully!');
-        
-        // Capture login credentials from response
-        // Check both PascalCase (C#) and camelCase (JSON serialized) properties
-        const data = response.data as any;
-        const username = data.username || data.Username || data.employeeId || data.EmployeeId;
-        const password = data.password || data.Password;
-        
-        console.log('Username:', username);
-        console.log('Password:', password);
-        
-        if (username && password) {
-          console.log('Setting credentials:', { username, password });
-          setGeneratedCredentials({
-            username: username,
-            password: password
-          });
-        } else {
-          console.warn('Credentials not found in response! Full data:', data);
-        }
-        
+      // Generate OTP
+      const otpResponse = await fetch('http://localhost:5000/api/Otp/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.emailAddress,
+          phoneNumber: formData.mobileNumberPersonal,
+          purpose: 'EmployeeRegistration',
+        }),
+      });
+
+      const otpData = await otpResponse.json();
+
+      if (otpData.success) {
         setIsSubmitting(false);
-        setShowSuccessPage(true);
+        setShowReviewPage(false);
+        setShowOtpPage(true);
       } else {
-        console.error('API returned error:', response.message);
-        throw new Error(response.message || 'Failed to create employee');
+        throw new Error(otpData.message || 'Failed to generate OTP');
       }
     } catch (error) {
-      console.error('Error creating employee:', error);
-      if (employeeData) {
-        console.error('Employee data:', employeeData);
-      }
+      console.error('Error generating OTP:', error);
       
-      // More detailed error message
-      let errorMessage = 'Failed to create employee. ';
+      let errorMessage = 'Failed to generate OTP. ';
       if (error instanceof Error) {
         if (error.message.includes('fetch')) {
           errorMessage += 'Cannot connect to server. Please check if the backend is running.';
@@ -350,6 +355,53 @@ const UserAccountCreation = () => {
       
       alert(errorMessage);
       setIsSubmitting(false);
+    }
+  };
+
+  const handleOtpVerified = async () => {
+    if (!pendingEmployeeData) {
+      alert('Error: No employee data found. Please try again.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const response = await employeeService.createEmployee(pendingEmployeeData);
+      
+      if (response.success) {
+        // Capture login credentials from response
+        const data = response.data as any;
+        const username = data.username || data.Username || data.employeeId || data.EmployeeId;
+        const password = data.password || data.Password;
+        
+        if (username && password) {
+          setGeneratedCredentials({
+            username: username,
+            password: password
+          });
+        }
+        
+        setIsSubmitting(false);
+        setShowOtpPage(false);
+        setShowSuccessPage(true);
+      } else {
+        throw new Error(response.message || 'Failed to create employee');
+      }
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      
+      let errorMessage = 'Failed to create employee. ';
+      if (error instanceof Error) {
+        errorMessage += `Error: ${error.message}`;
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      alert(errorMessage);
+      setIsSubmitting(false);
+      setShowOtpPage(false);
+      setShowReviewPage(true);
     }
   };
 
@@ -388,7 +440,7 @@ const UserAccountCreation = () => {
         contact1: formData.mobileNumberPersonal,
         contact2: formData.phoneNumberOfficial || undefined,
         email: formData.emailAddress,
-        employeeTypeId: formData.typeOfEmployment,
+        employeeTypeId: parseInt(formData.typeOfEmployment),
         permanentDate: formData.dateOfPermanent || undefined,
         joinDateContract: formData.joinDateContract || undefined,
         joinDateCasual: formData.joinDateCasual || undefined,
@@ -431,23 +483,36 @@ const UserAccountCreation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back to Home</span>
-            </button>
-            <h1 className="text-xl font-semibold text-gray-900">Create Account</h1>
-            <div className="w-20"></div>
+    <>
+      {/* Show OTP Page */}
+      {showOtpPage ? (
+        <OtpVerification
+          email={formData.emailAddress}
+          phoneNumber={formData.mobileNumberPersonal}
+          onVerified={handleOtpVerified}
+          onBack={() => {
+            setShowOtpPage(false);
+            setShowReviewPage(true);
+          }}
+        />
+      ) : (
+        <div className="min-h-screen bg-gray-50">
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b">
+            <div className="max-w-6xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => navigate('/')}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  <span>Back to Home</span>
+                </button>
+                <h1 className="text-xl font-semibold text-gray-900">Create Account</h1>
+                <div className="w-20"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       {/* Stage Navigation */}
       <div className="bg-white border-b">
@@ -862,7 +927,12 @@ const UserAccountCreation = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium text-gray-500">Type of Employment:</span>
-                  <p className="text-gray-900">{formData.typeOfEmployment || 'Not provided'}</p>
+                  <p className="text-gray-900">
+                    {formData.typeOfEmployment 
+                      ? employeeTypes.find(et => et.employeeTypeId.toString() === formData.typeOfEmployment)?.typeName || formData.typeOfEmployment
+                      : 'Not provided'
+                    }
+                  </p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Date of Permanent:</span>
@@ -1028,7 +1098,7 @@ const UserAccountCreation = () => {
                         type="text"
                         value={formData.fullName}
                         onChange={(e) => handleFieldChange('fullName', e.target.value)}
-                        placeholder="Test SL CERT"
+                        placeholder="e.g., Nimal Perera"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -1040,7 +1110,7 @@ const UserAccountCreation = () => {
                         type="text"
                         value={formData.nameWithInitials}
                         onChange={(e) => handleFieldChange('nameWithInitials', e.target.value)}
-                        placeholder="TEST SL CERT"
+                        placeholder="e.g., N. Perera"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -1052,7 +1122,7 @@ const UserAccountCreation = () => {
                         type="text"
                         value={formData.firstName}
                         onChange={(e) => handleFieldChange('firstName', e.target.value)}
-                        placeholder="TEST"
+                        placeholder="e.g., Nimal"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -1064,7 +1134,7 @@ const UserAccountCreation = () => {
                         type="text"
                         value={formData.lastName}
                         onChange={(e) => handleFieldChange('lastName', e.target.value)}
-                        placeholder="CERT"
+                        placeholder="e.g., Perera"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -1258,24 +1328,24 @@ const UserAccountCreation = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       {/* Address Line 1 */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Address Line 1</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Number</label>
                         <input
                           type="text"
                           value={formData.permanentAddressLine1}
                           onChange={(e) => handleFieldChange('permanentAddressLine1', e.target.value)}
-                          placeholder="TEST SL CERT"
+                          placeholder="[ e.g., No. 45A ]"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
 
                       {/* Address Line 2 */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">address Line 2</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Street</label>
                         <input
                           type="text"
                           value={formData.permanentAddressLine2}
                           onChange={(e) => handleFieldChange('permanentAddressLine2', e.target.value)}
-                          placeholder="TEST SL CERT"
+                          placeholder="[ e.g., Temple Road ]"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
@@ -1307,24 +1377,24 @@ const UserAccountCreation = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                       {/* Address Line 1 */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Address Line 1</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Number</label>
                         <input
                           type="text"
                           value={formData.temporaryAddressLine1}
                           onChange={(e) => handleFieldChange('temporaryAddressLine1', e.target.value)}
-                          placeholder="Enter your first name"
+                          placeholder="[ e.g., No. 45A ]"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
 
                       {/* Address Line 2 */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">address Line 2</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Street</label>
                         <input
                           type="text"
                           value={formData.temporaryAddressLine2}
                           onChange={(e) => handleFieldChange('temporaryAddressLine2', e.target.value)}
-                          placeholder="Enter your first name"
+                          placeholder="[ e.g., Temple Road ]"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
@@ -1521,14 +1591,25 @@ const UserAccountCreation = () => {
                 <div className="space-y-6">
                   {/* Type of Employment */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Type of Employment</label>
-                    <input
-                      type="text"
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type of Employment <span className="text-red-500">*</span></label>
+                    <select
                       value={formData.typeOfEmployment}
                       onChange={(e) => handleFieldChange('typeOfEmployment', e.target.value)}
-                      placeholder="Employed"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                      required
+                      disabled={loadingEmployeeTypes}
+                    >
+                      <option value="">Select Employment Type</option>
+                      {loadingEmployeeTypes ? (
+                        <option disabled>Loading employment types...</option>
+                      ) : (
+                        employeeTypes.map((type) => (
+                          <option key={type.employeeTypeId} value={type.employeeTypeId}>
+                            {type.typeName}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
 
                   {/* Date of Permanent */}
@@ -1605,7 +1686,9 @@ const UserAccountCreation = () => {
         </form>
         )}
       </div>
-    </div>
+      </div>
+      )}
+    </>
   );
 };
 

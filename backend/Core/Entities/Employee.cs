@@ -177,11 +177,10 @@ namespace SLBFE.HRM.API.Core.Entities
 
         #region Employment Details
         /// <summary>
-        /// Type of Employment (Permanent, Contract, Casual)
+        /// Type of Employment (Permanent, Contract, Casual) - Foreign Key to EmployeeType table
         /// </summary>
         [Required]
-        [MaxLength(50)]
-        public string EmployeeTypeId { get; set; } = string.Empty;
+        public int EmployeeTypeId { get; set; }
 
         /// <summary>
         /// Date when employee became permanent

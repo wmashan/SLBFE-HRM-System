@@ -67,16 +67,6 @@ const LoginPage = () => {
             <p className="text-gray-600 mt-2">Access SLBFE HRM System</p>
           </div>
 
-          {/* Demo Credentials Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials:</h3>
-            <div className="text-xs space-y-1 text-blue-700">
-              <div><strong>System Admin:</strong> admin / admin123</div>
-              <div><strong>HR Manager:</strong> hrmanager / hrpass123</div>
-              <div><strong>Employee:</strong> employee / emp123</div>
-            </div>
-          </div>
-
           {/* Error Message */}
           {(error || authError) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">

@@ -1,6 +1,6 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, Title, Division, Grade } from '../types';
+import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, Title, Division, Grade, EmployeeType } from '../types';
 
 // Salary Management Types
 interface SalaryRecord {
@@ -408,6 +408,11 @@ class ApiService {
   // Grade Methods
   async getGrades(): Promise<ApiResponse<any[]>> {
     return this.request<any[]>('/Grade');
+  }
+
+  // Employee Type Methods
+  async getEmployeeTypes(): Promise<ApiResponse<EmployeeType[]>> {
+    return this.request<EmployeeType[]>('/EmployeeType');
   }
 
   async updateEmployee(id: number, employeeData: Partial<Employee>): Promise<ApiResponse<Employee>> {

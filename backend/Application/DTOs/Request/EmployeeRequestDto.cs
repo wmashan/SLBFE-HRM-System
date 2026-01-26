@@ -95,8 +95,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
 
         #region Employment Details
         [Required]
-        [MaxLength(50)]
-        public string EmployeeTypeId { get; set; } = string.Empty;
+        public int EmployeeTypeId { get; set; }
 
         public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
@@ -188,8 +187,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         #endregion
 
         #region Employment Details
-        [MaxLength(50)]
-        public string? EmployeeTypeId { get; set; }
+        public int? EmployeeTypeId { get; set; }
 
         public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
@@ -206,7 +204,7 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         public string? FullName { get; set; }
         public int? DivisionId { get; set; }
         public string? DesignationId { get; set; }
-        public string? EmployeeTypeId { get; set; }
+        public int? EmployeeTypeId { get; set; }
         public DateTime? JoinDateFrom { get; set; }
         public DateTime? JoinDateTo { get; set; }
         public int? PageNumber { get; set; } = 1;
