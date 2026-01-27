@@ -98,18 +98,27 @@ else
     exit 1
 fi
 
+# Find sqlcmd path
+if docker exec "$CONTAINER_ID" test -f /opt/mssql-tools18/bin/sqlcmd; then
+    SQLCMD_PATH="/opt/mssql-tools18/bin/sqlcmd"
+elif docker exec "$CONTAINER_ID" test -f /opt/mssql-tools/bin/sqlcmd; then
+    SQLCMD_PATH="/opt/mssql-tools/bin/sqlcmd"
+else
+    SQLCMD_PATH="sqlcmd"
+fi
+
 # Close existing connections
 echo ""
 echo "🔒 Closing existing database connections..."
-docker exec "$CONTAINER_ID" /opt/mssql-tools/bin/sqlcmd \
-    -S localhost -U sa -P "${SA_PASSWORD}" \
+docker exec "$CONTAINER_ID" $SQLCMD_PATH \
+    -S localhost -U sa -P "${SA_PASSWORD}" -C \
     -Q "ALTER DATABASE [${DB_NAME}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;" 2>/dev/null || true
 
 # Restore database
 echo ""
 echo "📥 Restoring database from backup..."
-docker exec "$CONTAINER_ID" /opt/mssql-tools/bin/sqlcmd \
-    -S localhost -U sa -P "${SA_PASSWORD}" \
+docker exec "$CONTAINER_ID" $SQLCMD_PATH \
+    -S localhost -U sa -P "${SA_PASSWORD}" -C \
     -Q "RESTORE DATABASE [${DB_NAME}] FROM DISK = N'${CONTAINER_BACKUP_PATH}' WITH REPLACE, STATS = 10"
 
 if [ $? -eq 0 ]; then
@@ -117,8 +126,8 @@ if [ $? -eq 0 ]; then
 else
     echo "❌ Error: Failed to restore database"
     # Try to set database back to multi-user
-    docker exec "$CONTAINER_ID" /opt/mssql-tools/bin/sqlcmd \
-        -S localhost -U sa -P "${SA_PASSWORD}" \
+    docker exec "$CONTAINER_ID" $SQLCMD_PATH \
+        -S localhost -U sa -P "${SA_PASSWORD}" -C \
         -Q "ALTER DATABASE [${DB_NAME}] SET MULTI_USER;" 2>/dev/null || true
     exit 1
 fi
@@ -126,15 +135,15 @@ fi
 # Set database back to multi-user mode
 echo ""
 echo "🔓 Setting database to multi-user mode..."
-docker exec "$CONTAINER_ID" /opt/mssql-tools/bin/sqlcmd \
-    -S localhost -U sa -P "${SA_PASSWORD}" \
+docker exec "$CONTAINER_ID" $SQLCMD_PATH \
+    -S localhost -U sa -P "${SA_PASSWORD}" -C \
     -Q "ALTER DATABASE [${DB_NAME}] SET MULTI_USER;"
 
 # Verify restore
 echo ""
 echo "✅ Verifying restore..."
-docker exec "$CONTAINER_ID" /opt/mssql-tools/bin/sqlcmd \
-    -S localhost -U sa -P "${SA_PASSWORD}" \
+docker exec "$CONTAINER_ID" $SQLCMD_PATH \
+    -S localhost -U sa -P "${SA_PASSWORD}" -C \
     -Q "SELECT name, state_desc, recovery_model_desc FROM sys.databases WHERE name = '${DB_NAME}'"
 
 # Clean up backup file from container

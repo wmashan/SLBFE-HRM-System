@@ -49,8 +49,19 @@ mkdir -p "$BACKUP_DIR"
 
 # Create database backup inside the container
 echo "📦 Creating database backup..."
-docker exec "$CONTAINER_ID" /opt/mssql-tools/bin/sqlcmd \
-    -S localhost -U sa -P SLBFE_HRM_2025! \
+
+# Try to find sqlcmd location (newer images use /opt/mssql-tools18)
+if docker exec "$CONTAINER_ID" test -f /opt/mssql-tools18/bin/sqlcmd; then
+    SQLCMD_PATH="/opt/mssql-tools18/bin/sqlcmd"
+elif docker exec "$CONTAINER_ID" test -f /opt/mssql-tools/bin/sqlcmd; then
+    SQLCMD_PATH="/opt/mssql-tools/bin/sqlcmd"
+else
+    echo "❌ Error: sqlcmd not found in container. Trying with just 'sqlcmd'..."
+    SQLCMD_PATH="sqlcmd"
+fi
+
+docker exec "$CONTAINER_ID" $SQLCMD_PATH \
+    -S localhost -U sa -P SLBFE_HRM_2025! -C \
     -Q "BACKUP DATABASE [${DB_NAME}] TO DISK = N'${CONTAINER_BACKUP_PATH}' WITH NOFORMAT, NOINIT, NAME = '${DB_NAME}-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, STATS = 10"
 
 if [ $? -eq 0 ]; then
