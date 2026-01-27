@@ -12,7 +12,9 @@ import {
   Heart,
   GraduationCap,
   UserCheck,
-  BarChart3
+  BarChart3,
+  Calendar,
+  Shield
 } from 'lucide-react';
 import { HRFeature } from '../types';
 
@@ -26,6 +28,8 @@ import Transfer from './Transfer';
 import SalaryManagement from './SalaryManagement';
 import RetirementManagement from './RetirementManagement';
 import TrainingManagement from './TrainingManagement';
+import LeaveManagement from './dashboard/LeaveManagement';
+import DisciplinaryActions from './dashboard/DisciplinaryActions';
 
 const HRManagerDashboard = () => {
   const navigate = useNavigate();
@@ -63,6 +67,18 @@ const HRManagerDashboard = () => {
       label: 'Medical Claims',
       icon: Heart,
       feature: 'medical_claims' as HRFeature
+    },
+    {
+      id: 'leave',
+      label: 'Leave Requests',
+      icon: Calendar,
+      feature: 'leave_management' as HRFeature
+    },
+    {
+      id: 'disciplinary',
+      label: 'Disciplinary Actions',
+      icon: Shield,
+      feature: 'documents' as HRFeature
     },
     {
       id: 'transfer',
@@ -147,7 +163,7 @@ const HRManagerDashboard = () => {
 
     // Default to general HR permissions if user not found
     return userPermissionMap[userId] || [
-      'overview', 'employees', 'reports', 'medical_claims', 'transfer', 'retirement', 
+      'overview', 'employees', 'reports', 'medical_claims', 'leave_management', 'transfer', 'retirement', 
       'recruitment', 'training', 'payroll', 'documents'
     ];
   };
@@ -277,6 +293,8 @@ const HRManagerDashboard = () => {
           {activeTab === 'employees' && hasPermission('employees') && <Employees />}
           {activeTab === 'reports' && hasPermission('reports') && <Reports />}
           {activeTab === 'medical' && hasPermission('medical_claims') && <MedicalManagement />}
+          {activeTab === 'leave' && hasPermission('leave_management') && <LeaveManagement />}
+          {activeTab === 'disciplinary' && hasPermission('documents') && <DisciplinaryActions />}
           {activeTab === 'transfer' && hasPermission('transfer') && <Transfer />}
           {activeTab === 'salary' && hasPermission('payroll') && <SalaryManagement />}
           {activeTab === 'retirement' && hasPermission('retirement') && <RetirementManagement />}
@@ -288,6 +306,8 @@ const HRManagerDashboard = () => {
             (activeTab === 'employees' && !hasPermission('employees')) ||
             (activeTab === 'reports' && !hasPermission('reports')) ||
             (activeTab === 'medical' && !hasPermission('medical_claims')) ||
+            (activeTab === 'leave' && !hasPermission('leave_management')) ||
+            (activeTab === 'disciplinary' && !hasPermission('documents')) ||
             (activeTab === 'transfer' && !hasPermission('transfer')) ||
             (activeTab === 'salary' && !hasPermission('payroll')) ||
             (activeTab === 'retirement' && !hasPermission('retirement')) ||

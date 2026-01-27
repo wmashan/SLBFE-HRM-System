@@ -1,0 +1,354 @@
+{
+  "info": {
+    "name": "SLBFE HRM - JWT Authentication",
+    "description": "JWT Authentication endpoints with refresh token support",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "jwt-auth-collection",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "1. Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse response",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "// Save tokens to collection variables",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "    pm.collectionVariables.set('userId', jsonData.userId);",
+                  "    ",
+                  "    console.log('✅ Login successful');",
+                  "    console.log('Access Token:', jsonData.accessToken.substring(0, 20) + '...');",
+                  "    console.log('Refresh Token:', jsonData.refreshToken.substring(0, 20) + '...');",
+                  "    console.log('User ID:', jsonData.userId);",
+                  "    console.log('Role ID:', jsonData.roleId);",
+                  "    console.log('Expires In:', jsonData.expiresIn, 'seconds');",
+                  "} else {",
+                  "    console.log('❌ Login failed');",
+                  "}",
+                  "",
+                  "// Test assertions",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has accessToken', function () {",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "pm.test('Response has refreshToken', function () {",
+                  "    pm.expect(jsonData).to.have.property('refreshToken');",
+                  "});",
+                  "",
+                  "pm.test('Token type is Bearer', function () {",
+                  "    pm.expect(jsonData.tokenType).to.eql('Bearer');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"admin\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate user and receive JWT access token with refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse response",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "// Update tokens in collection variables",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "    ",
+                  "    console.log('✅ Token refresh successful');",
+                  "    console.log('New Access Token:', jsonData.accessToken.substring(0, 20) + '...');",
+                  "    console.log('New Refresh Token:', jsonData.refreshToken.substring(0, 20) + '...');",
+                  "} else {",
+                  "    console.log('❌ Token refresh failed');",
+                  "}",
+                  "",
+                  "// Test assertions",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has new accessToken', function () {",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "pm.test('Response has new refreshToken', function () {",
+                  "    pm.expect(jsonData).to.have.property('refreshToken');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"{{accessToken}}\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh-token"]
+            },
+            "description": "Refresh the access token using a valid refresh token. Both tokens will be rotated."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Revoke Token (Logout)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse response",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    console.log('✅ Token revoked successfully');",
+                  "    console.log('Message:', jsonData.message);",
+                  "    ",
+                  "    // Clear tokens from collection variables",
+                  "    pm.collectionVariables.set('accessToken', '');",
+                  "    pm.collectionVariables.set('refreshToken', '');",
+                  "} else {",
+                  "    console.log('❌ Token revocation failed');",
+                  "}",
+                  "",
+                  "// Test assertions",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success message', function () {",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/revoke-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "revoke-token"]
+            },
+            "description": "Revoke a specific refresh token (logout from current device)"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Revoke All Tokens (Logout All Devices)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Parse response",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    console.log('✅ All tokens revoked successfully');",
+                  "    console.log('Message:', jsonData.message);",
+                  "    console.log('Tokens Revoked:', jsonData.revokedCount);",
+                  "    ",
+                  "    // Clear tokens from collection variables",
+                  "    pm.collectionVariables.set('accessToken', '');",
+                  "    pm.collectionVariables.set('refreshToken', '');",
+                  "} else {",
+                  "    console.log('❌ Revoke all tokens failed');",
+                  "}",
+                  "",
+                  "// Test assertions",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has revokedCount', function () {",
+                  "    pm.expect(jsonData).to.have.property('revokedCount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/revoke-all-tokens",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "revoke-all-tokens"]
+            },
+            "description": "Revoke all refresh tokens for the current user (logout from all devices)"
+          },
+          "response": []
+        }
+      ],
+      "description": "JWT Authentication endpoints"
+    },
+    {
+      "name": "Protected Examples",
+      "item": [
+        {
+          "name": "Get Employees (Protected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 401', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 401) {",
+                  "    console.log('⚠️ Unauthorized - Token may be expired. Try refreshing the token.');",
+                  "} else if (pm.response.code === 200) {",
+                  "    console.log('✅ Request successful');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employee"]
+            },
+            "description": "Example of a protected endpoint requiring JWT authentication"
+          },
+          "response": []
+        }
+      ],
+      "description": "Examples of protected API endpoints"
+    }
+  ]
+}

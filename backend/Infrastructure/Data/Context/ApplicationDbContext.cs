@@ -25,6 +25,8 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
         // public DbSet<Application> Applications { get; set; }
         
         public DbSet<MedicalRequest> MedicalRequests { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+        public DbSet<SystemSettings> SystemSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -150,6 +152,41 @@ namespace SLBFE.HRM.API.Infrastructure.Data.Context
                 // Unique constraints
                 entity.HasIndex(e => e.EmployeeId).IsUnique();
                 entity.HasIndex(e => e.UserName).IsUnique();
+                
+                // Configure properties
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("getdate()");
+            });
+
+            // Configure UserRefreshToken entity
+            modelBuilder.Entity<UserRefreshToken>(entity =>
+            {
+                entity.ToTable("UserRefreshTokens");
+                entity.HasKey(e => e.Id);
+                
+                // Indexes for performance
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.ExpiresAt);
+                
+                // Foreign key relationship
+                entity.HasOne(rt => rt.User)
+                    .WithMany()
+                    .HasForeignKey(rt => rt.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Configure properties
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("sysutcdatetime()");
+            });
+
+            // Configure SystemSettings entity
+            modelBuilder.Entity<SystemSettings>(entity =>
+            {
+                entity.ToTable("SystemSettings");
+                entity.HasKey(e => e.Id);
+                
+                // Unique constraint on SettingKey
+                entity.HasIndex(e => e.SettingKey).IsUnique();
                 
                 // Configure properties
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");

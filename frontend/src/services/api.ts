@@ -124,7 +124,7 @@ interface RetirementStats {
 }
 
 // Base API configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5050/api';
 
 class ApiService {
   private baseURL: string;
@@ -222,38 +222,40 @@ class ApiService {
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
     try {
       const response = await this.request<{
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+        tokenType: string;
         userId: number;
-        employeeId: number;
         roleId: number;
         userName: string;
-        status: string;
-        lastLogin: string;
       }>('/Auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
 
       if (response.success && response.data) {
-        // Map backend response to User type
+        // Map backend JWT response to User type
         const user: User = {
           id: response.data.userId.toString(),
           username: response.data.userName,
           email: '', // Not provided by backend, can be fetched separately if needed
           fullName: '', // Not provided by backend, can be fetched from employee table
           role: this.mapRoleIdToRole(response.data.roleId),
-          isActive: response.data.status === 'Active',
-          lastLogin: new Date(response.data.lastLogin),
+          isActive: true, // If login succeeds, user is active
+          lastLogin: new Date(),
           createdAt: new Date(), // Not provided by backend
           updatedAt: new Date(), // Not provided by backend
         };
 
-        // Generate a simple token (in production, this should come from backend)
-        const token = 'auth_token_' + user.id + '_' + Date.now();
+        // Use the JWT access token from backend
+        const token = response.data.accessToken;
         
         this.token = token;
         localStorage.setItem('slbfe_auth_token', token);
+        localStorage.setItem('slbfe_refresh_token', response.data.refreshToken);
         localStorage.setItem('slbfe_user_data', JSON.stringify(user));
-        localStorage.setItem('slbfe_employee_id', response.data.employeeId.toString());
+        localStorage.setItem('slbfe_user_id', response.data.userId.toString());
 
         return {
           success: true,
@@ -290,7 +292,9 @@ class ApiService {
 
     this.token = null;
     localStorage.removeItem('slbfe_auth_token');
+    localStorage.removeItem('slbfe_refresh_token');
     localStorage.removeItem('slbfe_user_data');
+    localStorage.removeItem('slbfe_user_id');
 
     return response;
   }

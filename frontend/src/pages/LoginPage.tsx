@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading, error: authError, getDashboardPath } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
@@ -12,6 +13,10 @@ const LoginPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+
+  // Get success message from navigation state (from password reset)
+  const successMessage = location.state?.message;
+  const messageType = location.state?.type;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -71,6 +76,13 @@ const LoginPage = () => {
           {(error || authError) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
               <p className="text-red-700 text-sm">{error || authError}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && messageType === 'success' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <p className="text-green-700 text-sm">{successMessage}</p>
             </div>
           )}
 
@@ -140,6 +152,7 @@ const LoginPage = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/forgot-password')}
                 className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
               >
                 Forgot password?

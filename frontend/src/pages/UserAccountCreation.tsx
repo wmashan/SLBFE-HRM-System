@@ -85,6 +85,154 @@ const UserAccountCreation = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  
+  // Validation state
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Validation functions
+  const validateField = (field: string, value: any): string => {
+    switch (field) {
+      case 'title':
+        return value ? '' : 'Title is required';
+      
+      case 'fullName':
+        if (!value) return 'Full name is required';
+        if (value.length < 3) return 'Full name must be at least 3 characters';
+        if (!/^[a-zA-Z\s.]+$/.test(value)) return 'Full name can only contain letters, spaces, and periods';
+        return '';
+      
+      case 'nameWithInitials':
+        if (!value) return 'Name with initials is required';
+        if (!/^[A-Z.\s]+[a-zA-Z]+$/.test(value)) return 'Invalid format. Use format like "A.B. Silva"';
+        return '';
+      
+      case 'firstName':
+        if (!value) return 'First name is required';
+        if (value.length < 2) return 'First name must be at least 2 characters';
+        if (!/^[a-zA-Z]+$/.test(value)) return 'First name can only contain letters';
+        return '';
+      
+      case 'lastName':
+        if (!value) return 'Last name is required';
+        if (value.length < 2) return 'Last name must be at least 2 characters';
+        if (!/^[a-zA-Z]+$/.test(value)) return 'Last name can only contain letters';
+        return '';
+      
+      case 'nic':
+        if (!value) return 'NIC is required';
+        // Old NIC format: 9 digits + V/X or New NIC format: 12 digits
+        if (!/^([0-9]{9}[VvXx]|[0-9]{12})$/.test(value)) {
+          return 'Invalid NIC format. Use 9 digits + V/X or 12 digits';
+        }
+        return '';
+      
+      case 'birthDay':
+        if (!value) return 'Birth date is required';
+        const birthDate = new Date(value);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        if (age < 18) return 'Must be at least 18 years old';
+        if (age > 100) return 'Please enter a valid birth date';
+        if (birthDate > today) return 'Birth date cannot be in the future';
+        return '';
+      
+      case 'division':
+        return value ? '' : 'Division is required';
+      
+      case 'designation':
+        return value ? '' : 'Designation is required';
+      
+      case 'grade':
+        return value ? '' : 'Grade is required';
+      
+      case 'civilStatus':
+        return value ? '' : 'Civil status is required';
+      
+      case 'permanentAddressLine1':
+        if (!value) return 'Permanent address line 1 is required';
+        if (value.length < 5) return 'Address must be at least 5 characters';
+        return '';
+      
+      case 'permanentTown':
+        return value ? '' : 'Permanent town is required';
+      
+      case 'mobileNumberPersonal':
+        if (!value) return 'Mobile number is required';
+        // Sri Lankan mobile format: 0771234567 or +94771234567
+        if (!/^(\+94|0)?[7][0-9]{8}$/.test(value.replace(/\s/g, ''))) {
+          return 'Invalid mobile number format. Use format: 0771234567';
+        }
+        return '';
+      
+      case 'phoneNumberOfficial':
+        if (value && !/^(\+94|0)?[1-9][0-9]{8}$/.test(value.replace(/\s/g, ''))) {
+          return 'Invalid phone number format';
+        }
+        return '';
+      
+      case 'emailAddress':
+        if (!value) return 'Email address is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return 'Invalid email format';
+        }
+        return '';
+      
+      case 'typeOfEmployment':
+        return value ? '' : 'Type of employment is required';
+      
+      case 'dateOfPermanent':
+        if (value) {
+          const permDate = new Date(value);
+          const today = new Date();
+          if (permDate > today) return 'Date cannot be in the future';
+        }
+        return '';
+      
+      case 'joinDateContract':
+        if (value) {
+          const joinDate = new Date(value);
+          const today = new Date();
+          if (joinDate > today) return 'Date cannot be in the future';
+        }
+        return '';
+      
+      case 'joinDateCasual':
+        if (value) {
+          const joinDate = new Date(value);
+          const today = new Date();
+          if (joinDate > today) return 'Date cannot be in the future';
+        }
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  const validateStage = (stage: number): boolean => {
+    const stageFields: Record<number, string[]> = {
+      1: ['title', 'fullName', 'nameWithInitials', 'firstName', 'lastName', 'nic', 'birthDay', 'division', 'designation', 'grade', 'civilStatus'],
+      2: ['permanentAddressLine1', 'permanentTown', 'mobileNumberPersonal', 'phoneNumberOfficial', 'emailAddress'],
+      3: [], // No validation needed for educational checkboxes
+      4: ['typeOfEmployment']
+    };
+
+    const fieldsToValidate = stageFields[stage] || [];
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, formData[field as keyof typeof formData]);
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return isValid;
+  };
 
   // Fetch titles, divisions, and grades on component mount
   useEffect(() => {
@@ -185,6 +333,21 @@ const UserAccountCreation = () => {
       ...prev,
       [field]: value
     }));
+    
+    // Validate field if it has been touched
+    if (touched[field]) {
+      const error = validateField(field, value);
+      setErrors(prev => ({
+        ...prev,
+        [field]: error
+      }));
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const error = validateField(field, formData[field as keyof typeof formData]);
+    setErrors(prev => ({ ...prev, [field]: error }));
   };
 
   const handleToggleChange = (field: string, value: boolean) => {
@@ -213,6 +376,11 @@ const UserAccountCreation = () => {
 
   const handleNext = () => {
     // Validate current stage before proceeding
+    if (!validateStage(currentStage)) {
+      alert('Please fix all errors before proceeding to the next stage.');
+      return;
+    }
+    
     if (currentStage < 4) {
       setCurrentStage(prev => prev + 1);
     }
@@ -1071,11 +1239,16 @@ const UserAccountCreation = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Title */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Title <span className="text-red-500">*</span>
+                      </label>
                       <select
                         value={formData.title}
                         onChange={(e) => handleFieldChange('title', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => handleBlur('title')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.title && touched.title ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         disabled={loadingTitles}
                       >
                         <option value="">- select title -</option>
@@ -1089,81 +1262,133 @@ const UserAccountCreation = () => {
                           ))
                         )}
                       </select>
+                      {errors.title && touched.title && (
+                        <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                      )}
                     </div>
 
                     {/* Full Name */}
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={formData.fullName}
                         onChange={(e) => handleFieldChange('fullName', e.target.value)}
+                        onBlur={() => handleBlur('fullName')}
                         placeholder="e.g., Nimal Perera"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.fullName && touched.fullName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.fullName && touched.fullName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+                      )}
                     </div>
 
                     {/* Name with Initials */}
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Name with Initials</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Name with Initials <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={formData.nameWithInitials}
                         onChange={(e) => handleFieldChange('nameWithInitials', e.target.value)}
+                        onBlur={() => handleBlur('nameWithInitials')}
                         placeholder="e.g., N. Perera"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.nameWithInitials && touched.nameWithInitials ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.nameWithInitials && touched.nameWithInitials && (
+                        <p className="mt-1 text-sm text-red-600">{errors.nameWithInitials}</p>
+                      )}
                     </div>
 
                     {/* First Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">First name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        First name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={formData.firstName}
                         onChange={(e) => handleFieldChange('firstName', e.target.value)}
+                        onBlur={() => handleBlur('firstName')}
                         placeholder="e.g., Nimal"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.firstName && touched.firstName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.firstName && touched.firstName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                      )}
                     </div>
 
                     {/* Last Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Last name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Last name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={formData.lastName}
                         onChange={(e) => handleFieldChange('lastName', e.target.value)}
+                        onBlur={() => handleBlur('lastName')}
                         placeholder="e.g., Perera"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.lastName && touched.lastName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.lastName && touched.lastName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                      )}
                     </div>
 
                     {/* NIC */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">NIC</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        NIC <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={formData.nic}
-                        onChange={(e) => handleFieldChange('nic', e.target.value)}
-                        placeholder="125556666V"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onChange={(e) => handleFieldChange('nic', e.target.value.toUpperCase())}
+                        onBlur={() => handleBlur('nic')}
+                        placeholder="125556666V or 200012345678"
+                        maxLength={12}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.nic && touched.nic ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.nic && touched.nic && (
+                        <p className="mt-1 text-sm text-red-600">{errors.nic}</p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">Format: 9 digits + V/X or 12 digits</p>
                     </div>
 
                     {/* Birth Day */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Birth Day *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Birth Day <span className="text-red-500">*</span></label>
                       <div className="relative">
                         <input
                           type="date"
                           value={formData.birthDay}
                           onChange={(e) => handleFieldChange('birthDay', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                          onBlur={() => handleBlur('birthDay')}
+                          max={new Date().toISOString().split('T')[0]}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10 ${
+                            errors.birthDay && touched.birthDay ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           required
                         />
                         <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                       </div>
+                      {errors.birthDay && touched.birthDay && (
+                        <p className="mt-1 text-sm text-red-600">{errors.birthDay}</p>
+                      )}
                     </div>
 
                     {/* Division */}
@@ -1172,7 +1397,10 @@ const UserAccountCreation = () => {
                       <select
                         value={formData.division}
                         onChange={(e) => handleFieldChange('division', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => handleBlur('division')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.division && touched.division ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                       >
                         <option value="">Select Division</option>
@@ -1186,6 +1414,9 @@ const UserAccountCreation = () => {
                           ))
                         )}
                       </select>
+                      {errors.division && touched.division && (
+                        <p className="mt-1 text-sm text-red-600">{errors.division}</p>
+                      )}
                     </div>
 
                     {/* Grade */}
@@ -1193,8 +1424,14 @@ const UserAccountCreation = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Grade <span className="text-red-500">*</span></label>
                       <select
                         value={formData.grade}
-                        onChange={(e) => handleGradeChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onChange={(e) => {
+                          handleGradeChange(e.target.value);
+                          handleBlur('grade');
+                        }}
+                        onBlur={() => handleBlur('grade')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.grade && touched.grade ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                       >
                         <option value="">Select Grade</option>
@@ -1208,6 +1445,9 @@ const UserAccountCreation = () => {
                           ))
                         )}
                       </select>
+                      {errors.grade && touched.grade && (
+                        <p className="mt-1 text-sm text-red-600">{errors.grade}</p>
+                      )}
                     </div>
 
                     {/* Designation */}
@@ -1218,7 +1458,10 @@ const UserAccountCreation = () => {
                       <select
                         value={formData.designation}
                         onChange={(e) => handleFieldChange('designation', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        onBlur={() => handleBlur('designation')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                          errors.designation && touched.designation ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         disabled={!formData.grade || designations.length === 0}
                         required={!!formData.grade}
                       >
@@ -1229,6 +1472,9 @@ const UserAccountCreation = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.designation && touched.designation && (
+                        <p className="mt-1 text-sm text-red-600">{errors.designation}</p>
+                      )}
                     </div>
 
                     {/* Civil Status */}
@@ -1237,7 +1483,10 @@ const UserAccountCreation = () => {
                       <select
                         value={formData.civilStatus}
                         onChange={(e) => handleFieldChange('civilStatus', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => handleBlur('civilStatus')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.civilStatus && touched.civilStatus ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                       >
                         <option value="">Select Civil Status</option>
@@ -1246,6 +1495,9 @@ const UserAccountCreation = () => {
                         <option value="Divorced">Divorced</option>
                         <option value="Widowed">Widowed</option>
                       </select>
+                      {errors.civilStatus && touched.civilStatus && (
+                        <p className="mt-1 text-sm text-red-600">{errors.civilStatus}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1357,7 +1609,10 @@ const UserAccountCreation = () => {
                       <select
                         value={formData.permanentTown}
                         onChange={(e) => handleFieldChange('permanentTown', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => handleBlur('permanentTown')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.permanentTown && touched.permanentTown ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                       >
                         <option value="">Select Town</option>
@@ -1367,6 +1622,9 @@ const UserAccountCreation = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.permanentTown && touched.permanentTown && (
+                        <p className="mt-1 text-sm text-red-600">{errors.permanentTown}</p>
+                      )}
                     </div>
                   </div>
 
@@ -1421,14 +1679,21 @@ const UserAccountCreation = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       {/* Mobile Number (Personal) */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Mobile number (Personal )</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Mobile number (Personal ) <span className="text-red-500">*</span></label>
                         <input
                           type="tel"
                           value={formData.mobileNumberPersonal}
                           onChange={(e) => handleFieldChange('mobileNumberPersonal', e.target.value)}
+                          onBlur={() => handleBlur('mobileNumberPersonal')}
                           placeholder="0771234567"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            errors.mobileNumberPersonal && touched.mobileNumberPersonal ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         />
+                        {errors.mobileNumberPersonal && touched.mobileNumberPersonal && (
+                          <p className="mt-1 text-sm text-red-600">{errors.mobileNumberPersonal}</p>
+                        )}
+                        <p className="mt-1 text-xs text-gray-500">Format: 0771234567 (10 digits starting with 0)</p>
                       </div>
 
                       {/* Phone Number (Official) */}
@@ -1438,21 +1703,34 @@ const UserAccountCreation = () => {
                           type="tel"
                           value={formData.phoneNumberOfficial}
                           onChange={(e) => handleFieldChange('phoneNumberOfficial', e.target.value)}
-                          placeholder="Enter your first name"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          onBlur={() => handleBlur('phoneNumberOfficial')}
+                          placeholder="0112345678"
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            errors.phoneNumberOfficial && touched.phoneNumberOfficial ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         />
+                        {errors.phoneNumberOfficial && touched.phoneNumberOfficial && (
+                          <p className="mt-1 text-sm text-red-600">{errors.phoneNumberOfficial}</p>
+                        )}
                       </div>
                     </div>
 
                     {/* Email Address */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address <span className="text-red-500">*</span></label>
                       <input
                         type="email"
                         value={formData.emailAddress}
                         onChange={(e) => handleFieldChange('emailAddress', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => handleBlur('emailAddress')}
+                        placeholder="employee@example.com"
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.emailAddress && touched.emailAddress ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.emailAddress && touched.emailAddress && (
+                        <p className="mt-1 text-sm text-red-600">{errors.emailAddress}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1595,7 +1873,10 @@ const UserAccountCreation = () => {
                     <select
                       value={formData.typeOfEmployment}
                       onChange={(e) => handleFieldChange('typeOfEmployment', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onBlur={() => handleBlur('typeOfEmployment')}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.typeOfEmployment && touched.typeOfEmployment ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       required
                       disabled={loadingEmployeeTypes}
                     >
@@ -1610,6 +1891,9 @@ const UserAccountCreation = () => {
                         ))
                       )}
                     </select>
+                    {errors.typeOfEmployment && touched.typeOfEmployment && (
+                      <p className="mt-1 text-sm text-red-600">{errors.typeOfEmployment}</p>
+                    )}
                   </div>
 
                   {/* Date of Permanent */}
@@ -1620,9 +1904,15 @@ const UserAccountCreation = () => {
                         type="date"
                         value={formData.dateOfPermanent}
                         onChange={(e) => handleFieldChange('dateOfPermanent', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        onBlur={() => handleBlur('dateOfPermanent')}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.dateOfPermanent && touched.dateOfPermanent ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
                     </div>
+                    {errors.dateOfPermanent && touched.dateOfPermanent && (
+                      <p className="mt-1 text-sm text-red-600">{errors.dateOfPermanent}</p>
+                    )}
                   </div>
 
                   {/* Join Date Fields */}
@@ -1635,9 +1925,15 @@ const UserAccountCreation = () => {
                           type="date"
                           value={formData.joinDateContract}
                           onChange={(e) => handleFieldChange('joinDateContract', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          onBlur={() => handleBlur('joinDateContract')}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            errors.joinDateContract && touched.joinDateContract ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         />
                       </div>
+                      {errors.joinDateContract && touched.joinDateContract && (
+                        <p className="mt-1 text-sm text-red-600">{errors.joinDateContract}</p>
+                      )}
                     </div>
 
                     {/* Join Date of Join (Casual) */}
@@ -1648,9 +1944,15 @@ const UserAccountCreation = () => {
                           type="date"
                           value={formData.joinDateCasual}
                           onChange={(e) => handleFieldChange('joinDateCasual', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          onBlur={() => handleBlur('joinDateCasual')}
+                          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            errors.joinDateCasual && touched.joinDateCasual ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         />
                       </div>
+                      {errors.joinDateCasual && touched.joinDateCasual && (
+                        <p className="mt-1 text-sm text-red-600">{errors.joinDateCasual}</p>
+                      )}
                     </div>
                   </div>
                 </div>
