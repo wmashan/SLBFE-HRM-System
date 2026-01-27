@@ -70,7 +70,7 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5062/api/Auth/reset-password', {
+      const response = await axios.post('http://localhost:5000/api/Auth/reset-password', {
         employeeId: employeeId,
         otp: otp,
         newPassword: formData.newPassword,
