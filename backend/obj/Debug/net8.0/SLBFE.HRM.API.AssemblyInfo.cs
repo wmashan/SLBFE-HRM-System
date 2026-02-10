@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SLBFE.HRM.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aca02ae7dc69f3802843cb32e0b08b49971c6f91")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25dc3ec9251620d03a496e5e152106500fec24c4")]
 [assembly: System.Reflection.AssemblyProductAttribute("SLBFE.HRM.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SLBFE.HRM.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
