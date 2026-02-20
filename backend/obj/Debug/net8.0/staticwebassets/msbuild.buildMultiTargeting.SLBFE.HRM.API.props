@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/SLBFE.HRM.API.props" />
+</Project>

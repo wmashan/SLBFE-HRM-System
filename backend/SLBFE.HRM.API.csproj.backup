@@ -38,4 +38,33 @@
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\Entities\" />
+    <Folder Include="Core\Interfaces\" />
+    <Folder Include="Core\Enums\" />
+    <Folder Include="Core\Exceptions\" />
+    <Folder Include="Core\Constants\" />
+    <Folder Include="Application\DTOs\Request\" />
+    <Folder Include="Application\DTOs\Response\" />
+    <Folder Include="Application\Services\Interfaces\" />
+    <Folder Include="Application\Services\Implementation\" />
+    <Folder Include="Application\Validators\" />
+    <Folder Include="Application\Mappings\" />
+    <Folder Include="Application\Common\" />
+    <Folder Include="Infrastructure\Data\Context\" />
+    <Folder Include="Infrastructure\Data\Configurations\" />
+    <Folder Include="Infrastructure\Data\Migrations\" />
+    <Folder Include="Infrastructure\Repositories\" />
+    <Folder Include="Infrastructure\Services\" />
+    <Folder Include="Infrastructure\Configuration\" />
+    <Folder Include="Infrastructure\Identity\" />
+    <Folder Include="Presentation\Controllers\" />
+    <Folder Include="Presentation\Middleware\" />
+    <Folder Include="Presentation\Filters\" />
+    <Folder Include="Presentation\Extensions\" />
+    <Folder Include="Presentation\ActionFilters\" />
+    <Folder Include="Logs\" />
+    <Folder Include="Keys\" />
+  </ItemGroup>
+
 </Project>
