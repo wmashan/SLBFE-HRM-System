@@ -106,6 +106,12 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         /// </summary>
         [MaxLength(50)]
         public string? EmployeeId { get; set; }
+
+        /// <summary>
+        /// Profile Picture URL
+        /// </summary>
+        [MaxLength(500)]
+        public string? ProfilePictureUrl { get; set; }
         #endregion
     }
 
@@ -192,6 +198,12 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
         public DateTime? JoinDateCasual { get; set; }
+
+        /// <summary>
+        /// Profile Picture URL
+        /// </summary>
+        [MaxLength(500)]
+        public string? ProfilePictureUrl { get; set; }
         #endregion
     }
 

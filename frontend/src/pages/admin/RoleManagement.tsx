@@ -71,7 +71,7 @@ const RoleManagement: React.FC = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/User');
+      const response = await fetch('http://localhost:5001/api/User');
       
       if (!response.ok) {
         throw new Error('Failed to fetch users');
@@ -116,7 +116,7 @@ const RoleManagement: React.FC = () => {
       
       // Update each user's role
       for (const userId of userIds) {
-        const response = await fetch(`http://localhost:5000/api/User/${userId}/role`, {
+        const response = await fetch(`http://localhost:5001/api/User/${userId}/role`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -417,7 +417,7 @@ const RoleManagement: React.FC = () => {
                                         setUpdatingUserId(user.id);
                                         try {
                                           const roleId = role.role === 'admin' ? 1 : role.role === 'hr' ? 2 : 3;
-                                          const response = await fetch(`http://localhost:5000/api/User/${user.id}/role`, {
+                                          const response = await fetch(`http://localhost:5001/api/User/${user.id}/role`, {
                                             method: 'PUT',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ roleId }),

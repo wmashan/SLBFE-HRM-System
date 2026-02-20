@@ -15,7 +15,7 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/Auth/forgot-password', {
+      const response = await axios.post('http://localhost:5001/api/Auth/forgot-password', {
         employeeId: employeeId
       });
 

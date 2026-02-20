@@ -196,6 +196,12 @@ namespace SLBFE.HRM.API.Core.Entities
         /// Join Date for Casual employees
         /// </summary>
         public DateTime? JoinDateCasual { get; set; }
+
+        /// <summary>
+        /// Profile Picture URL
+        /// </summary>
+        [MaxLength(500)]
+        public string? ProfilePictureUrl { get; set; }
         #endregion
 
         #region Audit Fields

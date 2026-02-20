@@ -107,7 +107,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email, phoneNumber, o
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/Otp/verify', {
+      const response = await fetch('http://localhost:5001/api/Otp/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ email, phoneNumber, o
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/Otp/generate', {
+      const response = await fetch('http://localhost:5001/api/Otp/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

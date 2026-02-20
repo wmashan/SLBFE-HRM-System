@@ -85,6 +85,8 @@ const UserAccountCreation = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -357,20 +359,45 @@ const UserAccountCreation = () => {
     }));
   };
 
-  const handleFileChange = (file: File | null) => {
-    setFormData(prev => ({
-      ...prev,
-      profilePicture: file
-    }));
-    
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setProfilePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
       setProfilePreview(null);
+      setProfilePictureUrl(null);
+      return;
+    }
+    
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfilePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload to backend
+    setUploadingProfilePic(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      
+      const response = await fetch('http://localhost:5001/api/upload/profile', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+      
+      const result = await response.json();
+      if (result.success && result.data?.url) {
+        setProfilePictureUrl(result.data.url);
+        console.log('Profile picture uploaded successfully:', result.data.url);
+      } else {
+        alert('Failed to upload profile picture: ' + (result.message || 'Unknown error'));
+        setProfilePreview(null);
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Failed to upload profile picture. Please try again.');
+      setProfilePreview(null);
+    } finally {
+      setUploadingProfilePic(false);
     }
   };
 
@@ -480,13 +507,14 @@ const UserAccountCreation = () => {
         ol: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
         al: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
         higherStudies: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
+        profilePictureUrl: profilePictureUrl || undefined,
       };
 
       // Store employee data temporarily
       setPendingEmployeeData(employeeData);
 
       // Generate OTP
-      const otpResponse = await fetch('http://localhost:5000/api/Otp/generate', {
+      const otpResponse = await fetch('http://localhost:5001/api/Otp/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -616,6 +644,7 @@ const UserAccountCreation = () => {
         ol: formData.gceOLExamination ? JSON.stringify({ hasOL: true }) : undefined,
         al: formData.gceALExamination ? JSON.stringify({ hasAL: true }) : undefined,
         higherStudies: formData.higherStudies ? JSON.stringify({ hasHigherStudies: true }) : undefined,
+        profilePictureUrl: profilePictureUrl || undefined,
       };
 
       const response = await employeeService.createEmployee(employeeData);
@@ -1192,12 +1221,13 @@ const UserAccountCreation = () => {
                           accept="image/*"
                           onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                           className="hidden"
+                          disabled={uploadingProfilePic}
                         />
-                        <div className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer hover:bg-blue-700 transition-colors">
-                          Upload Photo
+                        <div className={`bg-blue-600 text-white px-4 py-2 rounded-md text-sm cursor-pointer hover:bg-blue-700 transition-colors ${uploadingProfilePic ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                          {uploadingProfilePic ? 'Uploading...' : 'Upload Photo'}
                         </div>
                       </label>
-                      {profilePreview && (
+                      {profilePreview && !uploadingProfilePic && (
                         <button
                           type="button"
                           onClick={() => handleFileChange(null)}
@@ -1205,6 +1235,23 @@ const UserAccountCreation = () => {
                         >
                           Remove Photo
                         </button>
+                      )}
+                      {uploadingProfilePic && (
+                        <div className="text-sm text-blue-600 mt-2 flex items-center justify-center">
+                          <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Uploading...
+                        </div>
+                      )}
+                      {profilePictureUrl && !uploadingProfilePic && (
+                        <div className="text-sm text-green-600 mt-2 flex items-center justify-center">
+                          <svg className="h-4 w-4 mr-1" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M5 13l4 4L19 7"></path>
+                          </svg>
+                          Photo uploaded successfully
+                        </div>
                       )}
                     </div>
 

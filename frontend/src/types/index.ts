@@ -121,7 +121,7 @@ export interface EmployeeCreateRequest {
   joinDateCasual?: string;
   gender?: string;
   nationality?: string;
-  profilePicture?: string;
+  profilePictureUrl?: string;
   department?: string;
   reportingManagerId?: number;
 }

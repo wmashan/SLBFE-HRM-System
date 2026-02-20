@@ -32,7 +32,7 @@ fi
 
 echo "🔧 Starting Backend API Server..."
 cd backend
-dotnet run --project SLBFE.HRM.API.csproj > ../logs/backend.log 2>&1 &
+dotnet run > ../logs/backend.log 2>&1 &
 BACKEND_PID=$!
 cd ..
 
@@ -47,9 +47,9 @@ cd ..
 
 echo ""
 echo "✅ Both servers are running!"
-echo "📡 Backend API: http://localhost:5000"
-echo "🌐 Frontend: http://localhost:3000"
-echo "📋 Swagger UI: http://localhost:5000/swagger"
+echo "📡 Backend API: http://localhost:5001"
+echo "🌐 Frontend: http://localhost:3000 (or next available port)"
+echo "📋 Swagger UI: http://localhost:5001/swagger"
 echo ""
 echo "📝 Logs are being written to:"
 echo "   - Backend: logs/backend.log"

@@ -52,6 +52,11 @@ namespace SLBFE.HRM.API.Application.DTOs.Response
         public DateTime? PermanentDate { get; set; }
         public DateTime? JoinDateContract { get; set; }
         public DateTime? JoinDateCasual { get; set; }
+
+        /// <summary>
+        /// Profile Picture URL
+        /// </summary>
+        public string? ProfilePictureUrl { get; set; }
         #endregion
 
         #region Audit Information
