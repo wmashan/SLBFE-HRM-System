@@ -6,9 +6,8 @@ namespace SLBFE.HRM.API.Core.Enums
     public enum UserRole
     {
         Admin = 1,
-        SeniorHRManager = 2,
-        HRManager = 3,
-        Employee = 4
+        HRManager = 2,
+        Employee = 3
     }
 
     /// <summary>

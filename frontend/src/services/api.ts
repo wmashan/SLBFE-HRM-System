@@ -145,7 +145,10 @@ class ApiService {
     };
 
     if (this.token) {
+      console.log('Adding Authorization header with token:', this.token.substring(0, 20) + '...');
       headers.Authorization = `Bearer ${this.token}`;
+    } else {
+      console.warn('No token available for Authorization header');
     }
 
     return headers;
@@ -251,11 +254,16 @@ class ApiService {
         // Use the JWT access token from backend
         const token = response.data.accessToken;
         
+        console.log('Login successful - Token received:', token ? token.substring(0, 30) + '...' : 'NO TOKEN');
+        console.log('Setting this.token and saving to localStorage');
+        
         this.token = token;
         localStorage.setItem('slbfe_auth_token', token);
         localStorage.setItem('slbfe_refresh_token', response.data.refreshToken);
         localStorage.setItem('slbfe_user_data', JSON.stringify(user));
         localStorage.setItem('slbfe_user_id', response.data.userId.toString());
+        
+        console.log('Token saved. Current this.token:', this.token ? this.token.substring(0, 30) + '...' : 'NO TOKEN');
 
         return {
           success: true,

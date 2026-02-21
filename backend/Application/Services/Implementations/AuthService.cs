@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SLBFE.HRM.API.Application.DTOs.Request;
@@ -19,13 +20,15 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
     public class AuthService : IAuthService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
         private const int DEFAULT_JWT_EXPIRY_MINUTES = 60; // 1 hour
         private const int REFRESH_TOKEN_EXPIRY_DAYS = 7; // 7 days
 
-        public AuthService(ApplicationDbContext context, ILogger<AuthService> logger)
+        public AuthService(ApplicationDbContext context, IConfiguration configuration, ILogger<AuthService> logger)
         {
             _context = context;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -62,24 +65,26 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
                     return null;
                 }
 
-                // Get JWT settings from SystemSettings
-                var jwtSecretKey = await GetSystemSettingAsync("JWT_Secret_Key");
-                var jwtExpiryMinutes = await GetSystemSettingAsync("JWT_Expiry_Minutes");
+                // Get JWT settings from Configuration
+                var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
+                var jwtIssuer = _configuration["JwtSettings:Issuer"];
+                var jwtAudience = _configuration["JwtSettings:Audience"];
+                var jwtExpiryMinutesStr = _configuration["JwtSettings:ExpiryMinutes"];
 
                 if (string.IsNullOrEmpty(jwtSecretKey))
                 {
-                    _logger.LogError("JWT_Secret_Key not found in SystemSettings");
+                    _logger.LogError("JWT_Secret_Key not found in Configuration");
                     throw new InvalidOperationException("JWT configuration is missing");
                 }
 
                 int expiryMinutes = DEFAULT_JWT_EXPIRY_MINUTES;
-                if (!string.IsNullOrEmpty(jwtExpiryMinutes) && int.TryParse(jwtExpiryMinutes, out int parsedExpiry))
+                if (!string.IsNullOrEmpty(jwtExpiryMinutesStr) && int.TryParse(jwtExpiryMinutesStr, out int parsedExpiry))
                 {
                     expiryMinutes = parsedExpiry;
                 }
 
                 // Generate JWT access token
-                var accessToken = GenerateJwtToken(user.UserId, user.RoleID, jwtSecretKey, expiryMinutes);
+                var accessToken = GenerateJwtToken(user.UserId, user.RoleID, jwtSecretKey, jwtIssuer, jwtAudience, expiryMinutes);
 
                 // Generate refresh token
                 var refreshToken = GenerateRefreshToken();
@@ -168,24 +173,25 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
                     return null;
                 }
 
-                // Get JWT settings from SystemSettings
-                var jwtSecretKey = await GetSystemSettingAsync("JWT_Secret_Key");
-                var jwtExpiryMinutes = await GetSystemSettingAsync("JWT_Expiry_Minutes");
+                // Get JWT settings from appsettings.json
+                var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
+                var jwtIssuer = _configuration["JwtSettings:Issuer"];
+                var jwtAudience = _configuration["JwtSettings:Audience"];
 
                 if (string.IsNullOrEmpty(jwtSecretKey))
                 {
-                    _logger.LogError("JWT_Secret_Key not found in SystemSettings");
+                    _logger.LogError("JWT_Secret_Key not found in configuration");
                     throw new InvalidOperationException("JWT configuration is missing");
                 }
 
                 int expiryMinutes = DEFAULT_JWT_EXPIRY_MINUTES;
-                if (!string.IsNullOrEmpty(jwtExpiryMinutes) && int.TryParse(jwtExpiryMinutes, out int parsedExpiry))
+                if (int.TryParse(_configuration["JwtSettings:ExpirationMinutes"], out int configExpiry))
                 {
-                    expiryMinutes = parsedExpiry;
+                    expiryMinutes = configExpiry;
                 }
 
                 // Generate new JWT access token
-                var newAccessToken = GenerateJwtToken(user.UserId, user.RoleID, jwtSecretKey, expiryMinutes);
+                var newAccessToken = GenerateJwtToken(user.UserId, user.RoleID, jwtSecretKey, jwtIssuer, jwtAudience, expiryMinutes);
 
                 // Generate new refresh token
                 var newRefreshToken = GenerateRefreshToken();
@@ -287,7 +293,7 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
         /// <summary>
         /// Generate JWT access token with user claims
         /// </summary>
-        private string GenerateJwtToken(int userId, int roleId, string secretKey, int expiryMinutes)
+        private string GenerateJwtToken(int userId, int roleId, string secretKey, string issuer, string audience, int expiryMinutes)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(secretKey);
@@ -305,8 +311,8 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(expiryMinutes),
-                Issuer = "SLBFE-HRM-System",
-                Audience = "SLBFE-HRM-Users",
+                Issuer = issuer,
+                Audience = audience,
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
@@ -365,8 +371,9 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
         {
             try
             {
-                var jwtSecretKey = _context.SystemSettings
-                    .FirstOrDefault(s => s.SettingKey == "JWT_Secret_Key")?.SettingValue;
+                var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
+                var jwtIssuer = _configuration["JwtSettings:Issuer"];
+                var jwtAudience = _configuration["JwtSettings:Audience"];
 
                 if (string.IsNullOrEmpty(jwtSecretKey))
                 {
@@ -379,8 +386,8 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
                     ValidateAudience = true,
                     ValidateLifetime = false, // Don't validate lifetime for expired token
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = "SLBFE-HRM-System",
-                    ValidAudience = "SLBFE-HRM-Users",
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
                     ClockSkew = TimeSpan.Zero
                 };
