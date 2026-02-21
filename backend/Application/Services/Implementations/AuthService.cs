@@ -292,12 +292,15 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(secretKey);
 
+            // Map roleId to role name for authorization
+            var roleName = MapRoleIdToRoleName(roleId);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                    new Claim(ClaimTypes.Role, roleId.ToString()),
+                    new Claim(ClaimTypes.Role, roleName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique token ID
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
                 }),
@@ -311,6 +314,20 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        /// <summary>
+        /// Map RoleID to role name
+        /// </summary>
+        private string MapRoleIdToRoleName(int roleId)
+        {
+            return roleId switch
+            {
+                1 => "SystemAdmin",
+                2 => "HR Manager",
+                3 => "Employee",
+                _ => "Employee"
+            };
         }
 
         /// <summary>

@@ -94,10 +94,10 @@ builder.Services.AddAuthentication(options =>
 // Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
-    options.AddPolicy("HRManagerOnly", policy => policy.RequireRole("hr", "senior_hr_manager", "admin"));
-    options.AddPolicy("SeniorHROnly", policy => policy.RequireRole("senior_hr_manager", "admin"));
-    options.AddPolicy("EmployeeOnly", policy => policy.RequireRole("employee", "hr", "senior_hr_manager", "admin"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("SystemAdmin"));
+    options.AddPolicy("HRManagerOnly", policy => policy.RequireRole("HR Manager", "SystemAdmin"));
+    options.AddPolicy("SeniorHROnly", policy => policy.RequireRole("HR Manager", "SystemAdmin"));
+    options.AddPolicy("EmployeeOnly", policy => policy.RequireRole("Employee", "HR Manager", "SystemAdmin"));
 });
 
 // CORS Configuration

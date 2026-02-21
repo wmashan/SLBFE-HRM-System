@@ -70,7 +70,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// <param name="fileUrl">The relative URL of the file to delete</param>
         /// <returns>Success status</returns>
         [HttpDelete]
-        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        [Authorize(Roles = "SystemAdmin,HR Manager")]
         public async Task<IActionResult> DeleteFile([FromQuery] string fileUrl)
         {
             try

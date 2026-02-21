@@ -135,7 +135,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// Update existing employee
         /// </summary>
         [HttpPut("{employeeId}")]
-        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        [Authorize(Roles = "SystemAdmin,HR Manager")]
         public async Task<ActionResult<EmployeeDto>> UpdateEmployee(string employeeId, [FromBody] UpdateEmployeeDto updateEmployeeDto)
         {
             try
@@ -161,7 +161,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// Delete employee (soft delete)
         /// </summary>
         [HttpDelete("{employeeId}")]
-        [Authorize(Roles = "admin,senior_hr_manager")]
+        [Authorize(Roles = "SystemAdmin,HR Manager")]
         public async Task<ActionResult> DeleteEmployee(string employeeId)
         {
             try
@@ -292,7 +292,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// Get pending employee applications
         /// </summary>
         [HttpGet("pending-applications")]
-        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        [Authorize(Roles = "SystemAdmin,HR Manager")]
         public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetPendingApplications()
         {
             try
@@ -311,7 +311,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// Get all employee applications with status
         /// </summary>
         [HttpGet("all-applications")]
-        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        [Authorize(Roles = "SystemAdmin,HR Manager")]
         public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetAllApplications()
         {
             try
@@ -330,7 +330,7 @@ namespace SLBFE.HRM.API.Presentation.Controllers
         /// Review employee application (Approve or Reject)
         /// </summary>
         [HttpPost("{employeeId}/review")]
-        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        [Authorize(Roles = "SystemAdmin,HR Manager")]
         public async Task<ActionResult<EmployeeDto>> ReviewApplication(string employeeId, [FromBody] ReviewEmployeeApplicationDto reviewDto)
         {
             try

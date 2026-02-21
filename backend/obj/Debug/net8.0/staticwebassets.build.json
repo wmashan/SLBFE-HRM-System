@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "7k9VEDcy07bp0rSO5lVJsxkuCZCl7oeeBJoes8MtE90=",
+  "Hash": "S9D6SJaupiJiabEHzTxvpPonHJ5ZgDVZzS18Agm2ARA=",
   "Source": "SLBFE.HRM.API",
   "BasePath": "_content/SLBFE.HRM.API",
   "Mode": "Default",
@@ -148,6 +148,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/uploads/profiles/profile_a4ede28b-5035-4ff8-bebe-0b816dd586ce.jpeg"
+    },
+    {
+      "Identity": "/Users/ashanwickramanayaka/files/Project/SLBFE-HRM-System/backend/wwwroot/uploads/profiles/profile_c4d12bd1-b610-4c21-b746-3700bd1c9de7.jpeg",
+      "SourceId": "SLBFE.HRM.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/ashanwickramanayaka/files/Project/SLBFE-HRM-System/backend/wwwroot/",
+      "BasePath": "_content/SLBFE.HRM.API",
+      "RelativePath": "uploads/profiles/profile_c4d12bd1-b610-4c21-b746-3700bd1c9de7.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/profiles/profile_c4d12bd1-b610-4c21-b746-3700bd1c9de7.jpeg"
     },
     {
       "Identity": "/Users/ashanwickramanayaka/files/Project/SLBFE-HRM-System/backend/wwwroot/uploads/profiles/profile_f978dbe9-a382-4ee1-ac4d-2ad96a28427e.jpeg",

@@ -112,6 +112,22 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\profiles\profile_a4ede28b-5035-4ff8-bebe-0b816dd586ce.jpeg))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\profiles\profile_c4d12bd1-b610-4c21-b746-3700bd1c9de7.jpeg))">
+      <SourceType>Package</SourceType>
+      <SourceId>SLBFE.HRM.API</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/SLBFE.HRM.API</BasePath>
+      <RelativePath>uploads/profiles/profile_c4d12bd1-b610-4c21-b746-3700bd1c9de7.jpeg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\profiles\profile_c4d12bd1-b610-4c21-b746-3700bd1c9de7.jpeg))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\profiles\profile_f978dbe9-a382-4ee1-ac4d-2ad96a28427e.jpeg))">
       <SourceType>Package</SourceType>
       <SourceId>SLBFE.HRM.API</SourceId>
