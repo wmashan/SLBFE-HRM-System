@@ -14,6 +14,7 @@ import BackupRestore from './pages/admin/BackupRestore';
 import SystemDocumentManagement from './pages/admin/SystemDocumentManagement';
 import TaskAssignment from './pages/admin/TaskAssignment';
 import TrainingFeedbackForm from './pages/TrainingFeedbackForm';
+import ApplicationReview from './pages/dashboard/ApplicationReview';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
@@ -92,6 +93,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <SystemDocumentManagement />
+              </ProtectedRoute>
+            } 
+          />
+          {/* Application Review Route */}
+          <Route 
+            path="/applications/:employeeId/review" 
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'hr', 'senior_hr_manager']}>
+                <ApplicationReview />
               </ProtectedRoute>
             } 
           />

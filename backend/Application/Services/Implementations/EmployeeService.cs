@@ -185,7 +185,7 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
                 RoleID = 3, // Default role ID
                 UserName = employee.EmployeeId,
                 PasswordHash = passwordHash,
-                Status = "Active",
+                Status = "Inactive",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -354,6 +354,99 @@ namespace SLBFE.HRM.API.Application.Services.Implementations
 
             // Shuffle the password characters
             return new string(password.OrderBy(x => random.Next()).ToArray());
+        }
+
+        /// <summary>
+        /// Get pending employee applications
+        /// </summary>
+        public async Task<IEnumerable<EmployeeSummaryDto>> GetPendingApplicationsAsync()
+        {
+            var pendingApplications = await (from e in _context.Employees
+                                             join u in _context.Users on e.EmployeeId equals u.EmployeeId
+                                             where u.Status == "Inactive"
+                                             orderby e.CreatedAt descending
+                                             select new
+                                             {
+                                                 Employee = e,
+                                                 UserStatus = u.Status
+                                             }).ToListAsync();
+
+            var result = pendingApplications.Select(pa =>
+            {
+                var dto = _mapper.Map<EmployeeSummaryDto>(pa.Employee);
+                dto.Status = pa.UserStatus;
+                return dto;
+            });
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get all employee applications with status
+        /// </summary>
+        public async Task<IEnumerable<EmployeeSummaryDto>> GetAllApplicationsAsync()
+        {
+            var allApplications = await (from e in _context.Employees
+                                         join u in _context.Users on e.EmployeeId equals u.EmployeeId
+                                         orderby e.CreatedAt descending
+                                         select new
+                                         {
+                                             Employee = e,
+                                             UserStatus = u.Status
+                                         }).ToListAsync();
+
+            var result = allApplications.Select(app =>
+            {
+                var dto = _mapper.Map<EmployeeSummaryDto>(app.Employee);
+                dto.Status = app.UserStatus;
+                return dto;
+            });
+
+            return result;
+        }
+
+        /// <summary>
+        /// Review employee application (Approve or Reject)
+        /// </summary>
+        public async Task<EmployeeDto> ReviewEmployeeApplicationAsync(string employeeId, ReviewEmployeeApplicationDto reviewDto, string reviewerId)
+        {
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            if (employee == null)
+            {
+                throw new InvalidOperationException($"Employee with ID {employeeId} not found");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.EmployeeId == employeeId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User account not found for employee {employeeId}");
+            }
+
+            if (user.Status != "Inactive")
+            {
+                throw new InvalidOperationException($"Application is not in Inactive status and cannot be reviewed");
+            }
+
+            // Validate status
+            if (reviewDto.Status != "Approved" && reviewDto.Status != "Rejected")
+            {
+                throw new InvalidOperationException("Status must be either 'Approved' or 'Rejected'");
+            }
+
+            // Update user status
+            user.Status = reviewDto.Status == "Approved" ? "Active" : "Rejected";
+            user.UpdatedAt = DateTime.UtcNow;
+
+            // Update employee record
+            employee.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<EmployeeDto>(employee);
         }
     }
 }

@@ -1,6 +1,6 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, Title, Division, Grade, EmployeeType } from '../types';
+import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, EmployeeType } from '../types';
 
 // Salary Management Types
 interface SalaryRecord {
@@ -392,6 +392,10 @@ class ApiService {
     return this.request<Employee>(`/Employee/${id}`);
   }
 
+  async getEmployeeByEmployeeId(employeeId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/Employee/${employeeId}`);
+  }
+
   async createEmployee(employeeData: EmployeeCreateRequest): Promise<ApiResponse<Employee>> {
     return this.request<Employee>('/Employee', {
       method: 'POST',
@@ -444,6 +448,25 @@ class ApiService {
 
   async checkEmployeeUnique(field: string, value: string): Promise<ApiResponse<boolean>> {
     return this.request<boolean>(`/Employee/check-unique?${field}=${encodeURIComponent(value)}`);
+  }
+
+  // Application Review Methods
+  async getPendingApplications(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Employee/pending-applications');
+  }
+
+  async getAllApplications(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Employee/all-applications');
+  }
+
+  async reviewApplication(employeeId: string, reviewData: {
+    status: string;
+    reviewComments?: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request<any>(`/Employee/${employeeId}/review`, {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    });
   }
 
   // Department Methods
@@ -1026,11 +1049,16 @@ export const authService = {
 export const employeeService = {
   getEmployees: (params?: any) => apiService.getEmployees(params),
   getEmployee: (id: number) => apiService.getEmployee(id),
+  getEmployeeByEmployeeId: (employeeId: string) => apiService.getEmployeeByEmployeeId(employeeId),
   createEmployee: (data: EmployeeCreateRequest) => apiService.createEmployee(data),
   updateEmployee: (id: number, data: Partial<Employee>) => apiService.updateEmployee(id, data),
   deleteEmployee: (id: number) => apiService.deleteEmployee(id),
   searchEmployees: (params?: any) => apiService.searchEmployees(params),
   checkEmployeeUnique: (field: string, value: string) => apiService.checkEmployeeUnique(field, value),
+  getPendingApplications: () => apiService.getPendingApplications(),
+  getAllApplications: () => apiService.getAllApplications(),
+  reviewApplication: (employeeId: string, reviewData: { status: string; reviewComments?: string }) => 
+    apiService.reviewApplication(employeeId, reviewData),
 };
 
 export const departmentService = {

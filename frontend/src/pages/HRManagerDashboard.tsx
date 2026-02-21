@@ -17,10 +17,11 @@ import {
   Shield
 } from 'lucide-react';
 import { HRFeature } from '../types';
+import { employeeService } from '../services/api';
 
 // Import dashboard page components
 import Overview from './dashboard/Overview';
-import Applications from './Applications';
+import Applications from './dashboard/Applications';
 import MedicalManagement from './dashboard/MedicalManagement';
 import Employees from './dashboard/Employees';
 import Reports from './dashboard/Reports';
@@ -40,6 +41,7 @@ const HRManagerDashboard = () => {
     initials: 'HM'
   });
   const [userPermissions, setUserPermissions] = useState<HRFeature[]>([]);
+  const [pendingApplicationsCount, setPendingApplicationsCount] = useState<number>(0);
 
   // Define navigation items with their corresponding features
   const navigationItems = [
@@ -114,7 +116,19 @@ const HRManagerDashboard = () => {
 
   useEffect(() => {
     loadUserData();
+    fetchPendingApplicationsCount();
   }, []);
+
+  const fetchPendingApplicationsCount = async () => {
+    try {
+      const response = await employeeService.getPendingApplications();
+      if (response.success && response.data) {
+        setPendingApplicationsCount(response.data.length);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending applications count:', error);
+    }
+  };
 
   const loadUserData = async () => {
     try {      
@@ -195,9 +209,9 @@ const HRManagerDashboard = () => {
     return 'HR Manager';
   };
 
-  // Sample data for badge display
+  // Dashboard stats
   const dashboardStats = {
-    newApplications: 23
+    newApplications: pendingApplicationsCount
   };
 
   return (

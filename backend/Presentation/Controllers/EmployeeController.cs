@@ -287,5 +287,73 @@ namespace SLBFE.HRM.API.Presentation.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Get pending employee applications
+        /// </summary>
+        [HttpGet("pending-applications")]
+        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetPendingApplications()
+        {
+            try
+            {
+                var applications = await _employeeService.GetPendingApplicationsAsync();
+                return Ok(applications);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting pending applications");
+                return StatusCode(500, "An error occurred while retrieving pending applications");
+            }
+        }
+
+        /// <summary>
+        /// Get all employee applications with status
+        /// </summary>
+        [HttpGet("all-applications")]
+        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        public async Task<ActionResult<IEnumerable<EmployeeSummaryDto>>> GetAllApplications()
+        {
+            try
+            {
+                var applications = await _employeeService.GetAllApplicationsAsync();
+                return Ok(applications);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all applications");
+                return StatusCode(500, "An error occurred while retrieving all applications");
+            }
+        }
+
+        /// <summary>
+        /// Review employee application (Approve or Reject)
+        /// </summary>
+        [HttpPost("{employeeId}/review")]
+        [Authorize(Roles = "admin,senior_hr_manager,hr")]
+        public async Task<ActionResult<EmployeeDto>> ReviewApplication(string employeeId, [FromBody] ReviewEmployeeApplicationDto reviewDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                // Get reviewer ID from claims
+                var reviewerId = User.FindFirst("EmployeeId")?.Value ?? User.Identity?.Name ?? "System";
+
+                var employee = await _employeeService.ReviewEmployeeApplicationAsync(employeeId, reviewDto, reviewerId);
+                return Ok(employee);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reviewing application: {EmployeeId}", employeeId);
+                return StatusCode(500, "An error occurred while reviewing the application");
+            }
+        }
+
     }
 }

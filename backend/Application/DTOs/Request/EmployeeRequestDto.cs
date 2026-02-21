@@ -221,7 +221,20 @@ namespace SLBFE.HRM.API.Application.DTOs.Request
         public DateTime? JoinDateTo { get; set; }
         public int? PageNumber { get; set; } = 1;
         public int? PageSize { get; set; } = 10;
-        public string? SortBy { get; set; } = "FullName";
-        public bool? SortDescending { get; set; } = false;
+        public string? SortBy { get; set; } = "CreatedAt";
+        public string? Status { get; set; }
+        public bool? SortDescending { get; set; } = true;
+    }
+    /// <summary>
+    /// Review Employee Application Request DTO
+    /// </summary>
+    public class ReviewEmployeeApplicationDto
+    {
+        [Required]
+        [MaxLength(20)]
+        public string Status { get; set; } = string.Empty; // "Approved" or "Rejected"
+
+        [MaxLength(500)]
+        public string? ReviewComments { get; set; }
     }
 }

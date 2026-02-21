@@ -79,6 +79,9 @@ namespace SLBFE.HRM.API.Application.DTOs.Response
         public string Contact1 { get; set; } = string.Empty;
         public int EmployeeTypeId { get; set; }
         public DateTime? JoinDate { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string? ProfilePictureUrl { get; set; }
+        public string? Status { get; set; }  // User status from Users table
     }
 
     /// <summary>

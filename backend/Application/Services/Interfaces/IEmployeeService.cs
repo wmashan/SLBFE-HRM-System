@@ -77,5 +77,20 @@ namespace SLBFE.HRM.API.Application.Services.Interfaces
         /// Get employees by designation
         /// </summary>
         Task<IEnumerable<EmployeeSummaryDto>> GetEmployeesByDesignationAsync(string designation);
+
+        /// <summary>
+        /// Get pending employee applications
+        /// </summary>
+        Task<IEnumerable<EmployeeSummaryDto>> GetPendingApplicationsAsync();
+
+        /// <summary>
+        /// Get all employee applications with status
+        /// </summary>
+        Task<IEnumerable<EmployeeSummaryDto>> GetAllApplicationsAsync();
+
+        /// <summary>
+        /// Review employee application (Approve or Reject)
+        /// </summary>
+        Task<EmployeeDto> ReviewEmployeeApplicationAsync(string employeeId, ReviewEmployeeApplicationDto reviewDto, string reviewerId);
     }
 }

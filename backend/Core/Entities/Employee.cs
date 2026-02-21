@@ -204,6 +204,7 @@ namespace SLBFE.HRM.API.Core.Entities
         public string? ProfilePictureUrl { get; set; }
         #endregion
 
+
         #region Audit Fields
         /// <summary>
         /// Record creation timestamp
