@@ -971,7 +971,7 @@ const UserAccountCreation = () => {
                 <div>
                   <span className="text-sm font-medium text-gray-500">Title:</span>
                   <p className="text-gray-900">
-                    {titles.find(t => t.titleId === formData.title)?.description || formData.title || 'Not provided'}
+                    {titles.find(t => t.titleId === parseInt(formData.title))?.description || formData.title || 'Not provided'}
                   </p>
                 </div>
                 <div>
