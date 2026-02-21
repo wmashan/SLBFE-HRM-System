@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { employeeService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 interface Application {
   employeeId: string;
@@ -228,9 +229,10 @@ const Applications = () => {
                         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                           {application.profilePictureUrl ? (
                             <img 
-                              src={application.profilePictureUrl} 
+                              src={getImageUrl(application.profilePictureUrl)} 
                               alt={application.fullName}
                               className="w-full h-full object-cover"
+                              onError={handleImageError}
                             />
                           ) : (
                             <User className="w-6 h-6 text-gray-600" />

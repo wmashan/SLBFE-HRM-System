@@ -19,6 +19,7 @@ import {
   Home
 } from 'lucide-react';
 import { employeeService } from '../../services/api';
+import { getImageUrl, handleImageError } from '../../utils/imageUtils';
 
 interface EmployeeDetails {
   employeeId: string;
@@ -231,9 +232,10 @@ const ApplicationReview = () => {
                 <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-100">
                   {employee.profilePictureUrl ? (
                     <img
-                      src={employee.profilePictureUrl}
+                      src={getImageUrl(employee.profilePictureUrl)}
                       alt={employee.fullName}
                       className="w-full h-full object-cover"
+                      onError={handleImageError}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
