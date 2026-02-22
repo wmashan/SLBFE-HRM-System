@@ -135,8 +135,7 @@ SLBFE-HRM-System/
 - ⏳ **Testing Suite** - Unit and integration tests (0% Complete)
 
 **Overall Progress**: ~40% Complete  
-**Estimated Time to Production**: 8-12 weeks with dedicated team
-
+**Estimated Time to Production**: 8-12 weeks 
 ### Key Features Implemented
 
 #### Backend Infrastructure
