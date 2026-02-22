@@ -4,7 +4,7 @@ A comprehensive Human Resource Management System built specifically for the Sri 
 
 ## 📋 Project Overview
 
-The SLBFE HRM System is designed to streamline HR operations for Sri Lanka's premier foreign employment bureau, managing staff across 50+ branches and facilitating overseas employment for thousands of Sri Lankan workers.
+The SLBFE HRM System is designed to streamline HR operations for Sri Lanka's premier foreign employment bureau, managing staff across branches and facilitating overseas employment.
 
 ## 🏗️ Architecture
 
@@ -304,16 +304,6 @@ dotnet clean
 dotnet restore
 npm install
 ```
-
-For more troubleshooting, see [Quick Reference Guide](docs/QUICK_REFERENCE.md)
-
-## 📞 Support
-
-- **IT Department**: it@slbfe.lk
-- **Development Team**: dev@slbfe.lk
-- **SLBFE Hotline**: 1989
-- **GitHub Issues**: [Report Issues](https://github.com/wmashan/SLBFE-HRM-System/issues)
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
