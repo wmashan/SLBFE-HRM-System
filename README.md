@@ -137,14 +137,6 @@ SLBFE-HRM-System/
 **Overall Progress**: ~40% Complete  
 **Estimated Time to Production**: 8-12 weeks with dedicated team
 
-## 📚 Documentation
-
-### Quick Links
-- [IIS Deployment Optimization Guide](docs/IIS_DEPLOYMENT_OPTIMIZATION.md)
-- [Code Structure Analysis](docs/CODE_STRUCTURE_ANALYSIS.md)
-- [Deployment Scripts](docs/DEPLOYMENT_SCRIPTS.md)
-- [Quick Reference Guide](docs/QUICK_REFERENCE.md)
-
 ### Key Features Implemented
 
 #### Backend Infrastructure
