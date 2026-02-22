@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../buildMultiTargeting/SLBFE.HRM.API.props" />
+</Project>

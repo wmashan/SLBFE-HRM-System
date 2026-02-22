@@ -12,7 +12,9 @@ import {
   Settings,
   Globe,
   Calendar,
-  UserCheck
+  UserCheck,
+  Shield,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { NavigationItem } from '../../types';
@@ -20,81 +22,138 @@ import { NavigationItem } from '../../types';
 const Sidebar: React.FC = () => {
   const { user } = useAuth();
 
-  const navigationItems: NavigationItem[] = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      path: '/dashboard',
-      icon: Home,
-      roles: ['employee', 'hr', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
-    },
-    {
-      id: 'employees',
-      label: 'Employees',
-      path: '/employees',
-      icon: Users,
-      roles: ['hr', 'branch_manager', 'program_manager', 'admin'],
-    },
-    {
-      id: 'departments',
-      label: 'Departments',
-      path: '/departments',
-      icon: Building2,
-      roles: ['hr', 'branch_manager', 'program_manager', 'admin'],
-    },
-    {
-      id: 'branches',
-      label: 'Branches',
-      path: '/branches',
-      icon: Globe,
-      roles: ['hr', 'program_manager', 'admin'],
-    },
-    {
-      id: 'training',
-      label: 'Training Programs',
-      path: '/training',
-      icon: Award,
-      roles: ['training_coordinator', 'hr', 'program_manager', 'admin'],
-    },
-    {
-      id: 'attendance',
-      label: 'Attendance',
-      path: '/attendance',
-      icon: Calendar,
-      roles: ['hr', 'branch_manager', 'program_manager', 'admin'],
-    },
-    {
-      id: 'recruitment',
-      label: 'Recruitment',
-      path: '/recruitment',
-      icon: UserCheck,
-      roles: ['hr', 'program_manager', 'admin'],
-    },
-    {
-      id: 'reports',
-      label: 'Reports',
-      path: '/reports',
-      icon: BarChart3,
-      roles: ['hr', 'branch_manager', 'program_manager', 'admin'],
-    },
-    {
-      id: 'documents',
-      label: 'Documents',
-      path: '/documents',
-      icon: FileText,
-      roles: ['employee', 'hr', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      path: '/settings',
-      icon: Settings,
-      roles: ['hr', 'admin'],
-    },
-  ];
+  const getNavigationItems = (): NavigationItem[] => {
+    const commonItems: NavigationItem[] = [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        path: user?.role === 'admin' ? '/admin-dashboard' : user?.role === 'employee' ? '/employee-dashboard' : '/hr-dashboard',
+        icon: Home,
+        roles: ['employee', 'hr', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
+      }
+    ];
+
+    // Add role-specific navigation items
+    const roleBasedItems: NavigationItem[] = [];
+
+    if (user?.role === 'admin') {
+      roleBasedItems.push(
+        {
+          id: 'user-management',
+          label: 'User Management',
+          path: '/admin/users',
+          icon: Users,
+          roles: ['admin'],
+        },
+        {
+          id: 'role-management',
+          label: 'Role Management',
+          path: '/admin/roles',
+          icon: UserCheck,
+          roles: ['admin'],
+        },
+        {
+          id: 'task-assignment',
+          label: 'Task Assignment',
+          path: '/admin/task-assignment',
+          icon: Shield,
+          roles: ['admin'],
+        },
+        {
+          id: 'backup-restore',
+          label: 'Backup & Restore',
+          path: '/admin/backup',
+          icon: Database,
+          roles: ['admin'],
+        }
+      );
+    }
+
+    // Common HR and business items for non-admin roles
+    if (user?.role !== 'admin') {
+      roleBasedItems.push(
+        {
+          id: 'employees',
+          label: 'Employees',
+          path: '/employees',
+          icon: Users,
+          roles: ['hr', 'branch_manager', 'program_manager'],
+        },
+        {
+          id: 'departments',
+          label: 'Departments',
+          path: '/departments',
+          icon: Building2,
+          roles: ['hr', 'branch_manager', 'program_manager'],
+        },
+        {
+          id: 'branches',
+          label: 'Branches',
+          path: '/branches',
+          icon: Globe,
+          roles: ['hr', 'program_manager'],
+        },
+        {
+          id: 'training',
+          label: 'Training Programs',
+          path: '/training',
+          icon: Award,
+          roles: ['training_coordinator', 'hr', 'program_manager'],
+        },
+        {
+          id: 'attendance',
+          label: 'Attendance',
+          path: '/attendance',
+          icon: Calendar,
+          roles: ['hr', 'branch_manager', 'program_manager'],
+        },
+        {
+          id: 'recruitment',
+          label: 'Recruitment',
+          path: '/recruitment',
+          icon: UserCheck,
+          roles: ['hr', 'program_manager'],
+        },
+        {
+          id: 'reports',
+          label: 'Reports',
+          path: '/reports',
+          icon: BarChart3,
+          roles: ['hr', 'branch_manager', 'program_manager'],
+        }
+      );
+    }
+
+    // Add items available to all roles
+    roleBasedItems.push(
+      {
+        id: 'documents',
+        label: 'Documents',
+        path: '/documents',
+        icon: FileText,
+        roles: ['employee', 'hr', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
+      }
+    );
+
+    // Settings for admins and HR
+    if (user?.role === 'admin' || user?.role === 'hr') {
+      roleBasedItems.push({
+        id: 'settings',
+        label: user?.role === 'admin' ? 'System Settings' : 'Settings',
+        path: user?.role === 'admin' ? '/admin/settings' : '/settings',
+        icon: Settings,
+        roles: ['hr', 'admin'],
+      });
+    }
+
+    return [...commonItems, ...roleBasedItems];
+  };
+
+  const navigationItems = getNavigationItems();
 
   const hasAccess = (item: NavigationItem): boolean => {
-    return !item.roles || item.roles.includes(user?.role || '');
+    if (!item.roles || !user?.role) return true;
+    return item.roles.includes(user.role);
   };
 
   return (

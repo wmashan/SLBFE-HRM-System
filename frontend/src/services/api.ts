@@ -1,9 +1,130 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, PaginatedResponse, User, LoginCredentials, RegisterData } from '../types';
+import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, EmployeeType } from '../types';
+
+// Salary Management Types
+interface SalaryRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  baseSalary: number;
+  allowances: number;
+  deductions: number;
+  netSalary: number;
+  paymentDate: string;
+  status: 'paid' | 'pending' | 'processing';
+}
+
+interface SalaryAdjustment {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  currentSalary: number;
+  proposedSalary: number;
+  adjustmentType: 'increase' | 'decrease' | 'bonus' | 'promotion';
+  reason: string;
+  effectiveDate: string;
+  approvedBy?: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+interface SalaryStats {
+  totalSalaryBudget: number;
+  averageSalary: number;
+  pendingPayments: number;
+  totalEmployees: number;
+}
+
+interface UpcomingIncrement {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  department: string;
+  position: string;
+  currentSalary: number;
+  incrementAmount: number;
+  newSalary: number;
+  incrementType: 'annual' | 'performance' | 'promotion' | 'market_adjustment';
+  scheduledDate: string;
+  notificationDate: string;
+  isNotified: boolean;
+  approvalRequired: boolean;
+  status: 'scheduled' | 'approved' | 'on_hold' | 'processed';
+  reason?: string;
+  approvedBy?: string;
+}
+
+// Retirement Management Types
+interface RetirementRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  title: string;
+  department: string;
+  position: string;
+  dateOfBirth: string;
+  joinDate: string;
+  serviceConfirmationDate?: string;
+  currentAge: number;
+  yearsOfService: number;
+  retirementEligibilityDate: string;
+  plannedRetirementDate?: string;
+  actualRetirementDate?: string;
+  retirementType: 'mandatory' | 'voluntary' | 'early' | 'medical';
+  status: 'active' | 'pre_retirement' | 'retired' | 'extended';
+  pensionEligible: boolean;
+  currentSalary: number;
+  estimatedPension?: number;
+  lastWorkingDay?: string;
+  notificationSent: boolean;
+  threeMonthNotificationSent: boolean;
+  handoverStatus?: 'not_started' | 'in_progress' | 'completed';
+  // SLBFE specific fields
+  epfNumber?: string;
+  etfNumber?: string;
+  serviceWithSLBFE: string; // Service duration as of specific date
+  serviceAsAtDate: string; // The date as of which service is calculated
+  confirmationLetterIssued: boolean;
+  confirmationLetterDate?: string;
+}
+
+interface RetirementBenefit {
+  id: string;
+  employeeId: string;
+  benefitType: 'pension' | 'gratuity' | 'leave_encashment' | 'medical' | 'other';
+  amount: number;
+  eligibilityDate: string;
+  status: 'eligible' | 'not_eligible' | 'processed' | 'pending';
+  description: string;
+}
+
+interface RetirementPlanning {
+  id: string;
+  employeeId: string;
+  plannedRetirementDate: string;
+  handoverPlan: string;
+  replacementIdentified: boolean;
+  replacementEmployeeId?: string;
+  knowledgeTransferPlan: string;
+  exitInterviewScheduled: boolean;
+  benefitsProcessed: boolean;
+  status: 'planning' | 'in_progress' | 'completed';
+  notes?: string;
+}
+
+interface RetirementStats {
+  totalUpcoming: number;
+  pendingNotifications: number;
+  inPreRetirement: number;
+  totalRetired: number;
+  upcomingThisYear: number;
+  pensionLiability: number;
+}
 
 // Base API configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 class ApiService {
   private baseURL: string;
@@ -24,7 +145,10 @@ class ApiService {
     };
 
     if (this.token) {
+      console.log('Adding Authorization header with token:', this.token.substring(0, 20) + '...');
       headers.Authorization = `Bearer ${this.token}`;
+    } else {
+      console.warn('No token available for Authorization header');
     }
 
     return headers;
@@ -34,39 +158,132 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+    console.log(`Making ${options.method || 'GET'} request to:`, url);
+    
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await fetch(url, {
         headers: this.getHeaders(),
         ...options,
       });
 
-      const data = await response.json();
+      console.log(`Response status: ${response.status} ${response.statusText}`);
 
-      if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      let data: any;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+        console.log('Response data:', data);
+      } else {
+        const text = await response.text();
+        console.log('Response text:', text);
+        data = { message: text };
       }
 
-      return data;
+      if (!response.ok) {
+        console.error('Request failed:', data);
+        return {
+          success: false,
+          message: data.message || data.title || `Request failed with status ${response.status}`,
+          data: null as any,
+        };
+      }
+
+      // Backend returns data directly, wrap it in ApiResponse format
+      return {
+        success: true,
+        message: 'Success',
+        data: data,
+      };
     } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+      console.error('API Fetch Error:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An error occurred',
+        data: null as any,
+      };
+    }
+  }
+
+  // Helper to map RoleId to role string
+  private mapRoleIdToRole(roleId: number): UserRole {
+    switch (roleId) {
+      case 1:
+        return 'admin';
+      case 2:
+        return 'hr';
+      case 3:
+        return 'employee';
+      default:
+        return 'employee';
     }
   }
 
   // Authentication Methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
-    const response = await this.request<{ user: User; token: string }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
+    try {
+      const response = await this.request<{
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+        tokenType: string;
+        userId: number;
+        roleId: number;
+        userName: string;
+      }>('/Auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
 
-    if (response.success && response.data) {
-      this.token = response.data.token;
-      localStorage.setItem('slbfe_auth_token', this.token);
-      localStorage.setItem('slbfe_user_data', JSON.stringify(response.data.user));
+      if (response.success && response.data) {
+        // Map backend JWT response to User type
+        const user: User = {
+          id: response.data.userId.toString(),
+          username: response.data.userName,
+          email: '', // Not provided by backend, can be fetched separately if needed
+          fullName: '', // Not provided by backend, can be fetched from employee table
+          role: this.mapRoleIdToRole(response.data.roleId),
+          isActive: true, // If login succeeds, user is active
+          lastLogin: new Date(),
+          createdAt: new Date(), // Not provided by backend
+          updatedAt: new Date(), // Not provided by backend
+        };
+
+        // Use the JWT access token from backend
+        const token = response.data.accessToken;
+        
+        console.log('Login successful - Token received:', token ? token.substring(0, 30) + '...' : 'NO TOKEN');
+        console.log('Setting this.token and saving to localStorage');
+        
+        this.token = token;
+        localStorage.setItem('slbfe_auth_token', token);
+        localStorage.setItem('slbfe_refresh_token', response.data.refreshToken);
+        localStorage.setItem('slbfe_user_data', JSON.stringify(user));
+        localStorage.setItem('slbfe_user_id', response.data.userId.toString());
+        
+        console.log('Token saved. Current this.token:', this.token ? this.token.substring(0, 30) + '...' : 'NO TOKEN');
+
+        return {
+          success: true,
+          message: 'Login successful',
+          data: { user, token }
+        };
+      }
+
+      return {
+        success: false,
+        message: response.message || 'Login failed',
+        data: null as any
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Invalid username or password',
+        data: null as any
+      };
     }
-
-    return response;
   }
 
   async register(userData: RegisterData): Promise<ApiResponse<User>> {
@@ -83,7 +300,9 @@ class ApiService {
 
     this.token = null;
     localStorage.removeItem('slbfe_auth_token');
+    localStorage.removeItem('slbfe_refresh_token');
     localStorage.removeItem('slbfe_user_data');
+    localStorage.removeItem('slbfe_user_id');
 
     return response;
   }
@@ -121,40 +340,140 @@ class ApiService {
     });
   }
 
+  // Admin User Management Methods
+  async assignUserRole(userId: string, newRole: string, reason?: string): Promise<ApiResponse<User>> {
+    return this.request<User>(`/admin/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role: newRole, reason }),
+    });
+  }
+
+  async bulkAssignRoles(userIds: string[], newRole: string, reason?: string): Promise<ApiResponse<User[]>> {
+    return this.request<User[]>('/admin/users/bulk-role-assignment', {
+      method: 'POST',
+      body: JSON.stringify({ userIds, role: newRole, reason }),
+    });
+  }
+
+  async getUserRoleHistory(userId: string): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>(`/admin/users/${userId}/role-history`);
+  }
+
+  async getRoleAssignmentLogs(params?: {
+    page?: number;
+    limit?: number;
+    userId?: string;
+    fromRole?: string;
+    toRole?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/role-assignments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async validateRoleChange(userId: string, newRole: string): Promise<ApiResponse<{
+    isValid: boolean;
+    warnings: string[];
+    requirements: string[];
+  }>> {
+    return this.request(`/admin/users/${userId}/validate-role-change`, {
+      method: 'POST',
+      body: JSON.stringify({ role: newRole }),
+    });
+  }
+
   // Employee Methods
   async getEmployees(params?: {
     page?: number;
     limit?: number;
     search?: string;
     department?: string;
-    branch?: string;
+    division?: string;
     status?: string;
-  }): Promise<PaginatedResponse<User>> {
+  }): Promise<ApiResponse<Employee[]>> {
     const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<User[]>(`/employees${queryString ? `?${queryString}` : ''}`);
+    return this.request<Employee[]>(`/Employee${queryString ? `?${queryString}` : ''}`);
   }
 
-  async getEmployee(id: string): Promise<ApiResponse<User>> {
-    return this.request<User>(`/employees/${id}`);
+  async getEmployee(id: number): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>(`/Employee/${id}`);
   }
 
-  async createEmployee(employeeData: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<User>('/employees', {
+  async getEmployeeByEmployeeId(employeeId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/Employee/${employeeId}`);
+  }
+
+  async createEmployee(employeeData: EmployeeCreateRequest): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>('/Employee', {
       method: 'POST',
       body: JSON.stringify(employeeData),
     });
   }
 
-  async updateEmployee(id: string, employeeData: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<User>(`/employees/${id}`, {
+  // Title Methods
+  async getTitles(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Title');
+  }
+
+  // Division Methods
+  async getDivisions(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Division');
+  }
+
+  // Grade Methods
+  async getGrades(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Grade');
+  }
+
+  // Employee Type Methods
+  async getEmployeeTypes(): Promise<ApiResponse<EmployeeType[]>> {
+    return this.request<EmployeeType[]>('/EmployeeType');
+  }
+
+  async updateEmployee(id: number, employeeData: Partial<Employee>): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>(`/Employee/${id}`, {
       method: 'PUT',
       body: JSON.stringify(employeeData),
     });
   }
 
-  async deleteEmployee(id: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/employees/${id}`, {
+  async deleteEmployee(id: number): Promise<ApiResponse<null>> {
+    return this.request<null>(`/Employee/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  async searchEmployees(params?: {
+    search?: string;
+    division?: string;
+    designation?: string;
+    status?: string;
+  }): Promise<ApiResponse<Employee[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<Employee[]>(`/Employee/search${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async checkEmployeeUnique(field: string, value: string): Promise<ApiResponse<boolean>> {
+    return this.request<boolean>(`/Employee/check-unique?${field}=${encodeURIComponent(value)}`);
+  }
+
+  // Application Review Methods
+  async getPendingApplications(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Employee/pending-applications');
+  }
+
+  async getAllApplications(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Employee/all-applications');
+  }
+
+  async reviewApplication(employeeId: string, reviewData: {
+    status: string;
+    reviewComments?: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request<any>(`/Employee/${employeeId}/review`, {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
     });
   }
 
@@ -215,6 +534,244 @@ class ApiService {
     return this.request('/dashboard/stats');
   }
 
+  // Salary Management Methods
+  async getSalaryRecords(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+    status?: string;
+  }): Promise<ApiResponse<SalaryRecord[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<SalaryRecord[]>(`/salary/records${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getSalaryRecord(id: string): Promise<ApiResponse<SalaryRecord>> {
+    return this.request<SalaryRecord>(`/salary/records/${id}`);
+  }
+
+  async updateSalaryRecord(id: string, data: Partial<SalaryRecord>): Promise<ApiResponse<SalaryRecord>> {
+    return this.request<SalaryRecord>(`/salary/records/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getSalaryAdjustments(params?: {
+    page?: number;
+    limit?: number;
+    status?: 'pending' | 'approved' | 'rejected';
+  }): Promise<ApiResponse<SalaryAdjustment[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<SalaryAdjustment[]>(`/salary/adjustments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createSalaryAdjustment(data: Omit<SalaryAdjustment, 'id' | 'status'>): Promise<ApiResponse<SalaryAdjustment>> {
+    return this.request<SalaryAdjustment>('/salary/adjustments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async approveSalaryAdjustment(id: string): Promise<ApiResponse<SalaryAdjustment>> {
+    return this.request<SalaryAdjustment>(`/salary/adjustments/${id}/approve`, {
+      method: 'POST',
+    });
+  }
+
+  async rejectSalaryAdjustment(id: string, reason?: string): Promise<ApiResponse<SalaryAdjustment>> {
+    return this.request<SalaryAdjustment>(`/salary/adjustments/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async getSalaryStats(): Promise<ApiResponse<SalaryStats>> {
+    return this.request<SalaryStats>('/salary/stats');
+  }
+
+  async generateSalaryReport(params: {
+    startDate: string;
+    endDate: string;
+    department?: string;
+    format: 'pdf' | 'excel';
+  }): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>('/salary/reports', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  // Upcoming Increments Methods
+  async getUpcomingIncrements(params?: {
+    page?: number;
+    limit?: number;
+    department?: string;
+    status?: 'scheduled' | 'approved' | 'on_hold' | 'processed';
+    daysAhead?: number;
+  }): Promise<ApiResponse<UpcomingIncrement[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<UpcomingIncrement[]>(`/salary/increments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createUpcomingIncrement(data: Omit<UpcomingIncrement, 'id'>): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>('/salary/increments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUpcomingIncrement(id: string, data: Partial<UpcomingIncrement>): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async approveIncrement(id: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/approve`, {
+      method: 'POST',
+    });
+  }
+
+  async putIncrementOnHold(id: string, reason?: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/hold`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async markIncrementNotified(id: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/notify`, {
+      method: 'POST',
+    });
+  }
+
+  async getIncrementNotifications(): Promise<ApiResponse<UpcomingIncrement[]>> {
+    return this.request<UpcomingIncrement[]>('/salary/increments/notifications');
+  }
+
+  async processIncrement(id: string): Promise<ApiResponse<UpcomingIncrement>> {
+    return this.request<UpcomingIncrement>(`/salary/increments/${id}/process`, {
+      method: 'POST',
+    });
+  }
+
+  // Retirement Management Methods
+  async getRetirementRecords(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+    status?: 'active' | 'pre_retirement' | 'retired' | 'extended';
+    upcomingMonths?: number;
+  }): Promise<ApiResponse<RetirementRecord[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<RetirementRecord[]>(`/retirement/records${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getRetirementRecord(id: string): Promise<ApiResponse<RetirementRecord>> {
+    return this.request<RetirementRecord>(`/retirement/records/${id}`);
+  }
+
+  async updateRetirementRecord(id: string, data: Partial<RetirementRecord>): Promise<ApiResponse<RetirementRecord>> {
+    return this.request<RetirementRecord>(`/retirement/records/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getUpcomingRetirements(months: number = 24): Promise<ApiResponse<RetirementRecord[]>> {
+    return this.request<RetirementRecord[]>(`/retirement/upcoming?months=${months}`);
+  }
+
+  async getRetirementNotifications(): Promise<ApiResponse<RetirementRecord[]>> {
+    return this.request<RetirementRecord[]>('/retirement/notifications');
+  }
+
+  async sendRetirementNotification(employeeId: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/retirement/notify/${employeeId}`, {
+      method: 'POST',
+    });
+  }
+
+  async sendThreeMonthNotification(employeeId: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/retirement/notify-three-month/${employeeId}`, {
+      method: 'POST',
+    });
+  }
+
+  async getThreeMonthNotifications(): Promise<ApiResponse<RetirementRecord[]>> {
+    return this.request<RetirementRecord[]>('/retirement/three-month-notifications');
+  }
+
+  async getRetirementBenefits(employeeId?: string): Promise<ApiResponse<RetirementBenefit[]>> {
+    const endpoint = employeeId ? `/retirement/benefits?employeeId=${employeeId}` : '/retirement/benefits';
+    return this.request<RetirementBenefit[]>(endpoint);
+  }
+
+  async createRetirementBenefit(data: Omit<RetirementBenefit, 'id'>): Promise<ApiResponse<RetirementBenefit>> {
+    return this.request<RetirementBenefit>('/retirement/benefits', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRetirementBenefit(id: string, data: Partial<RetirementBenefit>): Promise<ApiResponse<RetirementBenefit>> {
+    return this.request<RetirementBenefit>(`/retirement/benefits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getRetirementPlanning(employeeId?: string): Promise<ApiResponse<RetirementPlanning[]>> {
+    const endpoint = employeeId ? `/retirement/planning?employeeId=${employeeId}` : '/retirement/planning';
+    return this.request<RetirementPlanning[]>(endpoint);
+  }
+
+  async createRetirementPlan(data: Omit<RetirementPlanning, 'id'>): Promise<ApiResponse<RetirementPlanning>> {
+    return this.request<RetirementPlanning>('/retirement/planning', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRetirementPlan(id: string, data: Partial<RetirementPlanning>): Promise<ApiResponse<RetirementPlanning>> {
+    return this.request<RetirementPlanning>(`/retirement/planning/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async calculatePension(employeeId: string, retirementDate: string): Promise<ApiResponse<{
+    monthlyPension: number;
+    lumpSum: number;
+    gratuity: number;
+    totalBenefits: number;
+  }>> {
+    return this.request(`/retirement/calculate-pension`, {
+      method: 'POST',
+      body: JSON.stringify({ employeeId, retirementDate }),
+    });
+  }
+
+  async getRetirementStats(): Promise<ApiResponse<RetirementStats>> {
+    return this.request<RetirementStats>('/retirement/stats');
+  }
+
+  async generateRetirementReport(params: {
+    startDate?: string;
+    endDate?: string;
+    department?: string;
+    reportType: 'forecast' | 'benefits' | 'planning';
+    format: 'pdf' | 'excel';
+  }): Promise<ApiResponse<{ url: string }>> {
+    return this.request<{ url: string }>('/retirement/reports', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
   // Application Methods
   async getApplications(params?: {
     page?: number;
@@ -252,6 +809,236 @@ class ApiService {
   }>> {
     return this.request('/applications/stats');
   }
+
+  // Backup & Restore Methods
+  async getBackups(params?: any): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params).toString() : '';
+    return this.request<any[]>(`/admin/backups${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async createBackup(type: string, name: string, description?: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backups', {
+      method: 'POST',
+      body: JSON.stringify({ type, name, description }),
+    });
+  }
+
+  async deleteBackup(backupId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async downloadBackup(backupId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}/download`);
+  }
+
+  async restoreBackup(backupId: string, options?: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}/restore`, {
+      method: 'POST',
+      body: JSON.stringify(options || {}),
+    });
+  }
+
+  async getRestorePoints(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/restore-points');
+  }
+
+  async createRestorePoint(name: string, description?: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/restore-points', {
+      method: 'POST',
+      body: JSON.stringify({ name, description }),
+    });
+  }
+
+  async getBackupSchedules(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/backup-schedules');
+  }
+
+  async createBackupSchedule(schedule: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-schedules', {
+      method: 'POST',
+      body: JSON.stringify(schedule),
+    });
+  }
+
+  async updateBackupSchedule(scheduleId: string, schedule: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-schedules/${scheduleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(schedule),
+    });
+  }
+
+  async deleteBackupSchedule(scheduleId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-schedules/${scheduleId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleBackupSchedule(scheduleId: string, active: boolean): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-schedules/${scheduleId}/toggle`, {
+      method: 'PUT',
+      body: JSON.stringify({ active }),
+    });
+  }
+
+  async getBackupOperations(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/backup-operations');
+  }
+
+  async getBackupOperation(operationId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-operations/${operationId}`);
+  }
+
+  async cancelBackupOperation(operationId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backup-operations/${operationId}/cancel`, {
+      method: 'PUT',
+    });
+  }
+
+  async getBackupStorageInfo(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-storage');
+  }
+
+  async verifyBackup(backupId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/backups/${backupId}/verify`, {
+      method: 'POST',
+    });
+  }
+
+  async getBackupVerifications(backupId?: string): Promise<ApiResponse<any[]>> {
+    const queryString = backupId ? `?backupId=${backupId}` : '';
+    return this.request<any[]>(`/admin/backup-verifications${queryString}`);
+  }
+
+  async getBackupSystemHealth(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-system-health');
+  }
+
+  async testBackupConnectivity(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/backup-connectivity-test', {
+      method: 'POST',
+    });
+  }
+
+  // Document Management Methods
+  async getSystemDocuments(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    accessLevel?: string;
+    isSystemForm?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/documents${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getSystemDocument(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/documents/${id}`);
+  }
+
+  async uploadSystemDocument(formData: FormData): Promise<ApiResponse<any>> {
+    const response = await fetch(`${this.baseURL}/admin/documents/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: formData,
+    });
+
+    return response.json();
+  }
+
+  async updateSystemDocument(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/documents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSystemDocument(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/admin/documents/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async downloadSystemDocument(id: string): Promise<Response> {
+    return fetch(`${this.baseURL}/admin/documents/${id}/download`, {
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
+  }
+
+  async getDocumentStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/documents/stats');
+  }
+
+  // Task Assignment Methods
+  async getTaskAssignments(params?: {
+    page?: number;
+    limit?: number;
+    taskType?: string;
+    userId?: string;
+    isActive?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/task-assignments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getTaskAssignment(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}`);
+  }
+
+  async createTaskAssignment(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/task-assignments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateTaskAssignment(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTaskAssignment(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/admin/task-assignments/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getHRUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/hr-users${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getUserPermissions(userId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/users/${userId}/permissions`);
+  }
+
+  async getTaskTemplates(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/task-templates');
+  }
+
+  async getFeaturePermissions(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/feature-permissions');
+  }
+
+  async toggleTaskAssignmentStatus(id: string, isActive: boolean): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}/toggle`, {
+      method: 'POST',
+      body: JSON.stringify({ isActive }),
+    });
+  }
 }
 
 // Create and export API service instance
@@ -269,10 +1056,17 @@ export const authService = {
 
 export const employeeService = {
   getEmployees: (params?: any) => apiService.getEmployees(params),
-  getEmployee: (id: string) => apiService.getEmployee(id),
-  createEmployee: (data: Partial<User>) => apiService.createEmployee(data),
-  updateEmployee: (id: string, data: Partial<User>) => apiService.updateEmployee(id, data),
-  deleteEmployee: (id: string) => apiService.deleteEmployee(id),
+  getEmployee: (id: number) => apiService.getEmployee(id),
+  getEmployeeByEmployeeId: (employeeId: string) => apiService.getEmployeeByEmployeeId(employeeId),
+  createEmployee: (data: EmployeeCreateRequest) => apiService.createEmployee(data),
+  updateEmployee: (id: number, data: Partial<Employee>) => apiService.updateEmployee(id, data),
+  deleteEmployee: (id: number) => apiService.deleteEmployee(id),
+  searchEmployees: (params?: any) => apiService.searchEmployees(params),
+  checkEmployeeUnique: (field: string, value: string) => apiService.checkEmployeeUnique(field, value),
+  getPendingApplications: () => apiService.getPendingApplications(),
+  getAllApplications: () => apiService.getAllApplications(),
+  reviewApplication: (employeeId: string, reviewData: { status: string; reviewComments?: string }) => 
+    apiService.reviewApplication(employeeId, reviewData),
 };
 
 export const departmentService = {
@@ -292,6 +1086,115 @@ export const applicationService = {
     apiService.updateApplicationStatus(id, status),
   deleteApplication: (id: string) => apiService.deleteApplication(id),
   getApplicationStats: () => apiService.getApplicationStats(),
+};
+
+export const salaryService = {
+  getSalaryRecords: (params?: any) => apiService.getSalaryRecords(params),
+  getSalaryRecord: (id: string) => apiService.getSalaryRecord(id),
+  updateSalaryRecord: (id: string, data: Partial<SalaryRecord>) => apiService.updateSalaryRecord(id, data),
+  getSalaryAdjustments: (params?: any) => apiService.getSalaryAdjustments(params),
+  createSalaryAdjustment: (data: Omit<SalaryAdjustment, 'id' | 'status'>) => apiService.createSalaryAdjustment(data),
+  approveSalaryAdjustment: (id: string) => apiService.approveSalaryAdjustment(id),
+  rejectSalaryAdjustment: (id: string, reason?: string) => apiService.rejectSalaryAdjustment(id, reason),
+  getSalaryStats: () => apiService.getSalaryStats(),
+  generateSalaryReport: (params: any) => apiService.generateSalaryReport(params),
+  // Upcoming Increments
+  getUpcomingIncrements: (params?: any) => apiService.getUpcomingIncrements(params),
+  createUpcomingIncrement: (data: Omit<UpcomingIncrement, 'id'>) => apiService.createUpcomingIncrement(data),
+  updateUpcomingIncrement: (id: string, data: Partial<UpcomingIncrement>) => apiService.updateUpcomingIncrement(id, data),
+  approveIncrement: (id: string) => apiService.approveIncrement(id),
+  putIncrementOnHold: (id: string, reason?: string) => apiService.putIncrementOnHold(id, reason),
+  markIncrementNotified: (id: string) => apiService.markIncrementNotified(id),
+  getIncrementNotifications: () => apiService.getIncrementNotifications(),
+  processIncrement: (id: string) => apiService.processIncrement(id),
+};
+
+export const retirementService = {
+  getRetirementRecords: (params?: any) => apiService.getRetirementRecords(params),
+  getRetirementRecord: (id: string) => apiService.getRetirementRecord(id),
+  updateRetirementRecord: (id: string, data: Partial<RetirementRecord>) => apiService.updateRetirementRecord(id, data),
+  getUpcomingRetirements: (months?: number) => apiService.getUpcomingRetirements(months),
+  getRetirementNotifications: () => apiService.getRetirementNotifications(),
+  sendRetirementNotification: (employeeId: string) => apiService.sendRetirementNotification(employeeId),
+  sendThreeMonthNotification: (employeeId: string) => apiService.sendThreeMonthNotification(employeeId),
+  getThreeMonthNotifications: () => apiService.getThreeMonthNotifications(),
+  getRetirementBenefits: (employeeId?: string) => apiService.getRetirementBenefits(employeeId),
+  createRetirementBenefit: (data: Omit<RetirementBenefit, 'id'>) => apiService.createRetirementBenefit(data),
+  updateRetirementBenefit: (id: string, data: Partial<RetirementBenefit>) => apiService.updateRetirementBenefit(id, data),
+  getRetirementPlanning: (employeeId?: string) => apiService.getRetirementPlanning(employeeId),
+  createRetirementPlan: (data: Omit<RetirementPlanning, 'id'>) => apiService.createRetirementPlan(data),
+  updateRetirementPlan: (id: string, data: Partial<RetirementPlanning>) => apiService.updateRetirementPlan(id, data),
+  calculatePension: (employeeId: string, retirementDate: string) => apiService.calculatePension(employeeId, retirementDate),
+  getRetirementStats: () => apiService.getRetirementStats(),
+  generateRetirementReport: (params: any) => apiService.generateRetirementReport(params),
+};
+
+// Admin Service (Admin Only)
+export const adminService = {
+  // Role Management
+  assignUserRole: (userId: string, newRole: string, reason?: string) => apiService.assignUserRole(userId, newRole, reason),
+  bulkAssignRoles: (userIds: string[], newRole: string, reason?: string) => apiService.bulkAssignRoles(userIds, newRole, reason),
+  getUserRoleHistory: (userId: string) => apiService.getUserRoleHistory(userId),
+  getRoleAssignmentLogs: (params?: any) => apiService.getRoleAssignmentLogs(params),
+  validateRoleChange: (userId: string, newRole: string) => apiService.validateRoleChange(userId, newRole),
+};
+
+// Backup Service (Admin Only)
+export const backupService = {
+  // Backup Management
+  getBackups: (params?: any) => apiService.getBackups(params),
+  createBackup: (type: string, name: string, description?: string) => apiService.createBackup(type, name, description),
+  deleteBackup: (backupId: string) => apiService.deleteBackup(backupId),
+  downloadBackup: (backupId: string) => apiService.downloadBackup(backupId),
+  
+  // Restore Operations
+  restoreBackup: (backupId: string, options?: any) => apiService.restoreBackup(backupId, options),
+  getRestorePoints: () => apiService.getRestorePoints(),
+  createRestorePoint: (name: string, description?: string) => apiService.createRestorePoint(name, description),
+  
+  // Backup Scheduling
+  getBackupSchedules: () => apiService.getBackupSchedules(),
+  createBackupSchedule: (schedule: any) => apiService.createBackupSchedule(schedule),
+  updateBackupSchedule: (scheduleId: string, schedule: any) => apiService.updateBackupSchedule(scheduleId, schedule),
+  deleteBackupSchedule: (scheduleId: string) => apiService.deleteBackupSchedule(scheduleId),
+  toggleBackupSchedule: (scheduleId: string, active: boolean) => apiService.toggleBackupSchedule(scheduleId, active),
+  
+  // Backup Operations
+  getBackupOperations: () => apiService.getBackupOperations(),
+  getBackupOperation: (operationId: string) => apiService.getBackupOperation(operationId),
+  cancelBackupOperation: (operationId: string) => apiService.cancelBackupOperation(operationId),
+  
+  // Storage and Verification
+  getBackupStorageInfo: () => apiService.getBackupStorageInfo(),
+  verifyBackup: (backupId: string) => apiService.verifyBackup(backupId),
+  getBackupVerifications: (backupId?: string) => apiService.getBackupVerifications(backupId),
+  
+  // System Health
+  getBackupSystemHealth: () => apiService.getBackupSystemHealth(),
+  testBackupConnectivity: () => apiService.testBackupConnectivity(),
+};
+
+export const documentService = {
+  getSystemDocuments: (params?: any) => apiService.getSystemDocuments(params),
+  getSystemDocument: (id: string) => apiService.getSystemDocument(id),
+  uploadSystemDocument: (formData: FormData) => apiService.uploadSystemDocument(formData),
+  updateSystemDocument: (id: string, data: any) => apiService.updateSystemDocument(id, data),
+  deleteSystemDocument: (id: string) => apiService.deleteSystemDocument(id),
+  downloadSystemDocument: (id: string) => apiService.downloadSystemDocument(id),
+  getDocumentStats: () => apiService.getDocumentStats(),
+};
+
+export const taskAssignmentService = {
+  getTaskAssignments: (params?: any) => apiService.getTaskAssignments(params),
+  getTaskAssignment: (id: string) => apiService.getTaskAssignment(id),
+  createTaskAssignment: (data: any) => apiService.createTaskAssignment(data),
+  updateTaskAssignment: (id: string, data: any) => apiService.updateTaskAssignment(id, data),
+  deleteTaskAssignment: (id: string) => apiService.deleteTaskAssignment(id),
+  getHRUsers: (params?: any) => apiService.getHRUsers(params),
+  getUserPermissions: (userId: string) => apiService.getUserPermissions(userId),
+  getTaskTemplates: () => apiService.getTaskTemplates(),
+  getFeaturePermissions: () => apiService.getFeaturePermissions(),
+  toggleTaskAssignmentStatus: (id: string, isActive: boolean) => apiService.toggleTaskAssignmentStatus(id, isActive),
 };
 
 export default apiService;

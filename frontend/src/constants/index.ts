@@ -4,7 +4,7 @@ export const APP_VERSION = '1.0.0';
 export const APP_DESCRIPTION = 'Human Resource Management System for Sri Lanka Bureau of Foreign Employment';
 
 // API Configuration
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 export const API_VERSION = 'v1';
 
 // Authentication

@@ -40,7 +40,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           password: formData.password,
         });
         onClose();
-        navigate('/dashboard');
+        
+        // Get user data to determine navigation
+        const userData = localStorage.getItem('slbfe_user_data');
+        if (userData) {
+          const user = JSON.parse(userData);
+          // HR Manager uses the HR dashboard
+          if (user.role === 'hr') {
+            navigate('/hr-dashboard');
+          } else {
+            navigate('/dashboard');
+          }
+        } else {
+          navigate('/dashboard');
+        }
       } catch (error) {
         console.error('Login failed:', error);
       }
@@ -86,8 +99,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {loginMode === 'login' ? (
+      <form onSubmit={handleSubmit} className="space-y-4">{loginMode === 'login' ? (
           <>
             <Input
               label="Username"
