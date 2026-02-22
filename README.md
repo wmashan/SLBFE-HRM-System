@@ -57,7 +57,7 @@ SLBFE-HRM-System/
 - **Staff Assignment** - Assign staff to specific migrant worker cases
 - **Branch Operations** - Multi-location management and reporting
 - **Government Compliance** - Audit trails and regulatory compliance
-- **24/7 Support Integration** - Integration with SLBFE hotline (1989)
+
 
 ## 🛠️ Technology Stack
 
