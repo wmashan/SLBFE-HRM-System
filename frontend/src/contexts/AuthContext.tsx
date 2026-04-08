@@ -199,7 +199,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       case 'admin':
         return '/admin-dashboard';
       case 'hr':
-      case 'senior_hr_manager':
       case 'training_coordinator':
       case 'branch_manager':
       case 'program_manager':

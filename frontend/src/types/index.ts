@@ -15,7 +15,6 @@ export interface User {
 export type UserRole = 
   | 'employee' 
   | 'hr' 
-  | 'senior_hr_manager'
   | 'training_coordinator' 
   | 'branch_manager' 
   | 'program_manager' 
@@ -43,20 +42,92 @@ export interface AuthState {
 }
 
 // Employee Management Types
-export interface Employee extends User {
+export interface Employee {
+  id?: number;
+  titleId: number;
+  fullName: string;
+  nameInitials: string;
+  firstName: string;
+  lastName: string;
+  nic: string;
+  birthDate: string;
+  divisionId: number;
+  designationId: string;
+  gradeId: string;
+  civilStatusId: string;
+  // Address Information
+  permanentAddressL1: string;
+  permanentAddressL2?: string;
+  permanentTownId: string;
+  temporaryAddressL1?: string;
+  temporaryAddressL2?: string;
+  temporaryTownId?: string;
+  // Contact Information
+  contact1: string;
+  contact2?: string;
+  email: string;
+  // Educational Background
+  ol?: string;
+  al?: string;
+  higherStudies?: string;
+  // Employment Details
+  employeeTypeId: string;
+  permanentDate?: string;
+  joinDateContract?: string;
+  joinDateCasual?: string;
   employeeId: string;
-  department: Department;
-  position: string;
-  branch: Branch;
-  manager?: Employee;
-  joinDate: Date;
-  salary?: number;
+  // Additional Information
+  gender?: string;
+  nationality?: string;
+  bloodGroup?: string;
+  profilePicture?: string;
   status: EmployeeStatus;
-  skills: string[];
-  certifications: Certification[];
+  department?: string;
+  reportingManagerId?: number;
+  basicSalary?: number;
+  notes?: string;
+  // System fields
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export type EmployeeStatus = 'active' | 'inactive' | 'on_leave' | 'terminated';
+export interface EmployeeCreateRequest {
+  titleId: number;
+  fullName: string;
+  nameInitials: string;
+  firstName: string;
+  lastName: string;
+  nic: string;
+  birthDate: string;
+  divisionId: number;
+  designationId: string;
+  gradeId: string;
+  civilStatusId: string;
+  permanentAddressL1: string;
+  permanentAddressL2?: string;
+  permanentTownId: string;
+  temporaryAddressL1?: string;
+  temporaryAddressL2?: string;
+  temporaryTownId?: string;
+  contact1: string;
+  contact2?: string;
+  email: string;
+  ol?: string;
+  al?: string;
+  higherStudies?: string;
+  employeeTypeId: number;
+  permanentDate?: string;
+  joinDateContract?: string;
+  joinDateCasual?: string;
+  gender?: string;
+  nationality?: string;
+  profilePictureUrl?: string;
+  department?: string;
+  reportingManagerId?: number;
+}
+
+export type EmployeeStatus = 'Active' | 'Inactive' | 'OnLeave' | 'Terminated';
+export type EmploymentStatus = 'Active' | 'Inactive' | 'Probation' | 'Terminated';
 
 export interface Department {
   id: string;
@@ -64,6 +135,31 @@ export interface Department {
   description: string;
   headOfDepartment: Employee;
   budget?: number;
+}
+
+// Title Types
+export interface Title {
+  titleId: number;
+  description: string;
+}
+
+// Division Types
+export interface Division {
+  divisionId: number;
+  description: string;
+}
+
+// Grade Types
+export interface Grade {
+  gradeId: string;
+  designation: string;
+}
+
+// Employee Type
+export interface EmployeeType {
+  employeeTypeId: number;
+  typeName: string;
+  description?: string;
 }
 
 export interface Branch {
@@ -138,7 +234,7 @@ export interface NavigationItem {
   roles?: UserRole[];
 }
 
-// Disciplinary Actions Types (Senior HR Manager only)
+// Disciplinary Actions Types
 export interface DisciplinaryAction {
   id: string;
   employeeId: string;
@@ -228,7 +324,7 @@ export interface DisciplinaryStats {
   actionsBySeverity: Record<DisciplinarySeverity, number>;
 }
 
-// Reports Types (Senior HR Manager only)
+// Reports Types
 export interface ReportConfig {
   id: string;
   name: string;
@@ -239,7 +335,7 @@ export interface ReportConfig {
   defaultFilters?: Record<string, any>;
   schedule?: ReportSchedule;
   outputFormats: OutputFormat[];
-  accessLevel: 'senior_hr_manager' | 'hr' | 'manager' | 'all';
+  accessLevel: 'hr' | 'manager' | 'all';
   isActive: boolean;
   createdBy: string;
   createdAt: Date;
@@ -251,9 +347,8 @@ export type ReportType =
   | 'comprehensive_employee_report'
   | 'attendance_analysis'
   | 'salary_analysis'
-  | 'disciplinary_summary'
+  | 'medical_claims_summary'
   | 'recruitment_metrics'
-  | 'loan_analysis'
   | 'retirement_forecast'
   | 'performance_analytics'
   | 'compliance_report'
@@ -390,7 +485,7 @@ export interface ReportAnalytics {
   scheduledReportsActive: number;
 }
 
-// Comprehensive Employee Report Types (Senior HR Manager only)
+// Comprehensive Employee Report Types
 export interface EmployeeReportData {
   employeeInfo: EmployeePersonalDetails;
   employmentHistory: EmploymentRecord[];
@@ -964,12 +1059,12 @@ export type BackupStorageType = 'local' | 'cloud' | 'network';
 export type BackupStatus = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface AdminDashboardStats {
-  systemHealth: SystemHealth;
+  systemHealth?: SystemHealth;
   userActivity: UserActivitySummary;
-  securityOverview: SecurityOverview;
+  securityOverview?: SecurityOverview;
   recentActions: AdminActivity[];
   systemAlerts: SystemAlert[];
-  performanceMetrics: PerformanceMetrics;
+  performanceMetrics?: PerformanceMetrics;
 }
 
 export interface SystemHealth {
@@ -1074,7 +1169,7 @@ export interface EmployeeReportRequest {
   includeConfidential: boolean;
   includeSalaryDetails: boolean;
   includePerformanceHistory: boolean;
-  includeDisciplinaryHistory: boolean;
+  includeMedicalHistory: boolean;
   dateRange?: {
     startDate: Date;
     endDate: Date;
@@ -1088,7 +1183,7 @@ export type EmployeeReportType =
   | 'basic_info'
   | 'service_record'
   | 'performance_summary'
-  | 'disciplinary_summary'
+  | 'medical_claims_summary'
   | 'salary_history'
   | 'custom';
 
@@ -1097,7 +1192,7 @@ export type EmployeeReportSection =
   | 'employment_history'
   | 'service_summary'
   | 'transfer_history'
-  | 'disciplinary_history'
+  | 'medical_claims_history'
   | 'performance_history'
   | 'salary_history'
   | 'leave_history'
@@ -1287,4 +1382,226 @@ export interface VerificationIssue {
   description: string;
   filePath?: string;
   recommendation: string;
+}
+
+// Document Template Types for Admin Management
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: DocumentTemplateCategory;
+  fileType: 'docx' | 'pdf' | 'html' | 'txt';
+  template: string; // Template content or file path
+  placeholders: TemplatePlaceholder[];
+  isActive: boolean;
+  isDefault: boolean;
+  version: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  lastModifiedBy: string;
+  usage: {
+    totalUsed: number;
+    lastUsed?: Date;
+  };
+  approvalRequired: boolean;
+  tags: string[];
+}
+
+export type DocumentTemplateCategory = 
+  | 'employment_letters'
+  | 'leave_letters'
+  | 'transfer_letters'
+  | 'medical_letters'
+  | 'salary_letters'
+  | 'retirement_letters'
+  | 'disciplinary_letters'
+  | 'training_certificates'
+  | 'general_correspondence'
+  | 'forms'
+  | 'reports'
+  | 'policies'
+  | 'other';
+
+export interface TemplatePlaceholder {
+  id: string;
+  key: string;
+  label: string;
+  description: string;
+  type: 'text' | 'number' | 'date' | 'email' | 'phone' | 'address' | 'boolean' | 'dropdown';
+  required: boolean;
+  defaultValue?: string;
+  validation?: {
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+  };
+  options?: string[]; // For dropdown type
+}
+
+export interface GeneratedDocument {
+  id: string;
+  templateId: string;
+  templateName: string;
+  generatedFor: string; // Employee ID or name
+  generatedBy: string;
+  generatedAt: Date;
+  filePath: string;
+  fileName: string;
+  fileSize: number;
+  placeholderValues: Record<string, any>;
+  status: 'draft' | 'final' | 'sent' | 'archived';
+  downloadCount: number;
+  lastDownloaded?: Date;
+}
+
+export interface DocumentTemplateStats {
+  totalTemplates: number;
+  activeTemplates: number;
+  categoryBreakdown: Record<DocumentTemplateCategory, number>;
+  recentlyUsed: DocumentTemplate[];
+  mostUsed: DocumentTemplate[];
+  totalDocumentsGenerated: number;
+  documentsGeneratedThisMonth: number;
+}
+
+// System Document Types for Admin Document Management
+export interface SystemDocument {
+  id: string;
+  name: string;
+  description: string;
+  category: SystemDocumentCategory;
+  fileType: 'pdf' | 'docx' | 'xlsx' | 'doc' | 'xls' | 'jpg' | 'jpeg' | 'png' | 'txt';
+  fileName: string;
+  filePath: string;
+  fileSize: number; // in bytes
+  isActive: boolean;
+  accessLevel: DocumentAccessLevel;
+  createdAt: Date;
+  updatedAt: Date;
+  uploadedBy: string;
+  lastModifiedBy: string;
+  downloadCount: number;
+  lastDownloaded?: Date;
+  tags: string[];
+  version: string;
+  isSystemForm: boolean; // true for forms like HR/F/07, HR/F/08
+  formCode?: string; // e.g., "HR/F/07", "HR/F/08"
+}
+
+export type SystemDocumentCategory = 
+  | 'hr_forms'
+  | 'policies_procedures'
+  | 'employee_handbook'
+  | 'forms_applications'
+  | 'training_materials'
+  | 'compliance_documents'
+  | 'hr_guidelines'
+  | 'safety_documents'
+  | 'benefits_information'
+  | 'organizational_charts'
+  | 'announcements'
+  | 'reference_materials'
+  | 'templates'
+  | 'other';
+
+export type DocumentAccessLevel = 
+  | 'all_employees'
+  | 'hr_only'
+  | 'admin_only'
+  | 'managers_only'
+  | 'restricted';
+
+export interface DocumentStats {
+  totalDocuments: number;
+  activeDocuments: number;
+  categoryBreakdown: Record<SystemDocumentCategory, number>;
+  recentlyUploaded: SystemDocument[];
+  mostDownloaded: SystemDocument[];
+  totalDownloads: number;
+  documentsUploadedThisMonth: number;
+  storageUsed: number; // in bytes
+  accessLevelBreakdown: Record<DocumentAccessLevel, number>;
+}
+
+export interface DocumentUploadData {
+  name: string;
+  description: string;
+  category: SystemDocumentCategory;
+  accessLevel: DocumentAccessLevel;
+  file: File;
+  tags: string[];
+  isSystemForm: boolean;
+  formCode?: string;
+}
+
+// Task Assignment and Permission Management Types
+export type HRFeature = 
+  | 'overview'
+  | 'employees'
+  | 'medical_claims'
+  | 'retirement'
+  | 'transfer'
+  | 'leave_management'
+  | 'attendance'
+  | 'recruitment'
+  | 'training'
+  | 'performance'
+  | 'payroll'
+  | 'reports'
+  | 'documents';
+
+export type TaskAssignmentType = 
+  | 'medical_officer'
+  | 'transfer_officer'
+  | 'retirement_officer'
+  | 'recruitment_officer'
+  | 'training_coordinator'
+  | 'payroll_officer'
+  | 'general_hr'
+  | 'custom';
+
+export interface HRTaskAssignment {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  taskType: TaskAssignmentType;
+  taskDescription: string;
+  assignedFeatures: HRFeature[];
+  isActive: boolean;
+  assignedBy: string;
+  assignedDate: Date;
+  lastModified: Date;
+  notes?: string;
+}
+
+export interface FeaturePermission {
+  feature: HRFeature;
+  label: string;
+  description: string;
+  icon: string;
+  defaultForRoles: TaskAssignmentType[];
+  dependencies?: HRFeature[];
+}
+
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  type: TaskAssignmentType;
+  description: string;
+  defaultFeatures: HRFeature[];
+  isSystemTemplate: boolean;
+}
+
+export interface UserPermissionSummary {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  taskAssignments: HRTaskAssignment[];
+  effectiveFeatures: HRFeature[];
+  lastLogin?: Date;
+  isActive: boolean;
 }

@@ -2,35 +2,35 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
-  UserPlus, 
   FileText, 
-  Calendar, 
-  Settings, 
   LogOut,
   Bell,
   TrendingUp,
   RotateCcw,
   DollarSign,
   UserMinus,
-  CreditCard,
-  Shield,
-  BarChart3
+  Heart,
+  GraduationCap,
+  UserCheck,
+  BarChart3,
+  Calendar,
+  Shield
 } from 'lucide-react';
+import { HRFeature } from '../types';
+import { employeeService } from '../services/api';
 
 // Import dashboard page components
 import Overview from './dashboard/Overview';
-import Applications from './Applications';
+import Applications from './dashboard/Applications';
+import MedicalManagement from './dashboard/MedicalManagement';
 import Employees from './dashboard/Employees';
-import StaffLeave from './StaffLeave';
+import Reports from './dashboard/Reports';
 import Transfer from './Transfer';
-import Recruitment from './dashboard/Recruitment';
-import Schedule from './dashboard/Schedule';
-import SettingsPage from './dashboard/Settings';
 import SalaryManagement from './SalaryManagement';
 import RetirementManagement from './RetirementManagement';
-import StaffLoanManagement from './StaffLoanManagement';
-import DisciplinaryActions from './DisciplinaryActions';
-import Reports from './Reports';
+import TrainingManagement from './TrainingManagement';
+import LeaveManagement from './dashboard/LeaveManagement';
+import DisciplinaryActions from './dashboard/DisciplinaryActions';
 
 const HRManagerDashboard = () => {
   const navigate = useNavigate();
@@ -40,19 +40,157 @@ const HRManagerDashboard = () => {
     role: 'hr',
     initials: 'HM'
   });
+  const [userPermissions, setUserPermissions] = useState<HRFeature[]>([]);
+  const [pendingApplicationsCount, setPendingApplicationsCount] = useState<number>(0);
+
+  // Define navigation items with their corresponding features
+  const navigationItems = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      icon: TrendingUp,
+      feature: 'overview' as HRFeature,
+      alwaysVisible: true // Overview is always visible
+    },
+    {
+      id: 'employees',
+      label: 'Employees',
+      icon: Users,
+      feature: 'employees' as HRFeature
+    },
+    {
+      id: 'reports',
+      label: 'Reports & Analytics',
+      icon: BarChart3,
+      feature: 'reports' as HRFeature
+    },
+    {
+      id: 'medical',
+      label: 'Medical Claims',
+      icon: Heart,
+      feature: 'medical_claims' as HRFeature
+    },
+    {
+      id: 'leave',
+      label: 'Leave Requests',
+      icon: Calendar,
+      feature: 'leave_management' as HRFeature
+    },
+    {
+      id: 'disciplinary',
+      label: 'Disciplinary Actions',
+      icon: Shield,
+      feature: 'documents' as HRFeature
+    },
+    {
+      id: 'transfer',
+      label: 'Transfer',
+      icon: RotateCcw,
+      feature: 'transfer' as HRFeature
+    },
+    {
+      id: 'retirement',
+      label: 'Retirement Management',
+      icon: UserMinus,
+      feature: 'retirement' as HRFeature
+    },
+    {
+      id: 'applications',
+      label: 'Applications',
+      icon: FileText,
+      feature: 'recruitment' as HRFeature
+    },
+    {
+      id: 'salary',
+      label: 'Salary Management',
+      icon: DollarSign,
+      feature: 'payroll' as HRFeature
+    },
+    {
+      id: 'training',
+      label: 'Training',
+      icon: GraduationCap,
+      feature: 'training' as HRFeature
+    }
+  ];
 
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = localStorage.getItem('slbfe_user_data');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setUserInfo({
-        fullName: user.fullName || 'HR Manager',
-        role: user.role,
-        initials: user.role === 'senior_hr_manager' ? 'SHR' : 'HM'
-      });
-    }
+    loadUserData();
+    fetchPendingApplicationsCount();
   }, []);
+
+  const fetchPendingApplicationsCount = async () => {
+    try {
+      const response = await employeeService.getPendingApplications();
+      if (response.success && response.data) {
+        setPendingApplicationsCount(response.data.length);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending applications count:', error);
+    }
+  };
+
+  const loadUserData = async () => {
+    try {      
+      // Get user data from localStorage
+      const userData = localStorage.getItem('slbfe_user_data');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setUserInfo({
+          fullName: user.fullName || 'HR Manager',
+          role: user.role,
+          initials: user.fullName ? user.fullName.split(' ').map((n: string) => n[0]).join('') : 'HM'
+        });
+
+        // TODO: Replace with actual API call to get user permissions
+        // For now, simulate different user permissions based on stored data
+        const mockPermissions = getUserPermissions(user.id || user.email);
+        setUserPermissions(mockPermissions);
+        
+        // Set default active tab to first visible tab
+        const visibleTabs = navigationItems.filter(item => 
+          item.alwaysVisible || mockPermissions.includes(item.feature)
+        );
+        if (visibleTabs.length > 0) {
+          setActiveTab(visibleTabs[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+      // Default permissions if loading fails
+      setUserPermissions(['overview']);
+    }
+  };
+
+  // Mock function to simulate different user permissions
+  // In a real app, this would come from the task assignment API
+  const getUserPermissions = (userId: string): HRFeature[] => {
+    // Simulate different HR officers with different permissions
+    const userPermissionMap: Record<string, HRFeature[]> = {
+      'medical@slbfe.com': ['overview', 'medical_claims', 'documents'],
+      'transfer@slbfe.com': ['overview', 'transfer'],
+      'retirement@slbfe.com': ['overview', 'retirement'],
+      'recruitment@slbfe.com': ['overview', 'employees', 'recruitment', 'reports'],
+      'training@slbfe.com': ['overview', 'training'],
+      'payroll@slbfe.com': ['overview', 'payroll', 'reports'],
+    };
+
+    // Default to general HR permissions if user not found
+    return userPermissionMap[userId] || [
+      'overview', 'employees', 'reports', 'medical_claims', 'leave_management', 'transfer', 'retirement', 
+      'recruitment', 'training', 'payroll', 'documents'
+    ];
+  };
+
+  const hasPermission = (feature: HRFeature): boolean => {
+    return userPermissions.includes(feature);
+  };
+
+  const getVisibleNavigationItems = () => {
+    return navigationItems.filter(item => 
+      item.alwaysVisible || hasPermission(item.feature)
+    );
+  };
 
   const handleLogout = () => {
     // Clear any stored authentication data
@@ -64,16 +202,16 @@ const HRManagerDashboard = () => {
 
   // Get display text based on role
   const getDashboardTitle = () => {
-    return userInfo.role === 'senior_hr_manager' ? 'Senior HR Manager Dashboard' : 'HR Manager Dashboard';
+    return 'HR Manager Dashboard';
   };
 
   const getUserRoleDisplay = () => {
-    return userInfo.role === 'senior_hr_manager' ? 'Senior HR Manager' : 'HR Manager';
+    return 'HR Manager';
   };
 
-  // Sample data for badge display
+  // Dashboard stats
   const dashboardStats = {
-    newApplications: 23
+    newApplications: pendingApplicationsCount
   };
 
   return (
@@ -103,12 +241,8 @@ const HRManagerDashboard = () => {
               </div>
               
               <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  userInfo.role === 'senior_hr_manager' ? 'bg-purple-100' : 'bg-blue-100'
-                }`}>
-                  <span className={`font-medium text-sm ${
-                    userInfo.role === 'senior_hr_manager' ? 'text-purple-600' : 'text-blue-600'
-                  }`}>{userInfo.initials}</span>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100">
+                  <span className="font-medium text-sm text-blue-600">{userInfo.initials}</span>
                 </div>
                 <span className="text-sm font-medium text-gray-700">{getUserRoleDisplay()}</span>
               </div>
@@ -130,196 +264,88 @@ const HRManagerDashboard = () => {
         <div className="w-64 bg-white shadow-sm h-screen sticky top-0">
           <nav className="mt-6 px-3">
             <div className="space-y-1">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'overview' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <TrendingUp className="w-5 h-5 mr-3" />
-                Overview
-              </button>
+              {getVisibleNavigationItems().map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
+                      activeTab === item.id 
+                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <IconComponent className="w-5 h-5 mr-3" />
+                    {item.label}
+                    {item.id === 'applications' && (
+                      <span className="ml-auto bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
+                        {dashboardStats.newApplications}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
               
-              <button
-                onClick={() => setActiveTab('applications')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'applications' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <FileText className="w-5 h-5 mr-3" />
-                Applications
-                <span className="ml-auto bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
-                  {dashboardStats.newApplications}
-                </span>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('employees')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'employees' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Users className="w-5 h-5 mr-3" />
-                Employees
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('leave')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'leave' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Calendar className="w-5 h-5 mr-3" />
-                Staff Leave
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('transfer')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'transfer' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <RotateCcw className="w-5 h-5 mr-3" />
-                Transfer
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('salary')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'salary' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <DollarSign className="w-5 h-5 mr-3" />
-                Salary Management
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('retirement')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'retirement' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <UserMinus className="w-5 h-5 mr-3" />
-                Retirement Management
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('loans')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'loans' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <CreditCard className="w-5 h-5 mr-3" />
-                Staff Loan Management
-              </button>
-
-              {/* Disciplinary Actions - Senior HR Manager Only */}
-              {userInfo.role === 'senior_hr_manager' && (
-                <button
-                  onClick={() => setActiveTab('disciplinary')}
-                  className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === 'disciplinary' 
-                      ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-700' 
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <Shield className="w-5 h-5 mr-3" />
-                  Disciplinary Actions
-                  <span className="ml-auto bg-purple-100 text-purple-600 text-xs px-2 py-0.5 rounded-full">
-                    SHR
-                  </span>
-                </button>
+              {/* Show message if user has limited permissions */}
+              {getVisibleNavigationItems().length <= 2 && (
+                <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-600 text-center">
+                    Your access is limited to specific features based on your assigned tasks.
+                  </p>
+                </div>
               )}
-
-              {/* Advanced Reports - Senior HR Manager Only */}
-              {userInfo.role === 'senior_hr_manager' && (
-                <button
-                  onClick={() => setActiveTab('reports')}
-                  className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === 'reports' 
-                      ? 'bg-indigo-100 text-indigo-700 border-r-2 border-indigo-700' 
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <BarChart3 className="w-5 h-5 mr-3" />
-                  Advanced Reports
-                  <span className="ml-auto bg-indigo-100 text-indigo-600 text-xs px-2 py-0.5 rounded-full">
-                    SHR
-                  </span>
-                </button>
-              )}
-              
-              <button
-                onClick={() => setActiveTab('recruitment')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'recruitment' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <UserPlus className="w-5 h-5 mr-3" />
-                Recruitment
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('schedule')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'schedule' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Calendar className="w-5 h-5 mr-3" />
-                Schedule
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'settings' 
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Settings className="w-5 h-5 mr-3" />
-                Settings
-              </button>
             </div>
           </nav>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 p-6">
-          {/* Render active tab content */}
+          {/* Render active tab content based on permissions */}
           {activeTab === 'overview' && <Overview />}
-          {activeTab === 'applications' && <Applications />}
-          {activeTab === 'employees' && <Employees />}
-          {activeTab === 'leave' && <StaffLeave />}
-          {activeTab === 'transfer' && <Transfer />}
-          {activeTab === 'salary' && <SalaryManagement />}
-          {activeTab === 'retirement' && <RetirementManagement />}
-          {activeTab === 'loans' && <StaffLoanManagement />}
-          {activeTab === 'disciplinary' && userInfo.role === 'senior_hr_manager' && <DisciplinaryActions />}
-          {activeTab === 'reports' && userInfo.role === 'senior_hr_manager' && <Reports />}
-          {activeTab === 'recruitment' && <Recruitment />}
-          {activeTab === 'schedule' && <Schedule />}
-          {activeTab === 'settings' && <SettingsPage />}
+          {activeTab === 'applications' && hasPermission('recruitment') && <Applications />}
+          {activeTab === 'employees' && hasPermission('employees') && <Employees />}
+          {activeTab === 'reports' && hasPermission('reports') && <Reports />}
+          {activeTab === 'medical' && hasPermission('medical_claims') && <MedicalManagement />}
+          {activeTab === 'leave' && hasPermission('leave_management') && <LeaveManagement />}
+          {activeTab === 'disciplinary' && hasPermission('documents') && <DisciplinaryActions />}
+          {activeTab === 'transfer' && hasPermission('transfer') && <Transfer />}
+          {activeTab === 'salary' && hasPermission('payroll') && <SalaryManagement />}
+          {activeTab === 'retirement' && hasPermission('retirement') && <RetirementManagement />}
+          {activeTab === 'training' && hasPermission('training') && <TrainingManagement />}
+          
+          {/* Show access denied message if user tries to access unauthorized content */}
+          {(
+            (activeTab === 'applications' && !hasPermission('recruitment')) ||
+            (activeTab === 'employees' && !hasPermission('employees')) ||
+            (activeTab === 'reports' && !hasPermission('reports')) ||
+            (activeTab === 'medical' && !hasPermission('medical_claims')) ||
+            (activeTab === 'leave' && !hasPermission('leave_management')) ||
+            (activeTab === 'disciplinary' && !hasPermission('documents')) ||
+            (activeTab === 'transfer' && !hasPermission('transfer')) ||
+            (activeTab === 'salary' && !hasPermission('payroll')) ||
+            (activeTab === 'retirement' && !hasPermission('retirement')) ||
+            (activeTab === 'training' && !hasPermission('training'))
+          ) && (
+            <div className="text-center py-12">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
+                <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                  <UserCheck className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-red-800 mb-2">Access Denied</h3>
+                <p className="text-red-600 mb-4">
+                  You don't have permission to access this feature. Please contact your administrator 
+                  if you believe you should have access to this section.
+                </p>
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Return to Overview
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

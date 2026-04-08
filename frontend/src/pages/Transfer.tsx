@@ -480,9 +480,9 @@ const Transfer: React.FC = () => {
   // Location options
   const locationOptions = ['Head Office', 'Regional Office', 'Branch A', 'Branch B', 'Branch C', 'Branch D', 'Branch E'];
   
-  // Senior HR Manager options
+  // HR Manager options
   const seniorHRManagers = [
-    'Mr. Rajesh Perera - Senior HR Manager',
+    'Mr. Rajesh Perera - HR Manager',
     'Ms. Priya Fernando - Regional HR Head', 
     'Mr. Chaminda Silva - HR Director',
     'Ms. Nisha Jayawardena - Deputy HR Manager',
@@ -756,7 +756,7 @@ const Transfer: React.FC = () => {
       requestDate: new Date().toISOString().split('T')[0],
       proposedDate: newTransferForm.startDate,
       priority: newTransferForm.priority,
-      impactAssessment: 'Pending assessment by senior HR manager',
+      impactAssessment: 'Pending assessment by HR manager',
       requiresTraining: false,
       budgetImpact: 0,
       managerApproval: false,
@@ -1580,16 +1580,16 @@ const Transfer: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Senior HR Manager Selection */}
+                {/* HR Manager Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Send to Senior HR Manager for Approval *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Send to HR Manager for Approval *</label>
                   <select
                     value={newTransferForm.seniorHRManager}
                     onChange={(e) => setNewTransferForm(prev => ({ ...prev, seniorHRManager: e.target.value }))}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
-                    <option value="">Select Senior HR Manager...</option>
+                    <option value="">Select HR Manager...</option>
                     {seniorHRManagers.map(manager => (
                       <option key={manager} value={manager}>{manager}</option>
                     ))}

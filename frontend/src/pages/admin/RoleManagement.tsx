@@ -6,7 +6,8 @@ import {
   Filter, 
   Search, 
   Clock,
-  Shield
+  Shield,
+  ChevronDown
 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import { AdminUserView, UserRole } from '../../types';
@@ -20,14 +21,16 @@ const RoleManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   const roleDefinitions = [
     {
-      role: 'employee' as UserRole,
-      name: 'Employee',
-      description: 'Standard employee access with basic functionality',
-      permissions: ['View own profile', 'Submit applications', 'View documents'],
-      color: 'bg-gray-100 text-gray-800',
+      role: 'admin' as UserRole,
+      name: 'Admin',
+      description: 'System administrator with full access and control',
+      permissions: ['Manage all users', 'Configure system', 'Access all reports', 'Assign roles'],
+      color: 'bg-purple-100 text-purple-800',
       count: 0
     },
     {
@@ -39,11 +42,11 @@ const RoleManagement: React.FC = () => {
       count: 0
     },
     {
-      role: 'senior_hr_manager' as UserRole,
-      name: 'Senior HR Manager',
-      description: 'Advanced HR management including reports and disciplinary actions',
-      permissions: ['All HR permissions', 'Disciplinary actions', 'Advanced reports'],
-      color: 'bg-purple-100 text-purple-800',
+      role: 'employee' as UserRole,
+      name: 'Employee',
+      description: 'Standard employee access with basic functionality',
+      permissions: ['View own profile', 'Submit applications', 'View documents'],
+      color: 'bg-green-100 text-green-800',
       count: 0
     }
   ];
@@ -52,45 +55,53 @@ const RoleManagement: React.FC = () => {
     loadUsers();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (openDropdownId && !target.closest('.relative')) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdownId]);
+
   const loadUsers = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call to get all users
-      const mockUsers: AdminUserView[] = [
-        {
-          id: '1', username: 'john.doe', email: 'john.doe@slbfe.lk', fullName: 'John Doe',
-          role: 'hr', profilePicture: undefined, isActive: true, lastLogin: new Date(Date.now() - 3600000),
-          createdAt: new Date(Date.now() - 86400000 * 30), updatedAt: new Date(),
-          lastActivity: new Date(Date.now() - 1800000), sessionsActive: 2, totalLogins: 145,
-          accountLocked: false, passwordLastChanged: new Date(Date.now() - 86400000 * 15),
-          twoFactorEnabled: true, permissions: [], groups: []
-        },
-        {
-          id: '2', username: 'jane.smith', email: 'jane.smith@slbfe.lk', fullName: 'Jane Smith',
-          role: 'employee', profilePicture: undefined, isActive: true, lastLogin: new Date(Date.now() - 86400000 * 2),
-          createdAt: new Date(Date.now() - 86400000 * 60), updatedAt: new Date(),
-          lastActivity: new Date(Date.now() - 86400000 * 2), sessionsActive: 0, totalLogins: 89,
-          accountLocked: false, passwordLastChanged: new Date(Date.now() - 86400000 * 45),
-          twoFactorEnabled: false, permissions: [], groups: []
-        },
-        {
-          id: '3', username: 'mike.wilson', email: 'mike.wilson@slbfe.lk', fullName: 'Mike Wilson',
-          role: 'employee', profilePicture: undefined, isActive: true, lastLogin: new Date(Date.now() - 86400000 * 1),
-          createdAt: new Date(Date.now() - 86400000 * 45), updatedAt: new Date(),
-          lastActivity: new Date(Date.now() - 86400000 * 1), sessionsActive: 1, totalLogins: 67,
-          accountLocked: false, passwordLastChanged: new Date(Date.now() - 86400000 * 20),
-          twoFactorEnabled: true, permissions: [], groups: []
-        },
-        {
-          id: '4', username: 'sarah.johnson', email: 'sarah.johnson@slbfe.lk', fullName: 'Sarah Johnson',
-          role: 'senior_hr_manager', profilePicture: undefined, isActive: true, lastLogin: new Date(Date.now() - 7200000),
-          createdAt: new Date(Date.now() - 86400000 * 120), updatedAt: new Date(),
-          lastActivity: new Date(Date.now() - 7200000), sessionsActive: 1, totalLogins: 234,
-          accountLocked: false, passwordLastChanged: new Date(Date.now() - 86400000 * 10),
-          twoFactorEnabled: true, permissions: [], groups: []
-        }
-      ];
-      setUsers(mockUsers);
+      const response = await fetch('http://localhost:5001/api/User');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+
+      const data = await response.json();
+      
+      // Map backend data to AdminUserView format
+      const mappedUsers: AdminUserView[] = data.map((user: any) => ({
+        id: user.userId.toString(),
+        username: user.userName,
+        email: user.email || `${user.userName}@slbfe.lk`,
+        fullName: user.fullName || user.userName,
+        role: user.roleId === 1 ? 'admin' : user.roleId === 2 ? 'hr' : 'employee',
+        profilePicture: undefined,
+        isActive: user.status === 'Active',
+        lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(user.updatedAt),
+        lastActivity: user.lastLogin ? new Date(user.lastLogin) : undefined,
+        sessionsActive: 0,
+        totalLogins: 0,
+        accountLocked: false,
+        passwordLastChanged: new Date(),
+        twoFactorEnabled: false,
+        permissions: [],
+        groups: []
+      }));
+      
+      setUsers(mappedUsers);
     } catch (error) {
       console.error('Failed to load users:', error);
     } finally {
@@ -100,35 +111,32 @@ const RoleManagement: React.FC = () => {
 
   const handleRoleAssignment = async (userIds: string[], newRole: UserRole, reason?: string) => {
     try {
-      if (userIds.length === 1) {
-        await adminService.assignUserRole(userIds[0], newRole, reason);
-      } else {
-        await adminService.bulkAssignRoles(userIds, newRole, reason);
+      // Map role string to roleId number
+      const roleId = newRole === 'admin' ? 1 : newRole === 'hr' ? 2 : 3;
+      
+      // Update each user's role
+      for (const userId of userIds) {
+        const response = await fetch(`http://localhost:5001/api/User/${userId}/role`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ roleId }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to update role for user ${userId}`);
+        }
       }
       
-      // Update local state
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          userIds.includes(user.id) 
-            ? { ...user, role: newRole, updatedAt: new Date() }
-            : user
-        )
-      );
+      // Reload users to get updated data
+      await loadUsers();
       
       setSelectedUsers([]);
       setShowRoleModal(false);
     } catch (error) {
       console.error('Role assignment failed:', error);
-      // For demo purposes, still update the UI
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          userIds.includes(user.id) 
-            ? { ...user, role: newRole, updatedAt: new Date() }
-            : user
-        )
-      );
-      setSelectedUsers([]);
-      setShowRoleModal(false);
+      alert('Failed to update role. Please try again.');
     }
   };
 
@@ -376,15 +384,64 @@ const RoleManagement: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => {
-                            setSelectedUsers([user.id]);
-                            setShowRoleModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Change Role
-                        </button>
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() => setOpenDropdownId(openDropdownId === user.id ? null : user.id)}
+                            disabled={updatingUserId === user.id}
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {updatingUserId === user.id ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                                Updating...
+                              </>
+                            ) : (
+                              <>
+                                Change Role
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                              </>
+                            )}
+                          </button>
+
+                          {/* Dropdown Menu */}
+                          {openDropdownId === user.id && (
+                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                              <div className="py-1" role="menu">
+                                {roleDefinitions
+                                  .filter(role => role.role !== user.role)
+                                  .map((role) => (
+                                    <button
+                                      key={role.role}
+                                      onClick={async () => {
+                                        setOpenDropdownId(null);
+                                        setUpdatingUserId(user.id);
+                                        try {
+                                          const roleId = role.role === 'admin' ? 1 : role.role === 'hr' ? 2 : 3;
+                                          const response = await fetch(`http://localhost:5001/api/User/${user.id}/role`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ roleId }),
+                                          });
+                                          if (!response.ok) throw new Error('Failed to update role');
+                                          await loadUsers();
+                                          alert('Role updated successfully!');
+                                        } catch (error) {
+                                          console.error('Role update failed:', error);
+                                          alert('Failed to update role. Please try again.');
+                                        } finally {
+                                          setUpdatingUserId(null);
+                                        }
+                                      }}
+                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                      role="menuitem"
+                                    >
+                                      {role.name}
+                                    </button>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))

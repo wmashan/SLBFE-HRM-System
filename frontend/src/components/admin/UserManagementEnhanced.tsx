@@ -387,8 +387,7 @@ const UserManagementEnhanced: React.FC<UserManagementEnhancedProps> = ({ onUserS
         totalUsers: 342,
         usersByRole: {
           employee: 280,
-          hr: 25,
-          senior_hr_manager: 8,
+          hr: 33,
           training_coordinator: 12,
           branch_manager: 15,
           program_manager: 5,
@@ -484,8 +483,6 @@ const UserManagementEnhanced: React.FC<UserManagementEnhancedProps> = ({ onUserS
     switch (role) {
       case 'admin':
         return 'bg-red-100 text-red-800';
-      case 'senior_hr_manager':
-        return 'bg-purple-100 text-purple-800';
       case 'hr':
         return 'bg-blue-100 text-blue-800';
       case 'branch_manager':

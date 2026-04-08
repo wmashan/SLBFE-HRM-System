@@ -4,17 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
-  Settings, 
-  Shield, 
   Activity, 
   Database, 
-  AlertTriangle,
-  Server,
+  Shield,
   UserCheck,
   BarChart3,
   Bell,
   RefreshCw,
-  Download
+  Download,
+  FileText
 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { AdminDashboardStats } from '../types';
@@ -34,20 +32,6 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       // TODO: Replace with actual API call
       const mockData: AdminDashboardStats = {
-        systemHealth: {
-          cpuUsage: 45,
-          memoryUsage: 62,
-          diskUsage: 38,
-          databaseStatus: 'healthy',
-          serviceStatus: [
-            { name: 'Web Server', status: 'running', lastChecked: new Date(), responseTime: 120 },
-            { name: 'Database', status: 'running', lastChecked: new Date(), responseTime: 45 },
-            { name: 'Email Service', status: 'running', lastChecked: new Date(), responseTime: 200 },
-            { name: 'Backup Service', status: 'running', lastChecked: new Date(), responseTime: 300 }
-          ],
-          uptime: 99.8,
-          lastHealthCheck: new Date()
-        },
         userActivity: {
           activeUsers: 342,
           onlineUsers: 28,
@@ -56,43 +40,25 @@ const AdminDashboard: React.FC = () => {
           peakConcurrentUsers: 89,
           activityTrend: []
         },
-        securityOverview: {
-          totalAlerts: 12,
-          criticalAlerts: 2,
-          resolvedToday: 8,
-          pendingAlerts: 4,
-          failedLogins: 15,
-          suspiciousActivities: 3,
-          securityScore: 87
-        },
         recentActions: [],
         systemAlerts: [
           {
             id: '1',
-            type: 'backup_failed',
-            severity: 'medium',
-            message: 'Scheduled backup failed for database cluster',
+            type: 'maintenance_required',
+            severity: 'low',
+            message: 'System maintenance scheduled for next week',
             timestamp: new Date(Date.now() - 3600000),
-            acknowledged: false
+            acknowledged: true
           },
           {
             id: '2',
             type: 'performance_degradation',
             severity: 'low',
-            message: 'Response time increased by 15% in the last hour',
+            message: 'Minor performance optimization completed',
             timestamp: new Date(Date.now() - 7200000),
             acknowledged: true
           }
-        ],
-        performanceMetrics: {
-          responseTime: 120,
-          throughput: 1500,
-          errorRate: 0.02,
-          concurrentUsers: 28,
-          databaseConnections: 15,
-          cacheHitRate: 94.5,
-          queueSize: 5
-        }
+        ]
       };
       setDashboardData(mockData);
     } catch (error) {
@@ -106,21 +72,6 @@ const AdminDashboard: React.FC = () => {
     setRefreshing(true);
     await loadDashboardData();
     setRefreshing(false);
-  };
-
-  const getHealthStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy':
-      case 'running':
-        return 'text-green-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'error':
-      case 'stopped':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
   };
 
   const getSeverityColor = (severity: string) => {
@@ -170,7 +121,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -189,8 +140,8 @@ const AdminDashboard: React.FC = () => {
                 <Activity className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">System Uptime</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.systemHealth.uptime}%</p>
+                <p className="text-sm font-medium text-gray-600">Online Users</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData?.userActivity.onlineUsers}</p>
               </div>
             </div>
           </div>
@@ -198,99 +149,18 @@ const AdminDashboard: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
-                <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                <Database className="w-6 h-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Security Alerts</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.securityOverview.pendingAlerts}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Shield className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Security Score</p>
-                <p className="text-2xl font-bold text-gray-900">{dashboardData?.securityOverview.securityScore}%</p>
+                <p className="text-sm font-medium text-gray-600">Total Sessions</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardData?.userActivity.totalSessions}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* System Health and Performance */}
+        {/* User Activity and Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* System Health */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">System Health</h3>
-              <Server className="w-5 h-5 text-gray-400" />
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>CPU Usage</span>
-                  <span>{dashboardData?.systemHealth.cpuUsage}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full" 
-                    style={{ width: `${dashboardData?.systemHealth.cpuUsage}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>Memory Usage</span>
-                  <span>{dashboardData?.systemHealth.memoryUsage}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full" 
-                    style={{ width: `${dashboardData?.systemHealth.memoryUsage}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>Disk Usage</span>
-                  <span>{dashboardData?.systemHealth.diskUsage}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-purple-600 h-2 rounded-full" 
-                    style={{ width: `${dashboardData?.systemHealth.diskUsage}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Services Status</h4>
-                <div className="space-y-2">
-                  {dashboardData?.systemHealth.serviceStatus.map((service) => (
-                    <div key={service.name} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">{service.name}</span>
-                      <div className="flex items-center">
-                        <span className={`text-sm font-medium ${getHealthStatusColor(service.status)}`}>
-                          {service.status}
-                        </span>
-                        {service.responseTime && (
-                          <span className="text-xs text-gray-400 ml-2">
-                            {service.responseTime}ms
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* User Activity */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -331,47 +201,8 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Security and Alerts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Security Overview */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Security Overview</h3>
-              <Shield className="w-5 h-5 text-gray-400" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-red-800">Critical Alerts</p>
-                  <p className="text-sm text-red-600">Require immediate attention</p>
-                </div>
-                <span className="text-2xl font-bold text-red-600">
-                  {dashboardData?.securityOverview.criticalAlerts}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-yellow-800">Failed Logins</p>
-                  <p className="text-sm text-yellow-600">Last 24 hours</p>
-                </div>
-                <span className="text-2xl font-bold text-yellow-600">
-                  {dashboardData?.securityOverview.failedLogins}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-blue-800">Suspicious Activities</p>
-                  <p className="text-sm text-blue-600">Under investigation</p>
-                </div>
-                <span className="text-2xl font-bold text-blue-600">
-                  {dashboardData?.securityOverview.suspiciousActivities}
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* System Alerts */}
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
 
           {/* System Alerts */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -424,7 +255,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <button 
               onClick={() => navigate('/admin/users')}
               className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -441,9 +272,12 @@ const AdminDashboard: React.FC = () => {
               <span className="text-sm font-medium text-gray-700">Role Management</span>
             </button>
             
-            <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <Settings className="w-8 h-8 text-gray-600 mb-2" />
-              <span className="text-sm font-medium text-gray-700">System Config</span>
+            <button 
+              onClick={() => navigate('/admin/task-assignment')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Shield className="w-8 h-8 text-purple-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Task Assignment</span>
             </button>
             
             <button 
@@ -459,9 +293,12 @@ const AdminDashboard: React.FC = () => {
               <span className="text-sm font-medium text-gray-700">Analytics</span>
             </button>
             
-            <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <Shield className="w-8 h-8 text-red-600 mb-2" />
-              <span className="text-sm font-medium text-gray-700">Security Audit</span>
+            <button 
+              onClick={() => navigate('/documents')}
+              className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <FileText className="w-8 h-8 text-teal-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Documents</span>
             </button>
             
             <button className="flex flex-col items-center p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">

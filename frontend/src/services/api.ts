@@ -1,6 +1,6 @@
 // API Service Layer for SLBFE HRM System
 
-import { ApiResponse, User, LoginCredentials, RegisterData } from '../types';
+import { ApiResponse, User, UserRole, LoginCredentials, RegisterData, Employee, EmployeeCreateRequest, EmployeeType } from '../types';
 
 // Salary Management Types
 interface SalaryRecord {
@@ -54,109 +54,6 @@ interface UpcomingIncrement {
   status: 'scheduled' | 'approved' | 'on_hold' | 'processed';
   reason?: string;
   approvedBy?: string;
-}
-
-// Staff Loan Management Types
-interface StaffLoan {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
-  position: string;
-  loanType: 'personal' | 'medical' | 'education' | 'housing' | 'emergency' | 'vehicle';
-  loanAmount: number;
-  approvedAmount?: number;
-  interestRate: number;
-  repaymentPeriod: number; // in months
-  monthlyInstallment: number;
-  applicationDate: string;
-  approvalDate?: string;
-  disbursementDate?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'disbursed' | 'active' | 'completed' | 'defaulted';
-  approvedBy?: string;
-  remainingBalance: number;
-  totalPaid: number;
-  nextPaymentDate?: string;
-  guarantor1?: string;
-  guarantor2?: string;
-  purpose: string;
-  documents: string[];
-  comments?: string;
-}
-
-interface LoanApplication {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
-  position: string;
-  requestedAmount: number;
-  loanType: 'personal' | 'medical' | 'education' | 'housing' | 'emergency' | 'vehicle';
-  purpose: string;
-  guarantor1: string;
-  guarantor2: string;
-  submissionDate: string;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected';
-  reviewedBy?: string;
-  reviewDate?: string;
-  comments?: string;
-  documents: string[];
-  monthlyIncome: number;
-  existingLoans: number;
-  creditScore?: number;
-}
-
-interface LoanRepayment {
-  id: string;
-  loanId: string;
-  employeeId: string;
-  employeeName: string;
-  paymentDate: string;
-  dueDate: string;
-  amount: number;
-  principalAmount: number;
-  interestAmount: number;
-  remainingBalance: number;
-  paymentMethod: 'salary_deduction' | 'cash' | 'bank_transfer' | 'cheque';
-  status: 'scheduled' | 'paid' | 'overdue' | 'partial' | 'waived';
-  receiptNumber?: string;
-  lateFeesApplied: number;
-  notes?: string;
-}
-
-interface LoanStats {
-  totalLoansCount: number;
-  activeLoansCount: number;
-  pendingApplicationsCount: number;
-  totalDisbursedAmount: number;
-  totalOutstandingAmount: number;
-  overduePaymentsCount: number;
-  completedLoansCount: number;
-  defaultedLoansCount: number;
-  avgLoanAmount: number;
-  totalInterestEarned: number;
-}
-
-interface LoanEligibility {
-  employeeId: string;
-  maxEligibleAmount: number;
-  currentDebtRatio: number;
-  creditScore: number;
-  isEligible: boolean;
-  eligibilityReasons: string[];
-  recommendedAmount?: number;
-  recommendedTerm?: number;
-}
-
-interface LoanSchedule {
-  loanId: string;
-  paymentNumber: number;
-  dueDate: string;
-  principalAmount: number;
-  interestAmount: number;
-  totalPayment: number;
-  remainingBalance: number;
-  status: 'pending' | 'paid' | 'overdue';
 }
 
 // Retirement Management Types
@@ -227,7 +124,7 @@ interface RetirementStats {
 }
 
 // Base API configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 class ApiService {
   private baseURL: string;
@@ -248,7 +145,10 @@ class ApiService {
     };
 
     if (this.token) {
+      console.log('Adding Authorization header with token:', this.token.substring(0, 20) + '...');
       headers.Authorization = `Bearer ${this.token}`;
+    } else {
+      console.warn('No token available for Authorization header');
     }
 
     return headers;
@@ -258,116 +158,130 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+    console.log(`Making ${options.method || 'GET'} request to:`, url);
+    
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await fetch(url, {
         headers: this.getHeaders(),
         ...options,
       });
 
-      const data = await response.json();
+      console.log(`Response status: ${response.status} ${response.statusText}`);
 
-      if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+      // Handle non-JSON responses
+      const contentType = response.headers.get('content-type');
+      let data: any;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+        console.log('Response data:', data);
+      } else {
+        const text = await response.text();
+        console.log('Response text:', text);
+        data = { message: text };
       }
 
-      return data;
+      if (!response.ok) {
+        console.error('Request failed:', data);
+        return {
+          success: false,
+          message: data.message || data.title || `Request failed with status ${response.status}`,
+          data: null as any,
+        };
+      }
+
+      // Backend returns data directly, wrap it in ApiResponse format
+      return {
+        success: true,
+        message: 'Success',
+        data: data,
+      };
     } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+      console.error('API Fetch Error:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An error occurred',
+        data: null as any,
+      };
+    }
+  }
+
+  // Helper to map RoleId to role string
+  private mapRoleIdToRole(roleId: number): UserRole {
+    switch (roleId) {
+      case 1:
+        return 'admin';
+      case 2:
+        return 'hr';
+      case 3:
+        return 'employee';
+      default:
+        return 'employee';
     }
   }
 
   // Authentication Methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
-    // Demo users for development
-    const demoUsers = [
-      {
-        id: 'admin001',
-        username: 'admin',
-        email: 'admin@slbfe.com',
-        fullName: 'System Administrator',
-        role: 'admin' as const,
-        isActive: true,
-        createdAt: new Date('2022-01-01'),
-        updatedAt: new Date('2024-09-30')
-      },
-      {
-        id: 'hr001',
-        username: 'hrmanager',
-        email: 'hrmanager@slbfe.com',
-        fullName: 'John Anderson',
-        role: 'hr' as const,
-        isActive: true,
-        createdAt: new Date('2023-01-01'),
-        updatedAt: new Date('2024-09-30')
-      },
-      {
-        id: 'shr001',
-        username: 'seniorhrmanager',
-        email: 'seniorhrmanager@slbfe.com',
-        fullName: 'Sarah Williams',
-        role: 'senior_hr_manager' as const,
-        isActive: true,
-        createdAt: new Date('2022-06-15'),
-        updatedAt: new Date('2024-09-30')
-      },
-      {
-        id: 'emp001',
-        username: 'employee',
-        email: 'employee@slbfe.com',
-        fullName: 'Mike Johnson',
-        role: 'employee' as const,
-        isActive: true,
-        createdAt: new Date('2023-03-10'),
-        updatedAt: new Date('2024-09-30')
-      }
-    ];
-
-    // Check demo credentials
-    const user = demoUsers.find(u => {
-      if (u.username === credentials.username) {
-        if (u.role === 'admin' && credentials.password === 'admin123') return true;
-        if (u.role === 'hr' && credentials.password === 'hrpass123') return true;
-        if (u.role === 'senior_hr_manager' && credentials.password === 'seniorhrpass123') return true;
-        if (u.role === 'employee' && credentials.password === 'emp123') return true;
-      }
-      return false;
-    });
-
-    if (user) {
-      const token = 'demo_token_' + user.id + '_' + Date.now();
-      const response = {
-        success: true,
-        data: { user, token },
-        message: 'Login successful'
-      };
-
-      this.token = token;
-      localStorage.setItem('slbfe_auth_token', this.token);
-      localStorage.setItem('slbfe_user_data', JSON.stringify(user));
-
-      return response;
-    }
-
-    // Fallback to API call for production
     try {
-      const response = await this.request<{ user: User; token: string }>('/auth/login', {
+      const response = await this.request<{
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+        tokenType: string;
+        userId: number;
+        roleId: number;
+        userName: string;
+      }>('/Auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
 
       if (response.success && response.data) {
-        this.token = response.data.token;
-        localStorage.setItem('slbfe_auth_token', this.token);
-        localStorage.setItem('slbfe_user_data', JSON.stringify(response.data.user));
+        // Map backend JWT response to User type
+        const user: User = {
+          id: response.data.userId.toString(),
+          username: response.data.userName,
+          email: '', // Not provided by backend, can be fetched separately if needed
+          fullName: '', // Not provided by backend, can be fetched from employee table
+          role: this.mapRoleIdToRole(response.data.roleId),
+          isActive: true, // If login succeeds, user is active
+          lastLogin: new Date(),
+          createdAt: new Date(), // Not provided by backend
+          updatedAt: new Date(), // Not provided by backend
+        };
+
+        // Use the JWT access token from backend
+        const token = response.data.accessToken;
+        
+        console.log('Login successful - Token received:', token ? token.substring(0, 30) + '...' : 'NO TOKEN');
+        console.log('Setting this.token and saving to localStorage');
+        
+        this.token = token;
+        localStorage.setItem('slbfe_auth_token', token);
+        localStorage.setItem('slbfe_refresh_token', response.data.refreshToken);
+        localStorage.setItem('slbfe_user_data', JSON.stringify(user));
+        localStorage.setItem('slbfe_user_id', response.data.userId.toString());
+        
+        console.log('Token saved. Current this.token:', this.token ? this.token.substring(0, 30) + '...' : 'NO TOKEN');
+
+        return {
+          success: true,
+          message: 'Login successful',
+          data: { user, token }
+        };
       }
 
-      return response;
+      return {
+        success: false,
+        message: response.message || 'Login failed',
+        data: null as any
+      };
     } catch (error) {
       return {
         success: false,
-        message: 'Invalid username or password',
-        error: 'Authentication failed'
+        message: error instanceof Error ? error.message : 'Invalid username or password',
+        data: null as any
       };
     }
   }
@@ -386,7 +300,9 @@ class ApiService {
 
     this.token = null;
     localStorage.removeItem('slbfe_auth_token');
+    localStorage.removeItem('slbfe_refresh_token');
     localStorage.removeItem('slbfe_user_data');
+    localStorage.removeItem('slbfe_user_id');
 
     return response;
   }
@@ -473,34 +389,91 @@ class ApiService {
     limit?: number;
     search?: string;
     department?: string;
-    branch?: string;
+    division?: string;
     status?: string;
-  }): Promise<ApiResponse<User[]>> {
+  }): Promise<ApiResponse<Employee[]>> {
     const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<User[]>(`/employees${queryString ? `?${queryString}` : ''}`);
+    return this.request<Employee[]>(`/Employee${queryString ? `?${queryString}` : ''}`);
   }
 
-  async getEmployee(id: string): Promise<ApiResponse<User>> {
-    return this.request<User>(`/employees/${id}`);
+  async getEmployee(id: number): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>(`/Employee/${id}`);
   }
 
-  async createEmployee(employeeData: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<User>('/employees', {
+  async getEmployeeByEmployeeId(employeeId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/Employee/${employeeId}`);
+  }
+
+  async createEmployee(employeeData: EmployeeCreateRequest): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>('/Employee', {
       method: 'POST',
       body: JSON.stringify(employeeData),
     });
   }
 
-  async updateEmployee(id: string, employeeData: Partial<User>): Promise<ApiResponse<User>> {
-    return this.request<User>(`/employees/${id}`, {
+  // Title Methods
+  async getTitles(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Title');
+  }
+
+  // Division Methods
+  async getDivisions(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Division');
+  }
+
+  // Grade Methods
+  async getGrades(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Grade');
+  }
+
+  // Employee Type Methods
+  async getEmployeeTypes(): Promise<ApiResponse<EmployeeType[]>> {
+    return this.request<EmployeeType[]>('/EmployeeType');
+  }
+
+  async updateEmployee(id: number, employeeData: Partial<Employee>): Promise<ApiResponse<Employee>> {
+    return this.request<Employee>(`/Employee/${id}`, {
       method: 'PUT',
       body: JSON.stringify(employeeData),
     });
   }
 
-  async deleteEmployee(id: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/employees/${id}`, {
+  async deleteEmployee(id: number): Promise<ApiResponse<null>> {
+    return this.request<null>(`/Employee/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  async searchEmployees(params?: {
+    search?: string;
+    division?: string;
+    designation?: string;
+    status?: string;
+  }): Promise<ApiResponse<Employee[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<Employee[]>(`/Employee/search${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async checkEmployeeUnique(field: string, value: string): Promise<ApiResponse<boolean>> {
+    return this.request<boolean>(`/Employee/check-unique?${field}=${encodeURIComponent(value)}`);
+  }
+
+  // Application Review Methods
+  async getPendingApplications(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Employee/pending-applications');
+  }
+
+  async getAllApplications(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/Employee/all-applications');
+  }
+
+  async reviewApplication(employeeId: string, reviewData: {
+    status: string;
+    reviewComments?: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request<any>(`/Employee/${employeeId}/review`, {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
     });
   }
 
@@ -799,199 +772,6 @@ class ApiService {
     });
   }
 
-  // Staff Loan Management Methods
-  async getLoans(params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    department?: string;
-    status?: 'pending' | 'approved' | 'rejected' | 'disbursed' | 'active' | 'completed' | 'defaulted';
-    loanType?: string;
-  }): Promise<ApiResponse<StaffLoan[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<StaffLoan[]>(`/loans${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getLoan(id: string): Promise<ApiResponse<StaffLoan>> {
-    return this.request<StaffLoan>(`/loans/${id}`);
-  }
-
-  async createLoan(data: Omit<StaffLoan, 'id' | 'status' | 'remainingBalance' | 'totalPaid'>): Promise<ApiResponse<StaffLoan>> {
-    return this.request<StaffLoan>('/loans', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateLoan(id: string, data: Partial<StaffLoan>): Promise<ApiResponse<StaffLoan>> {
-    return this.request<StaffLoan>(`/loans/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async approveLoan(id: string, approvedAmount?: number, comments?: string): Promise<ApiResponse<StaffLoan>> {
-    return this.request<StaffLoan>(`/loans/${id}/approve`, {
-      method: 'POST',
-      body: JSON.stringify({ approvedAmount, comments }),
-    });
-  }
-
-  async rejectLoan(id: string, reason: string): Promise<ApiResponse<StaffLoan>> {
-    return this.request<StaffLoan>(`/loans/${id}/reject`, {
-      method: 'POST',
-      body: JSON.stringify({ reason }),
-    });
-  }
-
-  async disburseLoan(id: string, disbursementDate: string): Promise<ApiResponse<StaffLoan>> {
-    return this.request<StaffLoan>(`/loans/${id}/disburse`, {
-      method: 'POST',
-      body: JSON.stringify({ disbursementDate }),
-    });
-  }
-
-  async getLoanApplications(params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    status?: 'submitted' | 'under_review' | 'approved' | 'rejected';
-  }): Promise<ApiResponse<LoanApplication[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<LoanApplication[]>(`/loan-applications${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getLoanApplication(id: string): Promise<ApiResponse<LoanApplication>> {
-    return this.request<LoanApplication>(`/loan-applications/${id}`);
-  }
-
-  async createLoanApplication(data: Omit<LoanApplication, 'id' | 'status' | 'submissionDate'>): Promise<ApiResponse<LoanApplication>> {
-    return this.request<LoanApplication>('/loan-applications', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateLoanApplication(id: string, data: Partial<LoanApplication>): Promise<ApiResponse<LoanApplication>> {
-    return this.request<LoanApplication>(`/loan-applications/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async reviewLoanApplication(id: string, status: 'approved' | 'rejected', comments?: string): Promise<ApiResponse<LoanApplication>> {
-    return this.request<LoanApplication>(`/loan-applications/${id}/review`, {
-      method: 'POST',
-      body: JSON.stringify({ status, comments }),
-    });
-  }
-
-  async getLoanRepayments(params?: {
-    page?: number;
-    limit?: number;
-    loanId?: string;
-    employeeId?: string;
-    status?: 'scheduled' | 'paid' | 'overdue' | 'partial' | 'waived';
-    startDate?: string;
-    endDate?: string;
-  }): Promise<ApiResponse<LoanRepayment[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<LoanRepayment[]>(`/loan-repayments${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getLoanRepayment(id: string): Promise<ApiResponse<LoanRepayment>> {
-    return this.request<LoanRepayment>(`/loan-repayments/${id}`);
-  }
-
-  async recordLoanPayment(data: Omit<LoanRepayment, 'id' | 'remainingBalance'>): Promise<ApiResponse<LoanRepayment>> {
-    return this.request<LoanRepayment>('/loan-repayments', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateLoanPayment(id: string, data: Partial<LoanRepayment>): Promise<ApiResponse<LoanRepayment>> {
-    return this.request<LoanRepayment>(`/loan-repayments/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async getOverduePayments(): Promise<ApiResponse<LoanRepayment[]>> {
-    return this.request<LoanRepayment[]>('/loan-repayments/overdue');
-  }
-
-  async applyLateFee(repaymentId: string, feeAmount: number): Promise<ApiResponse<LoanRepayment>> {
-    return this.request<LoanRepayment>(`/loan-repayments/${repaymentId}/late-fee`, {
-      method: 'POST',
-      body: JSON.stringify({ feeAmount }),
-    });
-  }
-
-  async waivePayment(repaymentId: string, reason: string): Promise<ApiResponse<LoanRepayment>> {
-    return this.request<LoanRepayment>(`/loan-repayments/${repaymentId}/waive`, {
-      method: 'POST',
-      body: JSON.stringify({ reason }),
-    });
-  }
-
-  async getLoanSchedule(loanId: string): Promise<ApiResponse<LoanSchedule[]>> {
-    return this.request<LoanSchedule[]>(`/loans/${loanId}/schedule`);
-  }
-
-  async generateLoanSchedule(loanId: string): Promise<ApiResponse<LoanSchedule[]>> {
-    return this.request<LoanSchedule[]>(`/loans/${loanId}/generate-schedule`, {
-      method: 'POST',
-    });
-  }
-
-  async checkLoanEligibility(employeeId: string, requestedAmount: number, loanType: string): Promise<ApiResponse<LoanEligibility>> {
-    return this.request<LoanEligibility>('/loans/check-eligibility', {
-      method: 'POST',
-      body: JSON.stringify({ employeeId, requestedAmount, loanType }),
-    });
-  }
-
-  async getLoanStats(): Promise<ApiResponse<LoanStats>> {
-    return this.request<LoanStats>('/loans/stats');
-  }
-
-  async generateLoanReport(params: {
-    startDate?: string;
-    endDate?: string;
-    department?: string;
-    loanType?: string;
-    status?: string;
-    reportType: 'summary' | 'detailed' | 'repayment' | 'overdue';
-    format: 'pdf' | 'excel';
-  }): Promise<ApiResponse<{ url: string }>> {
-    return this.request<{ url: string }>('/loans/reports', {
-      method: 'POST',
-      body: JSON.stringify(params),
-    });
-  }
-
-  async getUpcomingLoanPayments(days: number = 30): Promise<ApiResponse<LoanRepayment[]>> {
-    return this.request<LoanRepayment[]>(`/loans/upcoming-payments?days=${days}`);
-  }
-
-  async sendPaymentReminder(repaymentId: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/loan-repayments/${repaymentId}/remind`, {
-      method: 'POST',
-    });
-  }
-
-  async calculateEmi(principal: number, interestRate: number, tenure: number): Promise<ApiResponse<{
-    emi: number;
-    totalAmount: number;
-    totalInterest: number;
-  }>> {
-    return this.request('/loans/calculate-emi', {
-      method: 'POST',
-      body: JSON.stringify({ principal, interestRate, tenure }),
-    });
-  }
-
   // Application Methods
   async getApplications(params?: {
     page?: number;
@@ -1028,310 +808,6 @@ class ApiService {
     thisWeek: number;
   }>> {
     return this.request('/applications/stats');
-  }
-
-  // Disciplinary Actions Methods (Senior HR Manager Only)
-  async getDisciplinaryActions(params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    department?: string;
-    status?: string;
-    severity?: string;
-    employeeId?: string;
-    startDate?: string;
-    endDate?: string;
-  }): Promise<ApiResponse<any[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<any[]>(`/disciplinary-actions${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getDisciplinaryAction(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${id}`);
-  }
-
-  async createDisciplinaryAction(data: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/disciplinary-actions', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateDisciplinaryAction(id: string, data: any): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteDisciplinaryAction(id: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/disciplinary-actions/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async approveDisciplinaryAction(id: string, comments?: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${id}/approve`, {
-      method: 'POST',
-      body: JSON.stringify({ comments }),
-    });
-  }
-
-  async implementDisciplinaryAction(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${id}/implement`, {
-      method: 'POST',
-    });
-  }
-
-  async submitAppeal(id: string, appealReason: string, evidenceUrls?: string[]): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${id}/appeal`, {
-      method: 'POST',
-      body: JSON.stringify({ appealReason, evidenceUrls }),
-    });
-  }
-
-  async reviewAppeal(id: string, decision: 'upheld' | 'overturned', reviewNotes?: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${id}/review-appeal`, {
-      method: 'POST',
-      body: JSON.stringify({ decision, reviewNotes }),
-    });
-  }
-
-  async getDisciplinaryStats(): Promise<ApiResponse<any>> {
-    return this.request<any>('/disciplinary-actions/stats');
-  }
-
-  async generateDisciplinaryReport(params: {
-    startDate?: string;
-    endDate?: string;
-    department?: string;
-    severity?: string;
-    actionType?: string;
-    status?: string;
-    format: 'pdf' | 'excel';
-  }): Promise<ApiResponse<{ url: string }>> {
-    return this.request<{ url: string }>('/disciplinary-actions/reports', {
-      method: 'POST',
-      body: JSON.stringify(params),
-    });
-  }
-
-  async getEmployeeDisciplinaryHistory(employeeId: string): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>(`/disciplinary-actions/employee/${employeeId}`);
-  }
-
-  async getUpcomingFollowUps(days: number = 30): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>(`/disciplinary-actions/follow-ups?days=${days}`);
-  }
-
-  async markFollowUpComplete(actionId: string, followUpNotes: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/disciplinary-actions/${actionId}/follow-up`, {
-      method: 'POST',
-      body: JSON.stringify({ followUpNotes }),
-    });
-  }
-
-  // Reports Methods (Senior HR Manager Only)
-  async getReportConfigs(params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    category?: string;
-    type?: string;
-    isActive?: boolean;
-  }): Promise<ApiResponse<any[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<any[]>(`/reports/configs${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getReportConfig(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/configs/${id}`);
-  }
-
-  async createReportConfig(data: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/configs', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateReportConfig(id: string, data: any): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/configs/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteReportConfig(id: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/reports/configs/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async generateReport(configId: string, parameters: any, format: string): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/generate', {
-      method: 'POST',
-      body: JSON.stringify({ configId, parameters, format }),
-    });
-  }
-
-  async getReportGenerations(params?: {
-    page?: number;
-    limit?: number;
-    configId?: string;
-    status?: string;
-    startDate?: string;
-    endDate?: string;
-  }): Promise<ApiResponse<any[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<any[]>(`/reports/generations${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getReportGeneration(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/generations/${id}`);
-  }
-
-  async cancelReportGeneration(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/generations/${id}/cancel`, {
-      method: 'POST',
-    });
-  }
-
-  async downloadReport(generationId: string): Promise<ApiResponse<{ url: string }>> {
-    return this.request<{ url: string }>(`/reports/generations/${generationId}/download`);
-  }
-
-  async getReportAnalytics(): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/analytics');
-  }
-
-  async getReportTemplates(category?: string): Promise<ApiResponse<any[]>> {
-    const queryString = category ? `?category=${category}` : '';
-    return this.request<any[]>(`/reports/templates${queryString}`);
-  }
-
-  async createReportTemplate(data: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/templates', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateReportTemplate(id: string, data: any): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/templates/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteReportTemplate(id: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/reports/templates/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async scheduleReport(configId: string, schedule: any): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/configs/${configId}/schedule`, {
-      method: 'POST',
-      body: JSON.stringify(schedule),
-    });
-  }
-
-  async updateReportSchedule(configId: string, schedule: any): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/configs/${configId}/schedule`, {
-      method: 'PUT',
-      body: JSON.stringify(schedule),
-    });
-  }
-
-  async deleteReportSchedule(configId: string): Promise<ApiResponse<null>> {
-    return this.request<null>(`/reports/configs/${configId}/schedule`, {
-      method: 'DELETE',
-    });
-  }
-
-  async getScheduledReports(): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>('/reports/scheduled');
-  }
-
-  async previewReport(configId: string, parameters: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/preview', {
-      method: 'POST',
-      body: JSON.stringify({ configId, parameters }),
-    });
-  }
-
-  async exportReportData(configId: string, parameters: any, format: string): Promise<ApiResponse<{ url: string }>> {
-    return this.request<{ url: string }>('/reports/export', {
-      method: 'POST',
-      body: JSON.stringify({ configId, parameters, format }),
-    });
-  }
-
-  async shareReport(generationId: string, recipients: string[], message?: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/generations/${generationId}/share`, {
-      method: 'POST',
-      body: JSON.stringify({ recipients, message }),
-    });
-  }
-
-  async getReportDashboards(): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>('/reports/dashboards');
-  }
-
-  async createReportDashboard(data: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/dashboards', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateReportDashboard(id: string, data: any): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/dashboards/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  // Employee Report Methods
-  async generateEmployeeReport(request: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/employee/generate', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
-  }
-
-  async getEmployeeReportData(employeeId: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/employee/${employeeId}/data`);
-  }
-
-  async getEmployeeReportGenerations(params?: {
-    employeeId?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<ApiResponse<any[]>> {
-    const queryString = params ? new URLSearchParams(params as any).toString() : '';
-    return this.request<any[]>(`/reports/employee/generations${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getEmployeeReportGeneration(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/employee/generations/${id}`);
-  }
-
-  async downloadEmployeeReport(generationId: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/reports/employee/generations/${generationId}/download`);
-  }
-
-  async getEmployeeReportTemplates(): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>('/reports/employee/templates');
-  }
-
-  async previewEmployeeReport(request: any): Promise<ApiResponse<any>> {
-    return this.request<any>('/reports/employee/preview', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
   }
 
   // Backup & Restore Methods
@@ -1444,6 +920,125 @@ class ApiService {
       method: 'POST',
     });
   }
+
+  // Document Management Methods
+  async getSystemDocuments(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string;
+    accessLevel?: string;
+    isSystemForm?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/documents${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getSystemDocument(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/documents/${id}`);
+  }
+
+  async uploadSystemDocument(formData: FormData): Promise<ApiResponse<any>> {
+    const response = await fetch(`${this.baseURL}/admin/documents/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+      body: formData,
+    });
+
+    return response.json();
+  }
+
+  async updateSystemDocument(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/documents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSystemDocument(id: string): Promise<ApiResponse<null>> {
+    return this.request<null>(`/admin/documents/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async downloadSystemDocument(id: string): Promise<Response> {
+    return fetch(`${this.baseURL}/admin/documents/${id}/download`, {
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+    });
+  }
+
+  async getDocumentStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/documents/stats');
+  }
+
+  // Task Assignment Methods
+  async getTaskAssignments(params?: {
+    page?: number;
+    limit?: number;
+    taskType?: string;
+    userId?: string;
+    isActive?: boolean;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/task-assignments${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getTaskAssignment(id: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}`);
+  }
+
+  async createTaskAssignment(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/admin/task-assignments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateTaskAssignment(id: string, data: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTaskAssignment(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/admin/task-assignments/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getHRUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    department?: string;
+  }): Promise<ApiResponse<any[]>> {
+    const queryString = params ? new URLSearchParams(params as any).toString() : '';
+    return this.request<any[]>(`/admin/hr-users${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getUserPermissions(userId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/users/${userId}/permissions`);
+  }
+
+  async getTaskTemplates(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/task-templates');
+  }
+
+  async getFeaturePermissions(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/admin/feature-permissions');
+  }
+
+  async toggleTaskAssignmentStatus(id: string, isActive: boolean): Promise<ApiResponse<any>> {
+    return this.request<any>(`/admin/task-assignments/${id}/toggle`, {
+      method: 'POST',
+      body: JSON.stringify({ isActive }),
+    });
+  }
 }
 
 // Create and export API service instance
@@ -1461,10 +1056,17 @@ export const authService = {
 
 export const employeeService = {
   getEmployees: (params?: any) => apiService.getEmployees(params),
-  getEmployee: (id: string) => apiService.getEmployee(id),
-  createEmployee: (data: Partial<User>) => apiService.createEmployee(data),
-  updateEmployee: (id: string, data: Partial<User>) => apiService.updateEmployee(id, data),
-  deleteEmployee: (id: string) => apiService.deleteEmployee(id),
+  getEmployee: (id: number) => apiService.getEmployee(id),
+  getEmployeeByEmployeeId: (employeeId: string) => apiService.getEmployeeByEmployeeId(employeeId),
+  createEmployee: (data: EmployeeCreateRequest) => apiService.createEmployee(data),
+  updateEmployee: (id: number, data: Partial<Employee>) => apiService.updateEmployee(id, data),
+  deleteEmployee: (id: number) => apiService.deleteEmployee(id),
+  searchEmployees: (params?: any) => apiService.searchEmployees(params),
+  checkEmployeeUnique: (field: string, value: string) => apiService.checkEmployeeUnique(field, value),
+  getPendingApplications: () => apiService.getPendingApplications(),
+  getAllApplications: () => apiService.getAllApplications(),
+  reviewApplication: (employeeId: string, reviewData: { status: string; reviewComments?: string }) => 
+    apiService.reviewApplication(employeeId, reviewData),
 };
 
 export const departmentService = {
@@ -1527,121 +1129,6 @@ export const retirementService = {
   generateRetirementReport: (params: any) => apiService.generateRetirementReport(params),
 };
 
-export const loanService = {
-  // Loan Management
-  getLoans: (params?: any) => apiService.getLoans(params),
-  getLoan: (id: string) => apiService.getLoan(id),
-  createLoan: (data: Omit<StaffLoan, 'id' | 'status' | 'remainingBalance' | 'totalPaid'>) => apiService.createLoan(data),
-  updateLoan: (id: string, data: Partial<StaffLoan>) => apiService.updateLoan(id, data),
-  approveLoan: (id: string, approvedAmount?: number, comments?: string) => apiService.approveLoan(id, approvedAmount, comments),
-  rejectLoan: (id: string, reason: string) => apiService.rejectLoan(id, reason),
-  disburseLoan: (id: string, disbursementDate: string) => apiService.disburseLoan(id, disbursementDate),
-  
-  // Loan Applications
-  getLoanApplications: (params?: any) => apiService.getLoanApplications(params),
-  getLoanApplication: (id: string) => apiService.getLoanApplication(id),
-  createLoanApplication: (data: Omit<LoanApplication, 'id' | 'status' | 'submissionDate'>) => apiService.createLoanApplication(data),
-  updateLoanApplication: (id: string, data: Partial<LoanApplication>) => apiService.updateLoanApplication(id, data),
-  reviewLoanApplication: (id: string, status: 'approved' | 'rejected', comments?: string) => apiService.reviewLoanApplication(id, status, comments),
-  
-  // Loan Repayments
-  getLoanRepayments: (params?: any) => apiService.getLoanRepayments(params),
-  getLoanRepayment: (id: string) => apiService.getLoanRepayment(id),
-  recordLoanPayment: (data: Omit<LoanRepayment, 'id' | 'remainingBalance'>) => apiService.recordLoanPayment(data),
-  updateLoanPayment: (id: string, data: Partial<LoanRepayment>) => apiService.updateLoanPayment(id, data),
-  getOverduePayments: () => apiService.getOverduePayments(),
-  applyLateFee: (repaymentId: string, feeAmount: number) => apiService.applyLateFee(repaymentId, feeAmount),
-  waivePayment: (repaymentId: string, reason: string) => apiService.waivePayment(repaymentId, reason),
-  
-  // Loan Scheduling and Calculations
-  getLoanSchedule: (loanId: string) => apiService.getLoanSchedule(loanId),
-  generateLoanSchedule: (loanId: string) => apiService.generateLoanSchedule(loanId),
-  checkLoanEligibility: (employeeId: string, requestedAmount: number, loanType: string) => apiService.checkLoanEligibility(employeeId, requestedAmount, loanType),
-  calculateEmi: (principal: number, interestRate: number, tenure: number) => apiService.calculateEmi(principal, interestRate, tenure),
-  
-  // Reports and Analytics
-  getLoanStats: () => apiService.getLoanStats(),
-  generateLoanReport: (params: any) => apiService.generateLoanReport(params),
-  getUpcomingLoanPayments: (days?: number) => apiService.getUpcomingLoanPayments(days),
-  sendPaymentReminder: (repaymentId: string) => apiService.sendPaymentReminder(repaymentId),
-};
-
-// Disciplinary Actions Service (Senior HR Manager Only)
-export const disciplinaryService = {
-  // CRUD Operations
-  getDisciplinaryActions: (params?: any) => apiService.getDisciplinaryActions(params),
-  getDisciplinaryAction: (id: string) => apiService.getDisciplinaryAction(id),
-  createDisciplinaryAction: (data: any) => apiService.createDisciplinaryAction(data),
-  updateDisciplinaryAction: (id: string, data: any) => apiService.updateDisciplinaryAction(id, data),
-  deleteDisciplinaryAction: (id: string) => apiService.deleteDisciplinaryAction(id),
-  
-  // Workflow Management
-  approveDisciplinaryAction: (id: string, comments?: string) => apiService.approveDisciplinaryAction(id, comments),
-  implementDisciplinaryAction: (id: string) => apiService.implementDisciplinaryAction(id),
-  
-  // Appeals
-  submitAppeal: (id: string, appealReason: string, evidenceUrls?: string[]) => apiService.submitAppeal(id, appealReason, evidenceUrls),
-  reviewAppeal: (id: string, decision: 'upheld' | 'overturned', reviewNotes?: string) => apiService.reviewAppeal(id, decision, reviewNotes),
-  
-  // Analytics and Reports
-  getDisciplinaryStats: () => apiService.getDisciplinaryStats(),
-  generateDisciplinaryReport: (params: any) => apiService.generateDisciplinaryReport(params),
-  getEmployeeDisciplinaryHistory: (employeeId: string) => apiService.getEmployeeDisciplinaryHistory(employeeId),
-  
-  // Follow-ups
-  getUpcomingFollowUps: (days?: number) => apiService.getUpcomingFollowUps(days),
-  markFollowUpComplete: (actionId: string, followUpNotes: string) => apiService.markFollowUpComplete(actionId, followUpNotes),
-};
-
-// Reports Service (Senior HR Manager Only)
-export const reportsService = {
-  // Report Configuration Management
-  getReportConfigs: (params?: any) => apiService.getReportConfigs(params),
-  getReportConfig: (id: string) => apiService.getReportConfig(id),
-  createReportConfig: (data: any) => apiService.createReportConfig(data),
-  updateReportConfig: (id: string, data: any) => apiService.updateReportConfig(id, data),
-  deleteReportConfig: (id: string) => apiService.deleteReportConfig(id),
-  
-  // Report Generation
-  generateReport: (configId: string, parameters: any, format: string) => apiService.generateReport(configId, parameters, format),
-  getReportGenerations: (params?: any) => apiService.getReportGenerations(params),
-  getReportGeneration: (id: string) => apiService.getReportGeneration(id),
-  cancelReportGeneration: (id: string) => apiService.cancelReportGeneration(id),
-  downloadReport: (generationId: string) => apiService.downloadReport(generationId),
-  
-  // Analytics and Templates
-  getReportAnalytics: () => apiService.getReportAnalytics(),
-  getReportTemplates: (category?: string) => apiService.getReportTemplates(category),
-  createReportTemplate: (data: any) => apiService.createReportTemplate(data),
-  updateReportTemplate: (id: string, data: any) => apiService.updateReportTemplate(id, data),
-  deleteReportTemplate: (id: string) => apiService.deleteReportTemplate(id),
-  
-  // Scheduling
-  scheduleReport: (configId: string, schedule: any) => apiService.scheduleReport(configId, schedule),
-  updateReportSchedule: (configId: string, schedule: any) => apiService.updateReportSchedule(configId, schedule),
-  deleteReportSchedule: (configId: string) => apiService.deleteReportSchedule(configId),
-  getScheduledReports: () => apiService.getScheduledReports(),
-  
-  // Preview and Export
-  previewReport: (configId: string, parameters: any) => apiService.previewReport(configId, parameters),
-  exportReportData: (configId: string, parameters: any, format: string) => apiService.exportReportData(configId, parameters, format),
-  shareReport: (generationId: string, recipients: string[], message?: string) => apiService.shareReport(generationId, recipients, message),
-  
-  // Dashboards
-  getReportDashboards: () => apiService.getReportDashboards(),
-  createReportDashboard: (data: any) => apiService.createReportDashboard(data),
-  updateReportDashboard: (id: string, data: any) => apiService.updateReportDashboard(id, data),
-
-  // Employee Reports
-  generateEmployeeReport: (request: any) => apiService.generateEmployeeReport(request),
-  getEmployeeReportData: (employeeId: string) => apiService.getEmployeeReportData(employeeId),
-  getEmployeeReportGenerations: (params?: any) => apiService.getEmployeeReportGenerations(params),
-  getEmployeeReportGeneration: (id: string) => apiService.getEmployeeReportGeneration(id),
-  downloadEmployeeReport: (generationId: string) => apiService.downloadEmployeeReport(generationId),
-  getEmployeeReportTemplates: () => apiService.getEmployeeReportTemplates(),
-  previewEmployeeReport: (request: any) => apiService.previewEmployeeReport(request),
-};
-
 // Admin Service (Admin Only)
 export const adminService = {
   // Role Management
@@ -1685,6 +1172,29 @@ export const backupService = {
   // System Health
   getBackupSystemHealth: () => apiService.getBackupSystemHealth(),
   testBackupConnectivity: () => apiService.testBackupConnectivity(),
+};
+
+export const documentService = {
+  getSystemDocuments: (params?: any) => apiService.getSystemDocuments(params),
+  getSystemDocument: (id: string) => apiService.getSystemDocument(id),
+  uploadSystemDocument: (formData: FormData) => apiService.uploadSystemDocument(formData),
+  updateSystemDocument: (id: string, data: any) => apiService.updateSystemDocument(id, data),
+  deleteSystemDocument: (id: string) => apiService.deleteSystemDocument(id),
+  downloadSystemDocument: (id: string) => apiService.downloadSystemDocument(id),
+  getDocumentStats: () => apiService.getDocumentStats(),
+};
+
+export const taskAssignmentService = {
+  getTaskAssignments: (params?: any) => apiService.getTaskAssignments(params),
+  getTaskAssignment: (id: string) => apiService.getTaskAssignment(id),
+  createTaskAssignment: (data: any) => apiService.createTaskAssignment(data),
+  updateTaskAssignment: (id: string, data: any) => apiService.updateTaskAssignment(id, data),
+  deleteTaskAssignment: (id: string) => apiService.deleteTaskAssignment(id),
+  getHRUsers: (params?: any) => apiService.getHRUsers(params),
+  getUserPermissions: (userId: string) => apiService.getUserPermissions(userId),
+  getTaskTemplates: () => apiService.getTaskTemplates(),
+  getFeaturePermissions: () => apiService.getFeaturePermissions(),
+  toggleTaskAssignmentStatus: (id: string, isActive: boolean) => apiService.toggleTaskAssignmentStatus(id, isActive),
 };
 
 export default apiService;

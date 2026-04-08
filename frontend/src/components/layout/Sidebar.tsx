@@ -14,10 +14,7 @@ import {
   Calendar,
   UserCheck,
   Shield,
-  Database,
-  Activity,
-  Lock,
-  AlertTriangle
+  Database
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { NavigationItem } from '../../types';
@@ -32,7 +29,7 @@ const Sidebar: React.FC = () => {
         label: 'Dashboard',
         path: user?.role === 'admin' ? '/admin-dashboard' : user?.role === 'employee' ? '/employee-dashboard' : '/hr-dashboard',
         icon: Home,
-        roles: ['employee', 'hr', 'senior_hr_manager', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
+        roles: ['employee', 'hr', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
       }
     ];
 
@@ -56,24 +53,10 @@ const Sidebar: React.FC = () => {
           roles: ['admin'],
         },
         {
-          id: 'system-config',
-          label: 'System Config',
-          path: '/admin/system',
-          icon: Settings,
-          roles: ['admin'],
-        },
-        {
-          id: 'security-audit',
-          label: 'Security & Audit',
-          path: '/admin/security',
+          id: 'task-assignment',
+          label: 'Task Assignment',
+          path: '/admin/task-assignment',
           icon: Shield,
-          roles: ['admin'],
-        },
-        {
-          id: 'system-monitoring',
-          label: 'System Monitoring',
-          path: '/admin/monitoring',
-          icon: Activity,
           roles: ['admin'],
         },
         {
@@ -81,13 +64,6 @@ const Sidebar: React.FC = () => {
           label: 'Backup & Restore',
           path: '/admin/backup',
           icon: Database,
-          roles: ['admin'],
-        },
-        {
-          id: 'access-control',
-          label: 'Access Control',
-          path: '/admin/access',
-          icon: Lock,
           roles: ['admin'],
         }
       );
@@ -101,49 +77,49 @@ const Sidebar: React.FC = () => {
           label: 'Employees',
           path: '/employees',
           icon: Users,
-          roles: ['hr', 'senior_hr_manager', 'branch_manager', 'program_manager'],
+          roles: ['hr', 'branch_manager', 'program_manager'],
         },
         {
           id: 'departments',
           label: 'Departments',
           path: '/departments',
           icon: Building2,
-          roles: ['hr', 'senior_hr_manager', 'branch_manager', 'program_manager'],
+          roles: ['hr', 'branch_manager', 'program_manager'],
         },
         {
           id: 'branches',
           label: 'Branches',
           path: '/branches',
           icon: Globe,
-          roles: ['hr', 'senior_hr_manager', 'program_manager'],
+          roles: ['hr', 'program_manager'],
         },
         {
           id: 'training',
           label: 'Training Programs',
           path: '/training',
           icon: Award,
-          roles: ['training_coordinator', 'hr', 'senior_hr_manager', 'program_manager'],
+          roles: ['training_coordinator', 'hr', 'program_manager'],
         },
         {
           id: 'attendance',
           label: 'Attendance',
           path: '/attendance',
           icon: Calendar,
-          roles: ['hr', 'senior_hr_manager', 'branch_manager', 'program_manager'],
+          roles: ['hr', 'branch_manager', 'program_manager'],
         },
         {
           id: 'recruitment',
           label: 'Recruitment',
           path: '/recruitment',
           icon: UserCheck,
-          roles: ['hr', 'senior_hr_manager', 'program_manager'],
+          roles: ['hr', 'program_manager'],
         },
         {
           id: 'reports',
           label: 'Reports',
           path: '/reports',
           icon: BarChart3,
-          roles: ['hr', 'senior_hr_manager', 'branch_manager', 'program_manager'],
+          roles: ['hr', 'branch_manager', 'program_manager'],
         }
       );
     }
@@ -155,18 +131,18 @@ const Sidebar: React.FC = () => {
         label: 'Documents',
         path: '/documents',
         icon: FileText,
-        roles: ['employee', 'hr', 'senior_hr_manager', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
+        roles: ['employee', 'hr', 'training_coordinator', 'branch_manager', 'program_manager', 'admin'],
       }
     );
 
     // Settings for admins and HR
-    if (user?.role === 'admin' || user?.role === 'hr' || user?.role === 'senior_hr_manager') {
+    if (user?.role === 'admin' || user?.role === 'hr') {
       roleBasedItems.push({
         id: 'settings',
         label: user?.role === 'admin' ? 'System Settings' : 'Settings',
         path: user?.role === 'admin' ? '/admin/settings' : '/settings',
         icon: Settings,
-        roles: ['hr', 'senior_hr_manager', 'admin'],
+        roles: ['hr', 'admin'],
       });
     }
 
